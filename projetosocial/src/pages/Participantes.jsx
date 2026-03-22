@@ -4,12 +4,14 @@ import { toast } from 'react-toastify'
 import ScreenShell from '../components/ScreenShell'
 import BiblicalStudyPanel from '../components/dashboard/BiblicalStudyPanel'
 import CoursesPanel from '../components/dashboard/CoursesPanel'
+import FrequencyPanel from '../components/dashboard/FrequencyPanel'
 import { apiFetch, clearSession, getToken, getUserName } from '../lib/api'
 
 const TABS = [
   { id: 'inscricoes', label: 'Inscrições' },
   { id: 'biblico', label: 'Estudo bíblico' },
   { id: 'cursos', label: 'Cursos' },
+  { id: 'frequencia', label: 'Frequência' },
 ]
 
 function formatDate(iso) {
@@ -62,6 +64,12 @@ export default function Participantes() {
   useEffect(() => {
     if (!getToken()) return
     if (tab === 'biblico') loadList()
+  }, [tab, loadList])
+
+  /* Recarrega participantes ao abrir Frequência (lista sempre atualizada no select). */
+  useEffect(() => {
+    if (!getToken()) return
+    if (tab === 'frequencia') loadList()
   }, [tab, loadList])
 
   async function handleSubmit(e) {
@@ -252,6 +260,11 @@ export default function Participantes() {
                                 {p.biblicalLessonsCompleted.length}/15 lições concluídas
                               </span>
                             ) : null}
+                            {p.frequencyAttended?.length > 0 ? (
+                              <span className="rounded-full bg-blue-500/15 text-blue-100/85 px-2 py-0.5 border border-blue-500/20">
+                                {p.frequencyAttended.length}/25 dias de frequência
+                              </span>
+                            ) : null}
                           </div>
                           <p className="text-xs text-white/40 mt-2">{formatDate(p.createdAt)}</p>
                         </li>
@@ -302,6 +315,28 @@ export default function Participantes() {
                 Ofertas formativas da secretaria — detalhes com a equipe.
               </p>
               <CoursesPanel />
+            </div>
+          </section>
+        )}
+
+        {tab === 'frequencia' && (
+          <section
+            className="relative rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden px-5 py-6 sm:px-8 sm:py-8"
+            aria-labelledby="frequencia-heading"
+          >
+            <div className="absolute inset-0 bg-linear-to-br from-blue-950/15 via-transparent to-slate-900/25 pointer-events-none" />
+            <div className="relative">
+              <h2 id="frequencia-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                Frequência — registro de presença
+              </h2>
+              <p className="text-sm text-white/55 mt-1 mb-8 text-center sm:text-left max-w-2xl">
+                Escolha um participante <strong className="text-white/85">já inscrito</strong> e marque os dias de presença.
+              </p>
+              <FrequencyPanel
+                participants={list}
+                loadingList={loadingList}
+                onUpdated={loadList}
+              />
             </div>
           </section>
         )}

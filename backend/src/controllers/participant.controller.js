@@ -9,6 +9,22 @@ function validateLessonNumbers(arr) {
   return arr.every((n) => Number.isInteger(n) && n >= 1 && n <= 15);
 }
 
+function validateFrequencyNumbers(arr) {
+  if (!Array.isArray(arr)) return false;
+  if (arr.length > 25) return false;
+  const dayIds = arr.map(item => item.dayId);
+  const set = new Set(dayIds);
+  if (set.size !== arr.length) return false;
+  return arr.every((item) => 
+    typeof item === 'object' && 
+    item !== null &&
+    Number.isInteger(item.dayId) && 
+    item.dayId >= 1 && 
+    item.dayId <= 25 &&
+    (item.markedDate instanceof Date || (typeof item.markedDate === 'string' && !isNaN(Date.parse(item.markedDate))))
+  );
+}
+
 export const patchBiblicalStudy = async (req, res) => {
   try {
     const { id } = req.params;
@@ -59,6 +75,54 @@ export const patchBiblicalStudy = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao atualizar estudo bíblico." });
+  }
+};
+
+export const patchFrequency = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+    const { frequencyAttended } = req.body;
+
+    if (frequencyAttended !== undefined) {
+      if (!validateFrequencyNumbers(frequencyAttended)) {
+        return res.status(400).json({
+          message: "Lista de dias de frequência inválida (objetos com dayId 1–25 e markedDate válida, sem dayId repetido).",
+        });
+      }
+    }
+
+    const update = {};
+    if (frequencyAttended !== undefined) {
+      // Garantir que markedDate seja Date e ordenar por dayId
+      update.frequencyAttended = [...frequencyAttended]
+        .map(item => ({
+          dayId: item.dayId,
+          markedDate: item.markedDate instanceof Date ? item.markedDate : new Date(item.markedDate)
+        }))
+        .sort((a, b) => a.dayId - b.dayId);
+    }
+
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({ message: "Nenhum campo para atualizar." });
+    }
+
+    const p = await Participant.findOneAndUpdate(
+      { _id: id, registeredBy: req.userId },
+      { $set: update },
+      { new: true, runValidators: true }
+    );
+
+    if (!p) {
+      return res.status(404).json({ message: "Participante não encontrado." });
+    }
+
+    res.json(p);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao atualizar frequência." });
   }
 };
 

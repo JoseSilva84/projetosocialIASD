@@ -82,13 +82,16 @@ Header: `Authorization: Bearer <token>`
 | `GET` | `/api/participants` | — | Lista participantes do usuário logado |
 | `POST` | `/api/participants` | `{ "name", "address", "whatsapp" }` | Cria participante vinculado ao usuário |
 | `PATCH` | `/api/participants/:id/biblical-study` | `{ "selectedBiblicalLesson", "biblicalLessonsCompleted" }` | Atualiza lição em estudo (1–15) e lista de lições concluídas |
+| `PATCH` | `/api/participants/:id/frequency` | `{ "frequencyAttended" }` | Atualiza lista de dias de frequência atendidos (array de objetos com dayId e markedDate) |
 
-No `PATCH`, envie um ou ambos os campos. `selectedBiblicalLesson` deve ser inteiro entre 1 e 15 (ou `null` para limpar). `biblicalLessonsCompleted` é um array de inteiros únicos entre 1 e 15.
+No `PATCH` para estudo bíblico, envie um ou ambos os campos. `selectedBiblicalLesson` deve ser inteiro entre 1 e 15 (ou `null` para limpar). `biblicalLessonsCompleted` é um array de inteiros únicos entre 1 e 15.
+
+No `PATCH` para frequência, envie `frequencyAttended` como array de objetos `[{ "dayId": 1, "markedDate": "2024-01-01T00:00:00.000Z" }, ...]`.
 
 ## Modelos (resumo)
 
 - **User:** `name` (string, único), `passwordHash`.
-- **Participant:** `name`, `address`, `whatsapp`, `registeredBy` (ObjectId → User), `selectedBiblicalLesson` (1–15, opcional), `biblicalLessonsCompleted` (array de números 1–15), timestamps.
+- **Participant:** `name`, `address`, `whatsapp`, `registeredBy` (ObjectId → User), `selectedBiblicalLesson` (1–15, opcional), `biblicalLessonsCompleted` (array de números 1–15), `frequencyAttended` (array de objetos `{dayId: 1-25, markedDate: Date}`), timestamps.
 
 ## Frontend
 

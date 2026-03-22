@@ -1,0 +1,30 @@
+/** 25 dias consecutivos de frequência. */
+export const FREQUENCY_DAYS = [
+  { id: 1, date: '2024-01-01', label: 'Dia 1' },
+  { id: 2, date: '2024-01-02', label: 'Dia 2' },
+  { id: 3, date: '2024-01-03', label: 'Dia 3' },
+  { id: 4, date: '2024-01-04', label: 'Dia 4' },
+  { id: 5, date: '2024-01-05', label: 'Dia 5' },
+  { id: 6, date: '2024-01-06', label: 'Dia 6' },
+  { id: 7, date: '2024-01-07', label: 'Dia 7' },
+  { id: 8, date: '2024-01-08', label: 'Dia 8' },
+  { id: 9, date: '2024-01-09', label: 'Dia 9' },
+  { id: 10, date: '2024-01-10', label: 'Dia 10' },
+  { id: 11, date: '2024-01-11', label: 'Dia 11' },
+  { id: 12, date: '2024-01-12', label: 'Dia 12' },
+  { id: 13, date: '2024-01-13', label: 'Dia 13' },
+  { id: 14, date: '2024-01-14', label: 'Dia 14' },
+  { id: 15, date: '2024-01-15', label: 'Dia 15' },
+  { id: 16, date: '2024-01-16', label: 'Dia 16' },
+  { id: 17, date: '2024-01-17', label: 'Dia 17' },
+  { id: 18, date: '2024-01-18', label: 'Dia 18' },
+  { id: 19, date: '2024-01-19', label: 'Dia 19' },
+  { id: 20, date: '2024-01-20', label: 'Dia 20' },
+  { id: 21, date: '2024-01-21', label: 'Dia 21' },
+  { id: 22, date: '2024-01-22', label: 'Dia 22' },
+  { id: 23, date: '2024-01-23', label: 'Dia 23' },
+  { id: 24, date: '2024-01-24', label: 'Dia 24' },
+  { id: 25, date: '2024-01-25', label: 'Dia 25' },
+]
+
+export const FREQUENCY_DAYS_COUNT = FREQUENCY_DAYS.length
