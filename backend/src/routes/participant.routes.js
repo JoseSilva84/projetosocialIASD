@@ -1,6 +1,7 @@
 import express from "express";
 import {
     create,
+    deleteParticipant,
     listMine,
     patchBiblicalStudy,
     patchFrequency,
@@ -14,5 +15,6 @@ router.get("/", listMine);
 router.post("/", create);
 router.patch("/:id/biblical-study", patchBiblicalStudy);
 router.patch("/:id/frequency", patchFrequency);
+router.delete("/:id", deleteParticipant);
 
 export default router;

@@ -158,3 +158,22 @@ export const listMine = async (req, res) => {
     res.status(500).json({ message: "Erro ao listar participantes." });
   }
 };
+
+export const deleteParticipant = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+
+    const p = await Participant.findOneAndDelete({ _id: id, registeredBy: req.userId });
+    if (!p) {
+      return res.status(404).json({ message: "Participante não encontrado." });
+    }
+
+    res.json({ message: "Participante excluído com sucesso." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao excluir participante." });
+  }
+};
