@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 import './App.css'
+import AppFooter from './components/AppFooter'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Participantes from './pages/Participantes'
@@ -23,6 +25,22 @@ function App() {
         <Route path="/participantes" element={<Participantes />} />
         <Route path="*" element={<HomeRedirect />} />
       </Routes>
+      <AppFooter />
+      <ToastContainer
+        position="top-center"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        className="!z-[99999]"
+        toastClassName="!bg-slate-900/95 !border !border-white/10 !text-slate-100 !rounded-xl !shadow-xl"
+        bodyClassName="!font-sans !text-sm"
+      />
     </BrowserRouter>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import ScreenShell from '../components/ScreenShell'
 import { apiFetch, saveSession } from '../lib/api'
 
@@ -46,22 +47,27 @@ export default function Login() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setError('')
+    const n = name.trim()
+    const p = password.trim()
+    if (!n || !p) {
+      toast.error('Nome e senha são obrigatórios.')
+      return
+    }
     setLoading(true)
     try {
       const data = await apiFetch('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ name: n, password: p }),
       })
       saveSession(data)
+      toast.success('Login realizado com sucesso.')
       navigate('/participantes', { replace: true })
     } catch (err) {
-      setError(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -83,12 +89,6 @@ export default function Login() {
             </h1>
             <p className="text-center text-sm text-white/60">Entrar na secretaria</p>
 
-            {error ? (
-              <p className="text-sm text-red-300 text-center" role="alert">
-                {error}
-              </p>
-            ) : null}
-
             <div className="flex items-center gap-3 border-b border-white/25 pb-3">
               <UserSilhouette className="h-4 w-4 text-white/70 shrink-0" aria-hidden="true" />
               <input
@@ -99,7 +99,6 @@ export default function Login() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-transparent py-1 text-sm text-white placeholder:text-white/60 outline-none"
-                required
               />
             </div>
 
@@ -113,7 +112,6 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-transparent py-1 text-sm text-white placeholder:text-white/60 outline-none"
-                required
               />
             </div>
 
