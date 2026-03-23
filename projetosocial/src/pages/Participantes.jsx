@@ -38,6 +38,7 @@ export default function Participantes() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deletingIds, setDeletingIds] = useState(new Set())
   const [recentlyDeleted, setRecentlyDeleted] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const loadList = useCallback(async () => {
     setLoadingList(true)
@@ -194,6 +195,30 @@ export default function Participantes() {
 
   const userLabel = getUserName()
 
+  const filteredList = list.filter(p => {
+    if (!searchTerm.trim()) return true
+    const term = searchTerm.toLowerCase()
+    // Nome
+    if (p.name.toLowerCase().includes(term)) return true
+    // WhatsApp
+    if (p.whatsapp.toLowerCase().includes(term)) return true
+    // Endereço
+    if (p.address.toLowerCase().includes(term)) return true
+    // Data de presença (formato completo)
+    if (p.frequencyAttended?.some(date => formatDate(date).toLowerCase().includes(term))) return true
+    // Dia das datas de presença
+    const dayNum = parseInt(term)
+    if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 31) {
+      if (p.frequencyAttended?.some(date => new Date(date).getDate() === dayNum)) return true
+    }
+    // Quantidade de dias
+    if (!isNaN(dayNum) && p.frequencyAttended?.length === dayNum) return true
+    // Estudo bíblico
+    if (p.selectedBiblicalLesson != null && `lição ${p.selectedBiblicalLesson}`.toLowerCase().includes(term)) return true
+    if (p.biblicalLessonsCompleted?.length > 0 && `${p.biblicalLessonsCompleted.length}/15 lições`.toLowerCase().includes(term)) return true
+    return false
+  })
+
   return (
     <ScreenShell maxWidthClass="max-w-7xl" alignClass="items-start sm:items-center">
       <div className="mx-auto w-full space-y-6">
@@ -206,6 +231,15 @@ export default function Participantes() {
             ) : null}
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex-1 max-w-xs">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Pesquisar por nome, WhatsApp, endereço, dia..."
+                className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+              />
+            </div>
             <nav
               className="flex flex-wrap justify-center gap-2 rounded-2xl border border-white/10 bg-black/30 p-1.5"
               aria-label="Seções do painel"
@@ -316,19 +350,19 @@ export default function Participantes() {
                   </p>
                   <div className="mt-3 flex justify-center sm:justify-start">
                     <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-xs font-medium text-emerald-200/90">
-                      Total: {loadingList ? '…' : list.length}
+                      Total: {loadingList ? '…' : filteredList.length}
                     </span>
                   </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
+                <div className="flex-1 overflow-y-auto max-h-80 px-4 py-4 sm:px-5 sm:py-5 custom-scrollbar">
                   {loadingList ? (
                     <p className="text-sm text-white/50 text-center py-8">Carregando…</p>
-                  ) : list.length === 0 ? (
+                  ) : filteredList.length === 0 ? (
                     <p className="text-sm text-white/50 text-center py-8">Nenhuma inscrição ainda.</p>
                   ) : (
                     <ul className="space-y-3 max-w-2xl mx-auto lg:mx-0">
-                      {list.map((p) => (
+                      {filteredList.map((p) => (
                         <li
                           key={p._id}
                           className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
