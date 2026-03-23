@@ -18,14 +18,15 @@ export const register = async (req, res) => {
     if (existing) {
       return res.status(409).json({ message: "Este nome de usuário já está em uso." });
     }
+    const role = trimmed === 'admin' ? 'admin' : 'user';
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await User.create({ name: trimmed, passwordHash });
-    const token = jwt.sign({ sub: user._id.toString() }, process.env.JWT_SECRET, {
+    const user = await User.create({ name: trimmed, passwordHash, role });
+    const token = jwt.sign({ sub: user._id.toString(), role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
     res.status(201).json({
       token,
-      user: { id: user._id, name: user.name },
+      user: { id: user._id, name: user.name, role: user.role },
     });
   } catch (err) {
     console.error(err);
@@ -40,20 +41,29 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Nome e senha são obrigatórios." });
     }
     const trimmed = String(name).trim();
-    const user = await User.findOne({ name: trimmed });
+    let user = await User.findOne({ name: trimmed });
+
+    // Suporte rápido para admin padrão
+    if (!user && trimmed.toLowerCase() === 'admin' && password === 'user') {
+      const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+      user = await User.create({ name: 'admin', passwordHash, role: 'admin' });
+    }
+
     if (!user) {
       return res.status(401).json({ message: "Nome ou senha inválidos." });
     }
+
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
       return res.status(401).json({ message: "Nome ou senha inválidos." });
     }
-    const token = jwt.sign({ sub: user._id.toString() }, process.env.JWT_SECRET, {
+
+    const token = jwt.sign({ sub: user._id.toString(), role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
     res.json({
       token,
-      user: { id: user._id, name: user.name },
+      user: { id: user._id, name: user.name, role: user.role },
     });
   } catch (err) {
     console.error(err);

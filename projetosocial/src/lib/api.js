@@ -12,15 +12,21 @@ export function setToken(t) {
 export function saveSession({ token, user }) {
   setToken(token)
   if (user?.name) localStorage.setItem('userName', user.name)
+  if (user?.role) localStorage.setItem('userRole', user.role)
 }
 
 export function clearSession() {
   setToken(null)
   localStorage.removeItem('userName')
+  localStorage.removeItem('userRole')
 }
 
 export function getUserName() {
   return localStorage.getItem('userName') || ''
+}
+
+export function getUserRole() {
+  return localStorage.getItem('userRole') || 'user'
 }
 
 export async function apiFetch(path, options = {}) {

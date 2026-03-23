@@ -61,8 +61,9 @@ export const patchBiblicalStudy = async (req, res) => {
       return res.status(400).json({ message: "Nenhum campo para atualizar." });
     }
 
+    const filter = req.userRole === 'admin' ? { _id: id } : { _id: id, registeredBy: req.userId };
     const p = await Participant.findOneAndUpdate(
-      { _id: id, registeredBy: req.userId },
+      filter,
       { $set: update },
       { new: true, runValidators: true }
     );
@@ -109,8 +110,9 @@ export const patchFrequency = async (req, res) => {
       return res.status(400).json({ message: "Nenhum campo para atualizar." });
     }
 
+    const filter = req.userRole === 'admin' ? { _id: id } : { _id: id, registeredBy: req.userId };
     const p = await Participant.findOneAndUpdate(
-      { _id: id, registeredBy: req.userId },
+      filter,
       { $set: update },
       { new: true, runValidators: true }
     );
@@ -149,13 +151,47 @@ export const create = async (req, res) => {
 
 export const listMine = async (req, res) => {
   try {
-    const list = await Participant.find({ registeredBy: req.userId }).sort({
+    const query = req.userRole === 'admin' ? {} : { registeredBy: req.userId };
+    const list = await Participant.find(query).sort({
       createdAt: -1,
     });
     res.json(list);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao listar participantes." });
+  }
+};
+
+export const update = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+    const { name, address, whatsapp } = req.body;
+    if (!name || !address || !whatsapp) {
+      return res.status(400).json({ message: "Nome, endereço e WhatsApp são obrigatórios." });
+    }
+
+    const filter = req.userRole === 'admin' ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const p = await Participant.findOneAndUpdate(
+      filter,
+      {
+        name: String(name).trim(),
+        address: String(address).trim(),
+        whatsapp: String(whatsapp).trim(),
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!p) {
+      return res.status(404).json({ message: "Participante não encontrado." });
+    }
+
+    res.json(p);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao atualizar participante." });
   }
 };
 
@@ -166,7 +202,8 @@ export const deleteParticipant = async (req, res) => {
       return res.status(400).json({ message: "ID inválido." });
     }
 
-    const p = await Participant.findOneAndDelete({ _id: id, registeredBy: req.userId });
+    const filter = req.userRole === 'admin' ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const p = await Participant.findOneAndDelete(filter);
     if (!p) {
       return res.status(404).json({ message: "Participante não encontrado." });
     }

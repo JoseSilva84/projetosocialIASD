@@ -9,6 +9,7 @@ export function requireAuth(req, res, next) {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = payload.sub;
+    req.userRole = payload.role || 'user';
     next();
   } catch {
     return res.status(401).json({ message: "Token inválido ou expirado." });

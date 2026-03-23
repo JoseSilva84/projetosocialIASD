@@ -13,4 +13,5 @@ model User {
   age     String
   email   String @unique
   name    String
+  role    String @default("user")
 }

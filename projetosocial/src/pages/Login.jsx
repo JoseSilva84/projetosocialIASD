@@ -49,6 +49,8 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const isAdmin = name.trim().toLowerCase() === 'admin'
+
   async function handleSubmit(e) {
     e.preventDefault()
     const n = name.trim()
@@ -88,6 +90,10 @@ export default function Login() {
               Projeto Eu quero Ser Feliz
             </h1>
             <p className="text-center text-sm text-white/60">Entrar na secretaria</p>
+            <p className="text-center text-xs text-white/50">
+              Administrador: usuário <strong>admin</strong> / senha <strong>user</strong> (controle total).<br />
+              Convidado: cadastre-se e verá apenas visualização de participantes.
+            </p>
 
             <div className="flex items-center gap-3 border-b border-white/25 pb-3">
               <UserSilhouette className="h-4 w-4 text-white/70 shrink-0" aria-hidden="true" />
@@ -124,10 +130,14 @@ export default function Login() {
             </button>
 
             <p className="text-center text-sm text-white/60">
-              Ainda não tem conta?{' '}
-              <Link to="/cadastro" className="text-white underline decoration-white/40 underline-offset-2">
-                Cadastre-se
-              </Link>
+              {!isAdmin && (
+                <>
+                  Ainda não tem conta?{' '}
+                  <Link to="/cadastro" className="text-white underline decoration-white/40 underline-offset-2">
+                    Cadastre-se
+                  </Link>
+                </>
+              )}
             </p>
           </form>
         </div>
