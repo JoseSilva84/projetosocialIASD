@@ -87,11 +87,11 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <h1 className="text-2xl font-bold text-center text-white">
-              Projeto Eu quero Ser Feliz
+              Projeto Eu Quero Ser Feliz
             </h1>
             <p className="text-center text-sm text-white/60">Entrar na secretaria</p>
             <p className="text-center text-xs text-white/50">
-              Administrador: usuário <strong>admin</strong> / senha <strong>user</strong> (controle total).<br />
+              Administrador: usuário (controle total).<br />
               Convidado: cadastre-se e verá apenas visualização de participantes.
             </p>
 
