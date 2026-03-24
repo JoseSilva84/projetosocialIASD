@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import ScreenShell from '../components/ScreenShell'
@@ -12,6 +12,8 @@ const TABS = [
   { id: 'biblico', label: 'Estudo bíblico' },
   { id: 'cursos', label: 'Cursos' },
   { id: 'frequencia', label: 'Frequência' },
+  { id: 'dados', label: 'Dados' },
+  { id: 'ranking', label: 'Ranking de pontuação' },
 ]
 
 function formatDate(iso) {
@@ -46,6 +48,515 @@ export default function Participantes() {
   const [updatingIds, setUpdatingIds] = useState(new Set())
 
   const userRole = getUserRole()
+  const [rankingConfig, setRankingConfig] = useState({
+    presenceWeight: 1,
+    biblicalWeight: 1,
+    extraLabel: 'Extra',
+    extraWeight: 0,
+  })
+  const [configLoading, setConfigLoading] = useState(true)
+  const [rankSaving, setRankSaving] = useState(false)
+
+  const analytics = useMemo(() => {
+    const totalParticipants = list.length
+    const totalPresences = list.reduce(
+      (sum, p) => sum + (Array.isArray(p.frequencyAttended) ? p.frequencyAttended.length : 0),
+      0
+    )
+
+    const daySet = new Set()
+    list.forEach((p) => {
+      if (Array.isArray(p.frequencyAttended)) {
+        p.frequencyAttended.forEach((f) => {
+          if (typeof f?.dayId === 'number') daySet.add(f.dayId)
+        })
+      }
+    })
+    const allDays = [...daySet].sort((a, b) => a - b)
+    const maxDay = allDays.length ? Math.max(...allDays) : 0
+
+    const frequencyByDay = []
+    const presentNamesByDay = {}
+    const absentNamesByDay = {}
+
+    for (let d = 1; d <= maxDay; d += 1) {
+      const presentParticipants = list.filter(
+        (p) => Array.isArray(p.frequencyAttended) && p.frequencyAttended.some((f) => f.dayId === d)
+      )
+      const present = presentParticipants.length
+      const absentParticipants = list.filter(
+        (p) => !Array.isArray(p.frequencyAttended) || !p.frequencyAttended.some((f) => f.dayId === d)
+      )
+      const absent = absentParticipants.length
+
+      frequencyByDay.push({ day: d, present, absent })
+      presentNamesByDay[d] = presentParticipants.map((p) => p.name || '(sem nome)')
+      absentNamesByDay[d] = absentParticipants.map((p) => p.name || '(sem nome)')
+    }
+
+    const inscriptionsMap = new Map()
+    list.forEach((p) => {
+      if (p.createdAt) {
+        const date = new Date(p.createdAt)
+        if (!Number.isNaN(date.getTime())) {
+          const dayString = date.toLocaleDateString('pt-BR')
+          inscriptionsMap.set(dayString, (inscriptionsMap.get(dayString) || 0) + 1)
+        }
+      }
+    })
+
+    const inscriptionsOverTime = [...inscriptionsMap.entries()]
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => new Date(a.date.split('/').reverse().join('-')) - new Date(b.date.split('/').reverse().join('-')))
+
+    let cumulative = 0
+    const inscriptionsAccum = inscriptionsOverTime.map((item) => {
+      cumulative += item.count
+      return { ...item, cumulative }
+    })
+
+    const studyingBible = list.filter(
+      (p) => (Array.isArray(p.biblicalLessonsCompleted) && p.biblicalLessonsCompleted.length > 0) || p.selectedBiblicalLesson != null
+    ).length
+    const notStudyingBible = totalParticipants - studyingBible
+
+    const averageFrequency =
+      totalParticipants && maxDay ? Math.round((totalPresences / (totalParticipants * maxDay)) * 100) : 0
+
+    const topFrequency = [...list]
+      .map((p) => ({ name: p.name || '(sem nome)', days: Array.isArray(p.frequencyAttended) ? p.frequencyAttended.length : 0 }))
+      .sort((a, b) => b.days - a.days)
+      .slice(0, 10)
+
+    const rankingList = [...list]
+      .map((p) => {
+        const attendance = Array.isArray(p.frequencyAttended) ? p.frequencyAttended.length : 0
+        const biblicalLessons = Array.isArray(p.biblicalLessonsCompleted) ? p.biblicalLessonsCompleted.length : 0
+        const extra = typeof p.extraScore === 'number' ? p.extraScore : 0
+        const score =
+          attendance * Number(rankingConfig.presenceWeight || 0) +
+          biblicalLessons * Number(rankingConfig.biblicalWeight || 0) +
+          extra * Number(rankingConfig.extraWeight || 0)
+        return {
+          id: p._id,
+          name: p.name || '(sem nome)',
+          attendance,
+          biblicalLessons,
+          extra,
+          score,
+        }
+      })
+      .sort((a, b) => b.score - a.score)
+
+    const topScoreRanking = rankingList.slice(0, 10)
+    const top3 = rankingList.slice(0, 3)
+
+    return {
+      totalParticipants,
+      totalPresences,
+      averageFrequency,
+      studyingBible,
+      notStudyingBible,
+      frequencyByDay,
+      presentNamesByDay,
+      absentNamesByDay,
+      inscriptionsOverTime: inscriptionsAccum,
+      topFrequency,
+      rankingList,
+      topScoreRanking,
+      top3,
+      maxDay,
+      allDays,
+    }
+  }, [list, rankingConfig])
+
+  const chartRefs = useRef({
+    frequencyChart: null,
+    bibleChart: null,
+    inscriptionsChart: null,
+    topFrequencyChart: null,
+  })
+
+  // Função para renderizar gráficos
+  const renderCharts = useCallback(() => {
+    // Destruir gráficos existentes
+    Object.values(chartRefs.current).forEach(chart => {
+      if (chart) chart.destroy()
+    })
+
+    const {
+      frequencyByDay,
+      totalParticipants,
+      studyingBible,
+      notStudyingBible,
+      inscriptionsOverTime,
+      topFrequency,
+      averageFrequency,
+    } = analytics
+
+    // Gráfico 1: Frequência por dia
+    const frequencyOptions = {
+      series: [
+        {
+          name: 'Presentes',
+          data: frequencyByDay.map(d => d.present),
+        },
+        {
+          name: 'Ausentes',
+          data: frequencyByDay.map(d => d.absent),
+        },
+      ],
+      chart: {
+        type: 'bar',
+        height: 320,
+        background: 'transparent',
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          endingShape: 'rounded',
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent'],
+      },
+      xaxis: {
+        categories: frequencyByDay.map(d => `Dia ${d.day}`),
+        labels: {
+          style: { colors: '#fff' },
+        },
+      },
+      yaxis: {
+        title: {
+          text: 'Número de participantes',
+          style: { color: '#fff' },
+        },
+        labels: {
+          style: { colors: '#fff' },
+        },
+      },
+      fill: {
+        opacity: 1,
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        custom: function ({series, dataPointIndex}) {
+          const day = frequencyByDay[dataPointIndex]?.day
+          const presentNames = analytics.presentNamesByDay[day] || []
+          const absentNames = analytics.absentNamesByDay[day] || []
+          const presentLine = `Presentes (${presentNames.length}): ${presentNames.join(', ') || 'Nenhum'}`
+          const absentLine = `Ausentes (${absentNames.length}): ${absentNames.join(', ') || 'Nenhum'}`
+          return `<div style="background:#0f1117; border:1px solid #2d3748; color:#fff; padding:10px; border-radius:8px; max-width:320px;">
+              <div style="font-weight:600; margin-bottom:4px;">Dia ${day}</div>
+              <div style="font-size:12px; margin-bottom:4px;">${presentLine}</div>
+              <div style="font-size:12px;">${absentLine}</div>
+            </div>`
+        },
+      },
+      colors: ['#10b981', '#ef4444'],
+      responsive: [
+        {
+          breakpoint: 768,
+          options: {
+            chart: {
+              height: 250,
+            },
+            plotOptions: {
+              bar: {
+                columnWidth: '70%',
+              },
+            },
+          },
+        },
+      ],
+    }
+    chartRefs.current.frequencyChart = new ApexCharts(document.querySelector('#frequency-chart'), frequencyOptions)
+    chartRefs.current.frequencyChart.render()
+
+    // Gráfico 2: Distribuição estudo bíblico
+    const bibleOptions = {
+      series: [studyingBible, notStudyingBible],
+      chart: {
+        type: 'donut',
+        height: 320,
+        background: 'transparent',
+      },
+      labels: ['Estudando a Bíblia', 'Não estudando'],
+      colors: ['#10b981', '#6b7280'],
+      legend: { position: 'bottom', labels: { colors: '#fff' } },
+      tooltip: {
+        y: { formatter: (val) => `${val} participantes` },
+      },
+      plotOptions: {
+        pie: {
+          donut: {
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: 'Total',
+                formatter: () => totalParticipants.toString(),
+              },
+            },
+          },
+        },
+      },
+      responsive: [
+        {
+          breakpoint: 768,
+          options: { chart: { height: 250 } },
+        },
+      ],
+    }
+    chartRefs.current.bibleChart = new ApexCharts(document.querySelector('#bible-chart'), bibleOptions)
+    chartRefs.current.bibleChart.render()
+
+    // Gráfico 3: Evolução inscrições
+    const inscriptionsOptions = {
+      series: [
+        {
+          name: 'Inscritos acumulados',
+          data: inscriptionsOverTime.map((d) => d.cumulative),
+        },
+      ],
+      chart: {
+        type: 'line',
+        height: 320,
+        background: 'transparent',
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 3,
+      },
+      xaxis: {
+        categories: inscriptionsOverTime.map((d) => d.date),
+        labels: { style: { colors: '#fff' } },
+      },
+      yaxis: {
+        title: { text: 'Número de inscritos', style: { color: '#fff' } },
+        labels: { style: { colors: '#fff' } },
+      },
+      colors: ['#10b981'],
+      tooltip: { y: { formatter: (val) => `${val} inscritos` } },
+      responsive: [
+        { breakpoint: 768, options: { chart: { height: 250 } } },
+      ],
+    }
+    chartRefs.current.inscriptionsChart = new ApexCharts(document.querySelector('#inscriptions-chart'), inscriptionsOptions)
+    chartRefs.current.inscriptionsChart.render()
+
+    // Gráfico 4: Ranking frequência
+    const topFrequencyOptions = {
+      series: [
+        {
+          name: 'Dias presentes',
+          data: topFrequency.map((p) => p.days),
+        },
+      ],
+      chart: {
+        type: 'bar',
+        height: 320,
+        background: 'transparent',
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: '70%',
+          distributed: true,
+        },
+      },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: topFrequency.map((p) => p.name),
+        labels: { style: { colors: '#fff' } },
+      },
+      yaxis: {
+        title: { text: 'Dias presentes', style: { color: '#fff' } },
+        labels: { style: { colors: '#fff' } },
+      },
+      colors: topFrequency.map((_, i) => `rgba(16, 185, 129, ${(i + 5) / 12})`),
+      tooltip: { y: { formatter: (val) => `${val} dias` } },
+      responsive: [{ breakpoint: 768, options: { chart: { height: 250 } } }],
+    }
+    chartRefs.current.topFrequencyChart = new ApexCharts(document.querySelector('#top-frequency-chart'), topFrequencyOptions)
+    chartRefs.current.topFrequencyChart.render()
+  }, [analytics])
+
+  // useEffect para renderizar gráficos quando tab === 'dados'
+  useEffect(() => {
+    if (tab !== 'dados') return
+    if (analytics.totalParticipants === 0) return
+
+    const timer = setTimeout(() => {
+      renderCharts()
+    }, 100)
+
+    return () => {
+      clearTimeout(timer)
+      Object.values(chartRefs.current).forEach((chart) => {
+        if (chart) chart.destroy()
+      })
+    }
+  }, [tab, renderCharts, analytics])
+
+  const handleExportPdf = () => {
+    if (!window.jspdf?.jsPDF) {
+      toast.error('Biblioteca jsPDF não carregada ainda.')
+      return
+    }
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+    let y = 30
+    doc.setFontSize(18)
+    doc.text('Relatório de Dados - Projeto Eu Quero Ser Feliz', 20, y)
+    y += 30
+    doc.setFontSize(12)
+    doc.text(`Total de participantes: ${analytics.totalParticipants}`, 20, y)
+    y += 18
+    doc.text(`Total de presenças: ${analytics.totalPresences}`, 20, y)
+    y += 18
+    doc.text(`Taxa média de frequência: ${analytics.averageFrequency}%`, 20, y)
+    y += 18
+    doc.text(`Estudando a Bíblia: ${analytics.studyingBible}`, 20, y)
+    y += 18
+    doc.text(`Não estudando: ${analytics.notStudyingBible}`, 20, y)
+    y += 30
+
+    const pageHeight = 841.89
+    const pageBottomThreshold = pageHeight * 0.9
+    const pageWidth = 595.28 // width of A4 portrait in pt is 595.28 for portrait, but in landscape we use 841.89
+    const contentWidth = 760
+
+    const ensureSpace = (lineHeight = 0) => {
+      if (y + lineHeight > pageBottomThreshold) {
+        doc.addPage()
+        y = 30
+      }
+    }
+
+    doc.setFontSize(14)
+    doc.text('Frequência por Dia', 20, y)
+    y += 20
+    doc.setFontSize(10)
+    analytics.frequencyByDay.forEach((d) => {
+      const presentNames = analytics.presentNamesByDay[d.day] || []
+      const absentNames = analytics.absentNamesByDay[d.day] || []
+
+      ensureSpace(72)
+      const headerLine = `Dia ${d.day}: ${d.present} presentes, ${d.absent} ausentes`
+      const presentLine = `Presentes (${presentNames.length}): ${presentNames.length > 0 ? presentNames.join(', ') : 'Nenhum'}`
+      const absentLine = `Ausentes (${absentNames.length}): ${absentNames.length > 0 ? absentNames.join(', ') : 'Nenhum'}`
+
+      const headerLns = doc.splitTextToSize(headerLine, contentWidth)
+      headerLns.forEach((t) => {
+        doc.text(t, 20, y)
+        y += 12
+      })
+
+      const presentLns = doc.splitTextToSize(presentLine, contentWidth)
+      presentLns.forEach((t) => {
+        doc.text(`  ${t}`, 20, y)
+        y += 12
+      })
+
+      const absentLns = doc.splitTextToSize(absentLine, contentWidth)
+      absentLns.forEach((t) => {
+        doc.text(`  ${t}`, 20, y)
+        y += 12
+      })
+
+      y += 8
+
+      if (y > pageBottomThreshold) {
+        doc.addPage()
+        y = 30
+      }
+    })
+
+    y += 20 // espaço extra entre seções
+    ensureSpace(30)
+    doc.setFontSize(14)
+    doc.text('Lista de Participantes', 20, y)
+    y += 20
+    doc.setFontSize(10)
+    doc.text('Nome | Endereço | WhatsApp', 20, y)
+    y += 14
+
+    list.forEach((p, idx) => {
+      ensureSpace(40)
+      const participantLine = `${idx + 1}. ${p.name || ''} | ${p.address || ''} | ${p.whatsapp || ''}`
+      const lines = doc.splitTextToSize(participantLine, contentWidth)
+      lines.forEach((line) => {
+        ensureSpace(14)
+        doc.text(line, 20, y)
+        y += 12
+      })
+      y += 6
+    })
+
+    doc.save('dados-projeto-eu-quero-ser-feliz.pdf')
+  }
+
+  const handleExportParticipants = () => {
+    if (!window.jspdf?.jsPDF) {
+      toast.error('Biblioteca jsPDF não carregada ainda.')
+      return
+    }
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+    let y = 30
+    doc.setFontSize(18)
+    doc.text('Lista de Participantes', 20, y)
+    y += 24
+    doc.setFontSize(10)
+    doc.text('Nome | Endereço | WhatsApp', 20, y)
+    y += 16
+
+    doc.setFontSize(14)
+    doc.text('Presença por Dia (detalhes de nomes)', 20, y)
+    y += 20
+    doc.setFontSize(10)
+    analytics.frequencyByDay.forEach((d) => {
+      const presentNames = analytics.presentNamesByDay[d.day] || []
+      const absentNames = analytics.absentNamesByDay[d.day] || []
+      if (y > 730) {
+        doc.addPage(); y = 30
+      }
+      doc.text(`Dia ${d.day}: Presentes (${presentNames.length})`, 20, y); y += 12
+      doc.text(`  ${presentNames.join(', ') || 'Nenhum'}`, 20, y); y += 12
+      doc.text(`Dia ${d.day}: Ausentes (${absentNames.length})`, 20, y); y += 12
+      doc.text(`  ${absentNames.join(', ') || 'Nenhum'}`, 20, y); y += 16
+    })
+
+    if (y > 760) {
+      doc.addPage(); y = 30
+    }
+    doc.setFontSize(14)
+    doc.text('Lista de Participantes', 20, y)
+    y += 20
+    doc.setFontSize(10)
+    doc.text('Nome | Endereço | WhatsApp', 20, y)
+    y += 14
+
+    list.forEach((p, idx) => {
+      if (y > 760) {
+        doc.addPage()
+        y = 30
+      }
+      const row = `${idx + 1}. ${p.name || ''} | ${p.address || ''} | ${p.whatsapp || ''}`
+      doc.text(row, 20, y)
+      y += 12
+    })
+
+    doc.save('lista-participantes.pdf')
+  }
 
   const loadList = useCallback(async () => {
     setLoadingList(true)
@@ -63,13 +574,54 @@ export default function Participantes() {
     }
   }, [navigate])
 
+  const loadRankingConfig = useCallback(async () => {
+    setConfigLoading(true)
+    try {
+      const data = await apiFetch('/ranking-config')
+      setRankingConfig({
+        presenceWeight: data.presenceWeight ?? 1,
+        biblicalWeight: data.biblicalWeight ?? 1,
+        extraLabel: data.extraLabel ?? 'Extra',
+        extraWeight: data.extraWeight ?? 0,
+      })
+    } catch (err) {
+      toast.error('Falha ao carregar configuração de ranking: ' + err.message)
+    } finally {
+      setConfigLoading(false)
+    }
+  }, [])
+
+  const saveRankingConfig = useCallback(async () => {
+    setRankSaving(true)
+    try {
+      const updated = await apiFetch('/ranking-config', {
+        method: 'PUT',
+        body: JSON.stringify(rankingConfig),
+      })
+      setRankingConfig({
+        presenceWeight: updated.presenceWeight ?? 1,
+        biblicalWeight: updated.biblicalWeight ?? 1,
+        extraLabel: updated.extraLabel ?? 'Extra',
+        extraWeight: updated.extraWeight ?? 0,
+      })
+      toast.success('Configuração de ranking salva com sucesso.')
+    } catch (err) {
+      toast.error('Erro ao salvar configuração de ranking: ' + err.message)
+    } finally {
+      setRankSaving(false)
+    }
+  }, [rankingConfig])
+
   useEffect(() => {
     if (!getToken()) {
       navigate('/login', { replace: true })
       return
     }
     loadList()
-  }, [navigate, loadList])
+    loadRankingConfig()
+    const refreshInterval = setInterval(loadList, 20000) // atualiza a cada 20s
+    return () => clearInterval(refreshInterval)
+  }, [navigate, loadList, loadRankingConfig])
 
   /* Recarrega participantes ao abrir Estudo bíblico (lista sempre atualizada no select). */
   useEffect(() => {
@@ -405,7 +957,7 @@ export default function Participantes() {
                     Dashboard — participantes
                   </h2>
                   <p className="text-xs text-white/50 mt-1 text-center sm:text-left">
-                    Todos os participantes que você cadastrou
+                    Todos os participantes cadastrados
                   </p>
                   <div className="mt-3 flex justify-center sm:justify-start">
                     <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-xs font-medium text-emerald-200/90">
@@ -642,6 +1194,244 @@ export default function Participantes() {
                 loadingList={loadingList}
                 onUpdated={loadList}
               />
+            </div>
+          </section>
+        )}
+
+        {tab === 'dados' && (
+          <section
+            className="relative rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden px-5 py-6 sm:px-8 sm:py-8"
+            aria-labelledby="dados-heading"
+          >
+            <div className="absolute inset-0 bg-linear-to-br from-green-950/15 via-transparent to-slate-900/25 pointer-events-none" />
+            <div className="relative">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+                <div>
+                  <h2 id="dados-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                    Análise de dados
+                  </h2>
+                  <p className="text-sm text-white/55 mt-1 text-center sm:text-left">
+                    Visão geral do projeto
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={handleExportParticipants}
+                    className="cursor-pointer rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition"
+                  >
+                    Exportar lista participantes
+                  </button>
+                  {userRole === 'admin' && (
+                    <button
+                      type="button"
+                      onClick={handleExportPdf}
+                      className="cursor-pointer rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+                    >
+                      Exportar PDF
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Cards de resumo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-sm font-semibold text-white/80">Total de participantes</h3>
+                  <p className="text-2xl font-bold text-emerald-400 mt-2">{analytics.totalParticipants}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-sm font-semibold text-white/80">Total de presenças</h3>
+                  <p className="text-2xl font-bold text-emerald-400 mt-2">{analytics.totalPresences}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-sm font-semibold text-white/80">Taxa média de frequência</h3>
+                  <p className="text-2xl font-bold text-emerald-400 mt-2">{analytics.averageFrequency}%</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-sm font-semibold text-white/80">Estudantes da Bíblia</h3>
+                  <p className="text-2xl font-bold text-emerald-400 mt-2">{analytics.studyingBible} / {analytics.totalParticipants}</p>
+                </div>
+              </div>
+
+              {/* Gráficos */}
+              <div className="space-y-8">
+                {/* Gráfico 1: Frequência por dia */}
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Presença e ausência por dia</h3>
+                  <div id="frequency-chart"></div>
+                </div>
+
+                {/* Gráfico 2 e 3 lado a lado */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Estudo bíblico — participantes</h3>
+                    <div id="bible-chart"></div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Crescimento de inscrições</h3>
+                    <div id="inscriptions-chart"></div>
+                  </div>
+                </div>
+
+                {/* Gráfico 4: Ranking frequência */}
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Top 10 participantes por frequência</h3>
+                  <div id="top-frequency-chart"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {tab === 'ranking' && (
+          <section
+            className="relative rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden px-5 py-6 sm:px-8 sm:py-8"
+            aria-labelledby="ranking-heading"
+          >
+            <div className="absolute inset-0 bg-linear-to-br from-indigo-950/15 via-transparent to-slate-900/25 pointer-events-none" />
+            <div className="relative">
+              <h2 id="ranking-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                Ranking de pontuação
+              </h2>
+              <p className="text-sm text-white/55 mt-1 mb-8 text-center sm:text-left max-w-3xl">
+                Configure os pesos dos critérios e visualize o ranking calculado dos participantes
+              </p>
+
+              {userRole === 'admin' && (
+                <div className="mb-8 rounded-2xl border border-indigo-500/20 bg-indigo-950/30 p-6">
+                  <h3 className="text-base font-semibold text-white mb-4">Configuração de pesos</h3>
+                  {configLoading ? (
+                    <p className="text-sm text-white/60">Carregando configuração…</p>
+                  ) : (
+                    <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <label className="block">
+                        <span className="block text-xs text-white/70 font-semibold mb-2">Peso da frequência</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={rankingConfig.presenceWeight}
+                          onChange={(e) =>
+                            setRankingConfig({
+                              ...rankingConfig,
+                              presenceWeight: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="block text-xs text-white/70 font-semibold mb-2">Peso do estudo bíblico</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={rankingConfig.biblicalWeight}
+                          onChange={(e) =>
+                            setRankingConfig({
+                              ...rankingConfig,
+                              biblicalWeight: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="block text-xs text-white/70 font-semibold mb-2">Label customizado</span>
+                        <input
+                          type="text"
+                          value={rankingConfig.extraLabel}
+                          onChange={(e) =>
+                            setRankingConfig({
+                              ...rankingConfig,
+                              extraLabel: e.target.value || 'Extra',
+                            })
+                          }
+                          className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                          placeholder="Ex: Comportamento"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="block text-xs text-white/70 font-semibold mb-2">Peso do {rankingConfig.extraLabel}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={rankingConfig.extraWeight}
+                          onChange={(e) =>
+                            setRankingConfig({
+                              ...rankingConfig,
+                              extraWeight: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                        />
+                      </label>
+                    </form>
+                  )}
+                  <button
+                    type="button"
+                    onClick={saveRankingConfig}
+                    disabled={rankSaving || configLoading}
+                    className="mt-6 cursor-pointer rounded-full bg-linear-to-r from-indigo-900/90 via-indigo-800 to-indigo-900/90 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {rankSaving ? 'Salvando…' : 'Salvar configuração'}
+                  </button>
+                </div>
+              )}
+
+              {/* Tabela de ranking */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-white/10 bg-white/10">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/80">#</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white/80">Nome</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Frequência ({rankingConfig.presenceWeight}x)</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Bíblico ({rankingConfig.biblicalWeight}x)</th>
+                      {rankingConfig.extraWeight > 0 && (
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">
+                          {rankingConfig.extraLabel} ({rankingConfig.extraWeight}x)
+                        </th>
+                      )}
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-yellow-300">Pontuação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.rankingList && analytics.rankingList.length > 0 ? (
+                      analytics.rankingList.map((item, idx) => (
+                        <tr key={item.id} className="border-b border-white/5 hover:bg-white/5 transition">
+                          <td className="px-4 py-3 font-bold text-amber-400">{idx + 1}</td>
+                          <td className="px-4 py-3 text-white">{item.name}</td>
+                          <td className="px-4 py-3 text-center text-white/80">
+                            {item.attendance} × {rankingConfig.presenceWeight} = {(item.attendance * rankingConfig.presenceWeight).toFixed(1)}
+                          </td>
+                          <td className="px-4 py-3 text-center text-white/80">
+                            {item.biblicalLessons} × {rankingConfig.biblicalWeight} = {(item.biblicalLessons * rankingConfig.biblicalWeight).toFixed(1)}
+                          </td>
+                          {rankingConfig.extraWeight > 0 && (
+                            <td className="px-4 py-3 text-center text-white/80">
+                              {item.extra} × {rankingConfig.extraWeight} = {(item.extra * rankingConfig.extraWeight).toFixed(1)}
+                            </td>
+                          )}
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center rounded-full bg-amber-500/20 text-amber-100 px-3 py-1 text-xs font-bold border border-amber-500/30">
+                              {item.score.toFixed(1)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={rankingConfig.extraWeight > 0 ? 6 : 5} className="px-4 py-8 text-center text-white/50">
+                          Nenhum participante cadastrado ainda
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
         )}

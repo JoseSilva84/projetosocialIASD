@@ -151,7 +151,11 @@ export const create = async (req, res) => {
 
 export const listMine = async (req, res) => {
   try {
-    const query = req.userRole === 'admin' ? {} : { registeredBy: req.userId };
+    // Admin e usuários convidados devem ver todos os participantes cadastrados.
+    // Usuários com perfis restritos ainda podem ver somente os seus próprios itens.
+    const query = ['admin', 'user', 'convidado'].includes(req.userRole)
+      ? {}
+      : { registeredBy: req.userId };
     const list = await Participant.find(query).sort({
       createdAt: -1,
     });

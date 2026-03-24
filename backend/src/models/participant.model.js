@@ -59,6 +59,11 @@ const participantSchema = new mongoose.Schema(
         message: "Dias de frequência devem ter dayId único entre 1 e 25 e markedDate válida.",
       },
     },
+    extraScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true }
 );
