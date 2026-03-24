@@ -411,99 +411,165 @@ export default function Participantes() {
       toast.error('Biblioteca jsPDF não carregada ainda.')
       return
     }
+
     const { jsPDF } = window.jspdf
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-    let y = 30
-    doc.setFontSize(18)
-    doc.text('Relatório de Dados - Projeto Eu Quero Ser Feliz', 20, y)
-    y += 30
-    doc.setFontSize(12)
-    doc.text(`Total de participantes: ${analytics.totalParticipants}`, 20, y)
-    y += 18
-    doc.text(`Total de presenças: ${analytics.totalPresences}`, 20, y)
-    y += 18
-    doc.text(`Taxa média de frequência: ${analytics.averageFrequency}%`, 20, y)
-    y += 18
-    doc.text(`Estudando a Bíblia: ${analytics.studyingBible}`, 20, y)
-    y += 18
-    doc.text(`Não estudando: ${analytics.notStudyingBible}`, 20, y)
-    y += 30
 
-    const pageHeight = 841.89
-    const pageBottomThreshold = pageHeight * 0.9
-    const pageWidth = 595.28 // width of A4 portrait in pt is 595.28 for portrait, but in landscape we use 841.89
-    const contentWidth = 760
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4'
+    })
 
-    const ensureSpace = (lineHeight = 0) => {
-      if (y + lineHeight > pageBottomThreshold) {
+    // ==============================
+    // 📐 CONFIGURAÇÃO DA PÁGINA
+    // ==============================
+    const pageWidth = 841.89
+    const pageHeight = 595.28
+
+    const marginX = 20
+    const marginTop = 30
+    const marginBottom = 30
+
+    const contentWidth = pageWidth - marginX * 2
+    const pageBottomLimit = pageHeight - marginBottom
+
+    let y = marginTop
+
+    // ==============================
+    // 🔥 CONTROLE DE PAGINAÇÃO (CORRIGIDO)
+    // ==============================
+    const ensureBlockFits = (blockHeight) => {
+      if (y + blockHeight > pageBottomLimit) {
         doc.addPage()
-        y = 30
+        y = marginTop
       }
     }
 
+    const drawTextBlock = (text, lineHeight = 12, spacing = 6) => {
+      const lines = doc.splitTextToSize(text, contentWidth)
+      const blockHeight = lines.length * lineHeight + spacing
+
+      ensureBlockFits(blockHeight)
+
+      lines.forEach((line) => {
+        doc.text(line, marginX, y)
+        y += lineHeight
+      })
+
+      y += spacing
+    }
+
+    // ==============================
+    // 📌 TÍTULO
+    // ==============================
+    doc.setFontSize(18)
+    drawTextBlock('Relatório de Dados - Projeto Eu Quero Ser Feliz', 16, 10)
+
+    // ==============================
+    // 📌 RESUMO
+    // ==============================
+    doc.setFontSize(12)
+
+    drawTextBlock(`Total de participantes: ${analytics.totalParticipants}`)
+    drawTextBlock(`Total de presenças: ${analytics.totalPresences}`)
+    drawTextBlock(`Taxa média de frequência: ${analytics.averageFrequency}%`)
+    drawTextBlock(`Estudando a Bíblia: ${analytics.studyingBible}`)
+    drawTextBlock(`Não estudando: ${analytics.notStudyingBible}`)
+
+    // ==============================
+    // 📌 FREQUÊNCIA POR DIA
+    // ==============================
     doc.setFontSize(14)
-    doc.text('Frequência por Dia', 20, y)
-    y += 20
+    drawTextBlock('Frequência por Dia', 14, 8)
+
     doc.setFontSize(10)
+
     analytics.frequencyByDay.forEach((d) => {
       const presentNames = analytics.presentNamesByDay[d.day] || []
       const absentNames = analytics.absentNamesByDay[d.day] || []
 
-      ensureSpace(72)
-      const headerLine = `Dia ${d.day}: ${d.present} presentes, ${d.absent} ausentes`
-      const presentLine = `Presentes (${presentNames.length}): ${presentNames.length > 0 ? presentNames.join(', ') : 'Nenhum'}`
-      const absentLine = `Ausentes (${absentNames.length}): ${absentNames.length > 0 ? absentNames.join(', ') : 'Nenhum'}`
+      const header = `Dia ${d.day}: ${d.present} presentes, ${d.absent} ausentes`
+      const presentLine = `Presentes (${presentNames.length}): ${presentNames.join(', ') || 'Nenhum'}`
+      const absentLine = `Ausentes (${absentNames.length}): ${absentNames.join(', ') || 'Nenhum'}`
 
-      const headerLns = doc.splitTextToSize(headerLine, contentWidth)
-      headerLns.forEach((t) => {
-        doc.text(t, 20, y)
+      const headerLines = doc.splitTextToSize(header, contentWidth)
+      const presentLines = doc.splitTextToSize(presentLine, contentWidth)
+      const absentLines = doc.splitTextToSize(absentLine, contentWidth)
+
+      const blockHeight =
+        (headerLines.length + presentLines.length + absentLines.length) * 12 + 10
+
+      ensureBlockFits(blockHeight)
+
+      headerLines.forEach((l) => {
+        doc.text(l, marginX, y)
         y += 12
       })
 
-      const presentLns = doc.splitTextToSize(presentLine, contentWidth)
-      presentLns.forEach((t) => {
-        doc.text(`  ${t}`, 20, y)
+      presentLines.forEach((l) => {
+        doc.text(`  ${l}`, marginX, y)
         y += 12
       })
 
-      const absentLns = doc.splitTextToSize(absentLine, contentWidth)
-      absentLns.forEach((t) => {
-        doc.text(`  ${t}`, 20, y)
+      absentLines.forEach((l) => {
+        doc.text(`  ${l}`, marginX, y)
         y += 12
       })
 
-      y += 8
-
-      if (y > pageBottomThreshold) {
-        doc.addPage()
-        y = 30
-      }
+      y += 10
     })
 
-    y += 20 // espaço extra entre seções
-    ensureSpace(30)
+    // ==============================
+    // 📌 LISTA DE PARTICIPANTES (CORRIGIDO)
+    // ==============================
     doc.setFontSize(14)
-    doc.text('Lista de Participantes', 20, y)
+
+    ensureBlockFits(20)
+    doc.text('Lista de Participantes', marginX, y)
     y += 20
+
     doc.setFontSize(10)
-    doc.text('Nome | Endereço | WhatsApp', 20, y)
-    y += 14
+
+    drawTextBlock('Nome | Endereço | WhatsApp', 12, 6)
 
     list.forEach((p, idx) => {
-      ensureSpace(40)
-      const participantLine = `${idx + 1}. ${p.name || ''} | ${p.address || ''} | ${p.whatsapp || ''}`
-      const lines = doc.splitTextToSize(participantLine, contentWidth)
+      const linha = `${idx + 1}. ${p.name || ''} | ${p.address || ''} | ${p.whatsapp || ''}`
+
+      const lines = doc.splitTextToSize(linha, contentWidth)
+
+      // 🔥 CORREÇÃO PRINCIPAL (NUNCA MAIS PERDE LINHA)
+      const blockHeight = lines.length * 12 + 6
+
+      ensureBlockFits(blockHeight)
+
       lines.forEach((line) => {
-        ensureSpace(14)
-        doc.text(line, 20, y)
+        doc.text(line, marginX, y)
         y += 12
       })
+
       y += 6
     })
 
+    // ==============================
+    // 📌 RODAPÉ (PAGINAÇÃO)
+    // ==============================
+    const totalPages = doc.getNumberOfPages()
+
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i)
+      doc.setFontSize(9)
+      doc.text(
+        `Página ${i} de ${totalPages}`,
+        pageWidth - 120,
+        pageHeight - 20
+      )
+    }
+
+    // ==============================
+    // 💾 EXPORTAR
+    // ==============================
     doc.save('dados-projeto-eu-quero-ser-feliz.pdf')
   }
-
   const handleExportParticipants = () => {
     if (!window.jspdf?.jsPDF) {
       toast.error('Biblioteca jsPDF não carregada ainda.')
