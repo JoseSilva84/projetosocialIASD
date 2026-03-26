@@ -130,15 +130,18 @@ export const patchFrequency = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const { name, address, whatsapp } = req.body;
-    if (!name || !address || !whatsapp) {
+    const { name, address, houseNumber, age, whatsapp } = req.body;
+    const parsedAge = Number(age);
+    if (!name || !address || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
       return res
         .status(400)
-        .json({ message: "Nome, endereço e WhatsApp são obrigatórios." });
+        .json({ message: "Nome, rua, número da casa, idade e WhatsApp são obrigatórios." });
     }
     const p = await Participant.create({
       name: String(name).trim(),
       address: String(address).trim(),
+      houseNumber: String(houseNumber).trim(),
+      age: parsedAge,
       whatsapp: String(whatsapp).trim(),
       registeredBy: req.userId,
     });
@@ -172,9 +175,10 @@ export const update = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido." });
     }
-    const { name, address, whatsapp } = req.body;
-    if (!name || !address || !whatsapp) {
-      return res.status(400).json({ message: "Nome, endereço e WhatsApp são obrigatórios." });
+    const { name, address, houseNumber, age, whatsapp } = req.body;
+    const parsedAge = Number(age);
+    if (!name || !address || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
+      return res.status(400).json({ message: "Nome, rua, número da casa, idade e WhatsApp são obrigatórios." });
     }
 
     const filter = req.userRole === 'admin' ? { _id: id } : { _id: id, registeredBy: req.userId };
@@ -183,6 +187,8 @@ export const update = async (req, res) => {
       {
         name: String(name).trim(),
         address: String(address).trim(),
+        houseNumber: String(houseNumber).trim(),
+        age: parsedAge,
         whatsapp: String(whatsapp).trim(),
       },
       { new: true, runValidators: true }

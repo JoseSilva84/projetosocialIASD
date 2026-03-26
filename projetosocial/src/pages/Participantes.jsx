@@ -44,11 +44,23 @@ function getStreetName(address) {
   return streetName || normalizedAddress
 }
 
+function getParticipantAgeLabel(age) {
+  const parsedAge = Number(age)
+  if (!Number.isFinite(parsedAge)) return 'Idade não informada'
+  return `${parsedAge} anos`
+}
+
+function formatParticipantRow(participant, index) {
+  return `${index + 1}. ${participant.name || ''} | ${participant.address || ''} | ${participant.houseNumber || ''} | ${getParticipantAgeLabel(participant.age)} | ${participant.whatsapp || ''}`
+}
+
 export default function Participantes() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('inscricoes')
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
+  const [houseNumber, setHouseNumber] = useState('')
+  const [age, setAge] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(false)
@@ -60,6 +72,8 @@ export default function Participantes() {
   const [editingId, setEditingId] = useState(null)
   const [editName, setEditName] = useState('')
   const [editAddress, setEditAddress] = useState('')
+  const [editHouseNumber, setEditHouseNumber] = useState('')
+  const [editAge, setEditAge] = useState('')
   const [editWhatsapp, setEditWhatsapp] = useState('')
   const [updatingIds, setUpdatingIds] = useState(new Set())
 
@@ -550,10 +564,10 @@ export default function Participantes() {
 
     doc.setFontSize(10)
 
-    drawTextBlock('Nome | Endereço | WhatsApp', 12, 6)
+    drawTextBlock('Nome | Rua | Número da casa | Idade | WhatsApp', 12, 6)
 
     list.forEach((p, idx) => {
-      const linha = `${idx + 1}. ${p.name || ''} | ${p.address || ''} | ${p.whatsapp || ''}`
+      const linha = formatParticipantRow(p, idx)
 
       const lines = doc.splitTextToSize(linha, contentWidth)
 
@@ -599,7 +613,7 @@ export default function Participantes() {
       const headerLines = doc.splitTextToSize(header, contentWidth)
       const participantBlocks = participantsOnStreet.map((participant, index) =>
         doc.splitTextToSize(
-          `${index + 1}. ${participant.name || '(sem nome)'} | ${participant.address || ''} | ${participant.whatsapp || ''}`,
+          formatParticipantRow(participant, index),
           contentWidth
         )
       )
@@ -653,12 +667,13 @@ export default function Participantes() {
     }
     const { jsPDF } = window.jspdf
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+    const contentWidth = 555
     let y = 30
     doc.setFontSize(18)
     doc.text('Lista de Participantes', 20, y)
     y += 24
     doc.setFontSize(10)
-    doc.text('Nome | Endereço | WhatsApp', 20, y)
+    doc.text('Nome | Rua | Número da casa | Idade | WhatsApp', 20, y)
     y += 16
 
     doc.setFontSize(14)
@@ -684,7 +699,7 @@ export default function Participantes() {
     doc.text('Lista de Participantes', 20, y)
     y += 20
     doc.setFontSize(10)
-    doc.text('Nome | Endereço | WhatsApp', 20, y)
+    doc.text('Nome | Rua | Número da casa | Idade | WhatsApp', 20, y)
     y += 14
 
     list.forEach((p, idx) => {
@@ -692,9 +707,11 @@ export default function Participantes() {
         doc.addPage()
         y = 30
       }
-      const row = `${idx + 1}. ${p.name || ''} | ${p.address || ''} | ${p.whatsapp || ''}`
-      doc.text(row, 20, y)
-      y += 12
+      const rowLines = doc.splitTextToSize(formatParticipantRow(p, idx), contentWidth)
+      rowLines.forEach((line) => {
+        doc.text(line, 20, y)
+        y += 12
+      })
     })
 
     doc.save('lista-participantes.pdf')
@@ -773,19 +790,23 @@ export default function Participantes() {
     e.preventDefault()
     const n = name.trim()
     const a = address.trim()
+    const hn = houseNumber.trim()
+    const parsedAge = Number(age)
     const w = whatsapp.trim()
-    if (!n || !a || !w) {
-      toast.error('Preencha nome, endereço e WhatsApp.')
+    if (!n || !a || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
+      toast.error('Preencha nome, rua, número da casa, idade e WhatsApp.')
       return
     }
     setLoading(true)
     try {
       await apiFetch('/participants', {
         method: 'POST',
-        body: JSON.stringify({ name: n, address: a, whatsapp: w }),
+        body: JSON.stringify({ name: n, address: a, houseNumber: hn, age: parsedAge, whatsapp: w }),
       })
       setName('')
       setAddress('')
+      setHouseNumber('')
+      setAge('')
       setWhatsapp('')
       toast.success('Participante cadastrado com sucesso.')
       await loadList()
@@ -807,12 +828,12 @@ export default function Participantes() {
   async function handleUndoDelete() {
     if (!recentlyDeleted) return
 
-    const { name: delName, address: delAddress, whatsapp: delWhatsapp } = recentlyDeleted
+    const { name: delName, address: delAddress, houseNumber: delHouseNumber, age: delAge, whatsapp: delWhatsapp } = recentlyDeleted
     setLoadingList(true)
     try {
       const restored = await apiFetch('/participants', {
         method: 'POST',
-        body: JSON.stringify({ name: delName, address: delAddress, whatsapp: delWhatsapp }),
+        body: JSON.stringify({ name: delName, address: delAddress, houseNumber: delHouseNumber, age: delAge, whatsapp: delWhatsapp }),
       })
 
       // Se houver dados em progresso, re-aplicar em endpoints específicos.
@@ -846,6 +867,8 @@ export default function Participantes() {
     setEditingId(participant._id)
     setEditName(participant.name)
     setEditAddress(participant.address)
+    setEditHouseNumber(participant.houseNumber || '')
+    setEditAge(participant.age != null ? String(participant.age) : '')
     setEditWhatsapp(participant.whatsapp)
   }
 
@@ -853,6 +876,8 @@ export default function Participantes() {
     setEditingId(null)
     setEditName('')
     setEditAddress('')
+    setEditHouseNumber('')
+    setEditAge('')
     setEditWhatsapp('')
   }
 
@@ -863,9 +888,11 @@ export default function Participantes() {
 
     const n = editName.trim()
     const a = editAddress.trim()
+    const hn = editHouseNumber.trim()
+    const parsedAge = Number(editAge)
     const w = editWhatsapp.trim()
-    if (!n || !a || !w) {
-      toast.error('Preencha nome, endereço e WhatsApp.')
+    if (!n || !a || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
+      toast.error('Preencha nome, rua, número da casa, idade e WhatsApp.')
       return
     }
 
@@ -873,11 +900,13 @@ export default function Participantes() {
     try {
       await apiFetch(`/participants/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ name: n, address: a, whatsapp: w }),
+        body: JSON.stringify({ name: n, address: a, houseNumber: hn, age: parsedAge, whatsapp: w }),
       })
       setEditingId(null)
       setEditName('')
       setEditAddress('')
+      setEditHouseNumber('')
+      setEditAge('')
       setEditWhatsapp('')
       toast.success('Participante atualizado com sucesso.')
       await loadList()
@@ -952,6 +981,8 @@ export default function Participantes() {
     if (p.whatsapp.toLowerCase().includes(term)) return true
     // Endereço
     if (p.address.toLowerCase().includes(term)) return true
+    if ((p.houseNumber || '').toLowerCase().includes(term)) return true
+    if (String(p.age ?? '').includes(term)) return true
     // Data de presença (formato completo)
     if (p.frequencyAttended?.some(date => formatDate(date).toLowerCase().includes(term))) return true
     // Dia das datas de presença
@@ -984,7 +1015,7 @@ export default function Participantes() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Pesquisar por nome, WhatsApp, endereço, dia..."
+                placeholder="Pesquisar por nome, rua, número, idade, WhatsApp, dia..."
                 className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
               />
             </div>
@@ -1048,13 +1079,34 @@ export default function Participantes() {
                         />
                       </label>
                       <label className="block">
-                        <span className="text-xs text-white/50 mb-1 block">Endereço</span>
+                        <span className="text-xs text-white/50 mb-1 block">Rua</span>
                         <input
                           type="text"
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
-                          placeholder="Rua, número, bairro, cidade"
+                          placeholder="Nome da rua"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs text-white/50 mb-1 block">Número da casa</span>
+                        <input
+                          type="text"
+                          value={houseNumber}
+                          onChange={(e) => setHouseNumber(e.target.value)}
+                          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                          placeholder="Ex: 123"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs text-white/50 mb-1 block">Idade</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={age}
+                          onChange={(e) => setAge(e.target.value)}
+                          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                          placeholder="Ex: 14"
                         />
                       </label>
                       <label className="block">
@@ -1131,13 +1183,34 @@ export default function Participantes() {
                                   />
                                 </label>
                                 <label className="block">
-                                  <span className="text-xs text-white/50">Endereço</span>
+                                  <span className="text-xs text-white/50">Rua</span>
                                   <input
                                     type="text"
                                     value={editAddress}
                                     onChange={(e) => setEditAddress(e.target.value)}
                                     className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
-                                    placeholder="Rua, número, bairro, cidade"
+                                    placeholder="Nome da rua"
+                                  />
+                                </label>
+                                <label className="block">
+                                  <span className="text-xs text-white/50">Número da casa</span>
+                                  <input
+                                    type="text"
+                                    value={editHouseNumber}
+                                    onChange={(e) => setEditHouseNumber(e.target.value)}
+                                    className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                                    placeholder="Ex: 123"
+                                  />
+                                </label>
+                                <label className="block">
+                                  <span className="text-xs text-white/50">Idade</span>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={editAge}
+                                    onChange={(e) => setEditAge(e.target.value)}
+                                    className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                                    placeholder="Ex: 14"
                                   />
                                 </label>
                                 <label className="block">
@@ -1241,7 +1314,9 @@ export default function Participantes() {
                                   </div>
                                 )}
                               </div>
-                              <p className="text-white/70 mt-1 wrap-break-word">{p.address}</p>
+                              <p className="text-white/70 mt-1 wrap-break-word">Rua: {p.address}</p>
+                              <p className="text-white/60 mt-1">Número da casa: {p.houseNumber || 'Não informado'}</p>
+                              <p className="text-white/60 mt-1">Idade: {getParticipantAgeLabel(p.age)}</p>
                               <p className="text-emerald-300/90 mt-1">{p.whatsapp}</p>
                               <div className="flex flex-wrap gap-2 mt-2 text-[11px]">
                                 {p.selectedBiblicalLesson != null ? (

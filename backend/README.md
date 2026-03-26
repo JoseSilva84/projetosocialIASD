@@ -80,7 +80,7 @@ Header: `Authorization: Bearer <token>`
 | Método | Rota | Corpo (JSON) | Descrição |
 |--------|------|----------------|-----------|
 | `GET` | `/api/participants` | — | Lista participantes do usuário logado |
-| `POST` | `/api/participants` | `{ "name", "address", "whatsapp" }` | Cria participante vinculado ao usuário |
+| `POST` | `/api/participants` | `{ "name", "address", "houseNumber", "age", "whatsapp" }` | Cria participante vinculado ao usuário |
 | `PATCH` | `/api/participants/:id/biblical-study` | `{ "selectedBiblicalLesson", "biblicalLessonsCompleted" }` | Atualiza lição em estudo (1–15) e lista de lições concluídas |
 | `PATCH` | `/api/participants/:id/frequency` | `{ "frequencyAttended" }` | Atualiza lista de dias de frequência atendidos (array de objetos com dayId e markedDate) |
 
@@ -91,7 +91,7 @@ No `PATCH` para frequência, envie `frequencyAttended` como array de objetos `[{
 ## Modelos (resumo)
 
 - **User:** `name` (string, único), `passwordHash`.
-- **Participant:** `name`, `address`, `whatsapp`, `registeredBy` (ObjectId → User), `selectedBiblicalLesson` (1–15, opcional), `biblicalLessonsCompleted` (array de números 1–15), `frequencyAttended` (array de objetos `{dayId: 1-25, markedDate: Date}`), timestamps.
+- **Participant:** `name`, `address`, `houseNumber`, `age`, `whatsapp`, `registeredBy` (ObjectId → User), `selectedBiblicalLesson` (1–15, opcional), `biblicalLessonsCompleted` (array de números 1–15), `frequencyAttended` (array de objetos `{dayId: 1-25, markedDate: Date}`), timestamps.
 
 ## Frontend
 
