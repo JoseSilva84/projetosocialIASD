@@ -49,6 +49,10 @@ function buildExtraEntries(participant) {
 
 export const patchBiblicalStudy = async (req, res) => {
   try {
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Somente o administrador pode alterar o estudo bíblico." });
+    }
+
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido." });
@@ -103,6 +107,10 @@ export const patchBiblicalStudy = async (req, res) => {
 
 export const patchFrequency = async (req, res) => {
   try {
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Somente o administrador pode alterar a frequência." });
+    }
+
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido." });
@@ -231,6 +239,10 @@ export const update = async (req, res) => {
 
 export const patchExtraScore = async (req, res) => {
   try {
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Somente o administrador pode alterar a pontuação extra." });
+    }
+
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido." });

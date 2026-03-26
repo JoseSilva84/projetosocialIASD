@@ -1,13 +1,10 @@
 import { BIBLICAL_LESSON_COUNT } from '../../lib/biblicalLessons'
 
-/**
- * Anel interativo: 15 segmentos — clique define a lição em estudo (callback).
- * Cores: concluída (verde), atual (âmbar), pendente (cinza).
- */
 export default function LessonProgressRing({
   completedIds = [],
   currentId = null,
   onSegmentClick,
+  readOnly = false,
 }) {
   const cx = 100
   const cy = 100
@@ -24,7 +21,8 @@ export default function LessonProgressRing({
   }
 
   const arcs = []
-  for (let i = 0; i < segments; i++) {
+
+  for (let i = 0; i < segments; i += 1) {
     const a0 = (i / segments) * 2 * Math.PI - Math.PI / 2
     const a1 = ((i + 1) / segments) * 2 * Math.PI - Math.PI / 2
     const a0g = a0 + gap
@@ -58,17 +56,20 @@ export default function LessonProgressRing({
         fill={fill}
         stroke="rgba(15, 23, 42, 0.6)"
         strokeWidth={0.8}
-        className="cursor-pointer transition hover:opacity-90 focus:outline-none"
-        onClick={() => onSegmentClick?.(id)}
+        className={`transition focus:outline-none ${readOnly ? 'cursor-default' : 'cursor-pointer hover:opacity-90'}`}
+        onClick={() => {
+          if (!readOnly) onSegmentClick?.(id)
+        }}
         onKeyDown={(e) => {
+          if (readOnly) return
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             onSegmentClick?.(id)
           }
         }}
-        tabIndex={0}
-        role="button"
-        aria-label={`Lição ${id}${current ? ', estudo atual' : ''}${done ? ', concluída' : ''}`}
+        tabIndex={readOnly ? -1 : 0}
+        role={readOnly ? 'img' : 'button'}
+        aria-label={`Licao ${id}${current ? ', estudo atual' : ''}${done ? ', concluida' : ''}`}
       />
     )
   }
@@ -81,7 +82,7 @@ export default function LessonProgressRing({
         viewBox="0 0 200 200"
         className="w-full max-w-[min(100%,280px)] drop-shadow-lg"
         aria-hidden="false"
-        aria-label="Gráfico circular do progresso nas 15 lições"
+        aria-label="Grafico circular do progresso nas 15 licoes"
       >
         {arcs}
         <text
@@ -100,12 +101,13 @@ export default function LessonProgressRing({
           fill="rgba(255,255,255,0.5)"
           style={{ fontSize: '10px' }}
         >
-          lições concluídas
+          licoes concluidas
         </text>
       </svg>
       <p className="text-[11px] text-white/45 text-center max-w-xs">
-        Clique em um segmento para definir a lição em estudo. Use os cartões abaixo para marcar como
-        concluída.
+        {readOnly
+          ? 'Visualizacao do progresso das licoes. Alteracoes sao exclusivas do administrador.'
+          : 'Clique em um segmento para definir a licao em estudo. Use os cartoes abaixo para marcar como concluida.'}
       </p>
     </div>
   )

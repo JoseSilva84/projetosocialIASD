@@ -3,7 +3,6 @@ import { toast } from 'react-toastify'
 import { apiFetch } from '../../lib/api'
 import { FREQUENCY_DAYS } from '../../lib/frequencyDays'
 
-/** Mongo / JSON podem devolver _id como string ou objeto; o select compara com string. */
 function participantIdString(p) {
   if (!p || p._id == null) return ''
   const id = p._id
@@ -13,7 +12,7 @@ function participantIdString(p) {
   return String(id)
 }
 
-export default function FrequencyPanel({ participants, loadingList, onUpdated }) {
+export default function FrequencyPanel({ participants, loadingList, onUpdated, readOnly = false }) {
   const [participantId, setParticipantId] = useState('')
   const [attended, setAttended] = useState(() => new Map())
 
@@ -27,9 +26,10 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
       setAttended(new Map())
       return
     }
+
     const attendedMap = new Map()
     if (selected.frequencyAttended) {
-      selected.frequencyAttended.forEach(item => {
+      selected.frequencyAttended.forEach((item) => {
         attendedMap.set(item.dayId, item.markedDate)
       })
     }
@@ -37,34 +37,39 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
   }, [selected])
 
   function toggleAttended(dayId) {
+    if (readOnly) return
+
     setAttended((prev) => {
       const next = new Map(prev)
-      if (next.has(dayId)) {
-        next.delete(dayId)
-      } else {
-        next.set(dayId, new Date().toISOString())
-      }
+      if (next.has(dayId)) next.delete(dayId)
+      else next.set(dayId, new Date().toISOString())
       return next
     })
   }
 
   async function handleSave() {
-    if (!participantId) {
-      toast.error('Selecione um participante já inscrito.')
+    if (readOnly) {
+      toast.info('Somente o administrador pode alterar a frequencia.')
       return
     }
+
+    if (!participantId) {
+      toast.error('Selecione um participante ja inscrito.')
+      return
+    }
+
     try {
       const frequencyAttended = Array.from(attended.entries()).map(([dayId, markedDate]) => ({
         dayId,
-        markedDate
+        markedDate,
       }))
+
       await apiFetch(`/participants/${participantId}/frequency`, {
         method: 'PATCH',
-        body: JSON.stringify({
-          frequencyAttended,
-        }),
+        body: JSON.stringify({ frequencyAttended }),
       })
-      toast.success('Frequência atualizada com sucesso.')
+
+      toast.success('Frequencia atualizada com sucesso.')
       onUpdated?.()
     } catch (err) {
       toast.error(err.message)
@@ -72,7 +77,7 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
   }
 
   if (loadingList) {
-    return <p className="text-sm text-white/50 text-center py-12">Carregando participantes…</p>
+    return <p className="text-sm text-white/50 text-center py-12">Carregando participantes...</p>
   }
 
   if (participants.length === 0) {
@@ -80,8 +85,8 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
       <div className="rounded-2xl border border-blue-500/20 bg-blue-950/20 px-6 py-10 text-center">
         <p className="text-white/90 font-medium">Nenhum participante inscrito ainda.</p>
         <p className="text-sm text-white/55 mt-2">
-          Cadastre alguém na aba <strong className="text-white/80">Inscrições</strong> para depois
-          registrar frequência.
+          Cadastre alguem na aba <strong className="text-white/80">Inscricoes</strong> para depois
+          registrar frequencia.
         </p>
       </div>
     )
@@ -91,7 +96,7 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <label className="block flex-1 max-w-md">
           <span className="text-xs text-white/50 mb-2 block">Participante inscrito</span>
           <select
@@ -99,7 +104,7 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
             onChange={(e) => setParticipantId(e.target.value)}
             className="participant-select w-full rounded-xl border border-white/15 px-4 py-3 text-sm outline-none focus:border-blue-400/50 cursor-pointer"
           >
-            <option value="">Selecione…</option>
+            <option value="">Selecione...</option>
             {participants.map((p) => {
               const id = participantIdString(p)
               return (
@@ -110,22 +115,31 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
             })}
           </select>
         </label>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!participantId}
-          className="rounded-full bg-linear-to-r from-blue-700/90 via-blue-600 to-blue-700/90 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:opacity-40 cursor-pointer"
-        >
-          Salvar frequência
-        </button>
+
+        {readOnly ? (
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/65">
+            Visualizacao apenas. A frequencia so pode ser alterada pelo administrador.
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!participantId}
+            className="rounded-full bg-linear-to-r from-blue-700/90 via-blue-600 to-blue-700/90 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:opacity-40 cursor-pointer"
+          >
+            Salvar frequencia
+          </button>
+        )}
       </div>
 
       {!participantId ? (
-        <p className="text-sm text-white/45 text-center py-6">Escolha um participante para ver o painel de frequência.</p>
+        <p className="text-sm text-white/45 text-center py-6">
+          Escolha um participante para ver o painel de frequencia.
+        </p>
       ) : (
         <>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 space-y-2">
-            <h3 className="text-sm font-semibold text-blue-200/90">Resumo da frequência</h3>
+            <h3 className="text-sm font-semibold text-blue-200/90">Resumo da frequencia</h3>
             <ul className="text-xs text-white/65 space-y-2">
               <li className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-sm bg-emerald-400/80" /> Presente
@@ -135,15 +149,17 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
               </li>
             </ul>
             <p className="text-xs text-white/45 pt-2 border-t border-white/10">
-              Participante: <span className="text-white/80">{selected?.name}</span> | Presenças: {attendedArr.length}/25
+              Participante: <span className="text-white/80">{selected?.name}</span> | Presencas:{' '}
+              {attendedArr.length}/25
             </p>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white/90 mb-3">Dias de frequência (1 a 25)</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <h3 className="text-sm font-semibold text-white/90 mb-3">Dias de frequencia (1 a 25)</h3>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {FREQUENCY_DAYS.map((day) => {
                 const isAttended = attended.has(day.id)
+
                 return (
                   <div
                     key={day.id}
@@ -159,17 +175,25 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
                         <p className="text-sm font-medium text-white mt-0.5">{day.label}</p>
                       </div>
                     </div>
+
                     <div className="flex flex-wrap gap-2 mt-3">
                       <button
                         type="button"
                         onClick={() => toggleAttended(day.id)}
+                        disabled={readOnly}
                         className={`text-xs rounded-full px-3 py-1.5 font-medium transition ${
                           isAttended
                             ? 'bg-emerald-600/40 text-emerald-100'
                             : 'bg-white/10 text-white/75 hover:bg-white/15'
-                        }`}
+                        } ${readOnly ? 'cursor-default opacity-80' : ''}`}
                       >
-                        {isAttended ? 'Presente ✓' : 'Marcar presente'}
+                        {readOnly
+                          ? isAttended
+                            ? 'Presente'
+                            : 'Ausente'
+                          : isAttended
+                            ? 'Presente'
+                            : 'Marcar presente'}
                       </button>
                     </div>
                   </div>

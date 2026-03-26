@@ -1478,6 +1478,7 @@ export default function Participantes() {
                 participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
+                readOnly={userRole !== 'admin'}
               />
             </div>
           </section>
@@ -1518,6 +1519,7 @@ export default function Participantes() {
                 participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
+                readOnly={userRole !== 'admin'}
               />
             </div>
           </section>
