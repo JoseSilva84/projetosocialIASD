@@ -90,7 +90,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <h1 className="text-2xl font-bold text-center text-white">Cadastro</h1>
             <p className="text-center text-sm text-white/60">
-              Crie seu acesso para inscrever participantes do projeto
+              Crie seu acesso como usuário convidado
             </p>
 
             <div className="flex items-center gap-3 border-b border-white/25 pb-3">
@@ -128,7 +128,7 @@ export default function Register() {
             </button>
 
             <p className="text-center text-sm text-white/60">
-              Já tem conta?{' '}
+              Já tem conta de administrador?{' '}
               <Link to="/login" className="text-white underline decoration-white/40 underline-offset-2">
                 Entrar
               </Link>

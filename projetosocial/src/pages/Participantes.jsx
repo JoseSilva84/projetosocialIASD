@@ -7,6 +7,8 @@ import CoursesPanel from '../components/dashboard/CoursesPanel'
 import FrequencyPanel from '../components/dashboard/FrequencyPanel'
 import { apiFetch, clearSession, getToken, getUserName, getUserRole } from '../lib/api'
 
+const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking']
+
 const TABS = [
   { id: 'inscricoes', label: 'Inscrições' },
   { id: 'biblico', label: 'Estudo bíblico' },
@@ -26,6 +28,20 @@ function formatDate(iso) {
   } catch {
     return '—'
   }
+}
+
+function compareParticipantNames(a, b) {
+  return (a?.name || '').localeCompare(b?.name || '', 'pt-BR', { sensitivity: 'base' })
+}
+
+function getStreetName(address) {
+  const normalizedAddress = (address || '').trim()
+  if (!normalizedAddress) return 'Endereço não informado'
+
+  const [streetPart] = normalizedAddress.split(',')
+  const streetName = streetPart?.trim()
+
+  return streetName || normalizedAddress
 }
 
 export default function Participantes() {
@@ -90,8 +106,12 @@ export default function Participantes() {
       const absent = absentParticipants.length
 
       frequencyByDay.push({ day: d, present, absent })
-      presentNamesByDay[d] = presentParticipants.map((p) => p.name || '(sem nome)')
-      absentNamesByDay[d] = absentParticipants.map((p) => p.name || '(sem nome)')
+      presentNamesByDay[d] = presentParticipants
+        .map((p) => p.name || '(sem nome)')
+        .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+      absentNamesByDay[d] = absentParticipants
+        .map((p) => p.name || '(sem nome)')
+        .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
     }
 
     const inscriptionsMap = new Map()
@@ -550,6 +570,62 @@ export default function Participantes() {
       y += 6
     })
 
+    const participantsByStreet = [...list]
+      .sort(compareParticipantNames)
+      .reduce((acc, participant) => {
+        const streetName = getStreetName(participant.address)
+
+        if (!acc.has(streetName)) {
+          acc.set(streetName, [])
+        }
+
+        acc.get(streetName).push(participant)
+        return acc
+      }, new Map())
+
+    const sortedStreets = [...participantsByStreet.keys()]
+      .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+
+    doc.setFontSize(14)
+    ensureBlockFits(20)
+    doc.text('Participantes por Rua', marginX, y)
+    y += 20
+
+    doc.setFontSize(10)
+
+    sortedStreets.forEach((streetName) => {
+      const participantsOnStreet = participantsByStreet.get(streetName) || []
+      const header = `${streetName} (${participantsOnStreet.length})`
+      const headerLines = doc.splitTextToSize(header, contentWidth)
+      const participantBlocks = participantsOnStreet.map((participant, index) =>
+        doc.splitTextToSize(
+          `${index + 1}. ${participant.name || '(sem nome)'} | ${participant.address || ''} | ${participant.whatsapp || ''}`,
+          contentWidth
+        )
+      )
+
+      const blockHeight =
+        headerLines.length * 12 +
+        participantBlocks.reduce((sum, lines) => sum + lines.length * 12, 0) +
+        10
+
+      ensureBlockFits(blockHeight)
+
+      headerLines.forEach((line) => {
+        doc.text(line, marginX, y)
+        y += 12
+      })
+
+      participantBlocks.forEach((lines) => {
+        lines.forEach((line) => {
+          doc.text(`  ${line}`, marginX, y)
+          y += 12
+        })
+      })
+
+      y += 10
+    })
+
     // ==============================
     // 📌 RODAPÉ (PAGINAÇÃO)
     // ==============================
@@ -685,20 +761,12 @@ export default function Participantes() {
     }
     loadList()
     loadRankingConfig()
-    const refreshInterval = setInterval(loadList, 20000) // atualiza a cada 20s
-    return () => clearInterval(refreshInterval)
   }, [navigate, loadList, loadRankingConfig])
 
-  /* Recarrega participantes ao abrir Estudo bíblico (lista sempre atualizada no select). */
+  /* Atualiza a lista ao entrar nas abas dependentes dos dados, sem recarga automática em segundo plano. */
   useEffect(() => {
     if (!getToken()) return
-    if (tab === 'biblico') loadList()
-  }, [tab, loadList])
-
-  /* Recarrega participantes ao abrir Frequência (lista sempre atualizada no select). */
-  useEffect(() => {
-    if (!getToken()) return
-    if (tab === 'frequencia') loadList()
+    if (TABS_WITH_FRESH_LIST.includes(tab)) loadList()
   }, [tab, loadList])
 
   async function handleSubmit(e) {
@@ -870,7 +938,12 @@ export default function Participantes() {
 
   const userLabel = getUserName()
 
-  const filteredList = list.filter(p => {
+  const sortedParticipants = useMemo(
+    () => [...list].sort(compareParticipantNames),
+    [list]
+  )
+
+  const filteredList = sortedParticipants.filter(p => {
     if (!searchTerm.trim()) return true
     const term = searchTerm.toLowerCase()
     // Nome
@@ -1216,7 +1289,7 @@ export default function Participantes() {
                 sistema.
               </p>
               <BiblicalStudyPanel
-                participants={list}
+                participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
               />
@@ -1256,7 +1329,7 @@ export default function Participantes() {
                 Escolha um participante <strong className="text-white/85">já inscrito</strong> e marque os dias de presença.
               </p>
               <FrequencyPanel
-                participants={list}
+                participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
               />

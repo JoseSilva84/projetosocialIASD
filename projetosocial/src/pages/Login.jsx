@@ -91,8 +91,7 @@ export default function Login() {
             </h1>
             <p className="text-center text-sm text-white/60">Entrar na secretaria</p>
             <p className="text-center text-xs text-white/50">
-              Administrador: usuário (controle total).<br />
-              Convidado: cadastre-se e verá apenas visualização de participantes.
+              Usuário Administrador: (controle total).<br />
             </p>
 
             <div className="flex items-center gap-3 border-b border-white/25 pb-3">
@@ -132,7 +131,7 @@ export default function Login() {
             <p className="text-center text-sm text-white/60">
               {!isAdmin && (
                 <>
-                  Ainda não tem conta?{' '}
+                  Ainda não tem conta, cadastre-se como usuário convidado?{' '}
                   <Link to="/cadastro" className="text-white underline decoration-white/40 underline-offset-2">
                     Cadastre-se
                   </Link>
