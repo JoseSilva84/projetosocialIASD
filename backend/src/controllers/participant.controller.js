@@ -25,6 +25,28 @@ function validateFrequencyNumbers(arr) {
   );
 }
 
+function normalizeReference(reference) {
+  return String(reference || "").trim();
+}
+
+function buildExtraEntries(participant) {
+  if (Array.isArray(participant?.extraEntries) && participant.extraEntries.length > 0) {
+    return participant.extraEntries;
+  }
+
+  if (typeof participant?.extraScore === "number" && participant.extraScore > 0) {
+    return [
+      {
+        points: participant.extraScore,
+        reason: "Pontuação extra anterior",
+        createdAt: participant.updatedAt || participant.createdAt || new Date(),
+      },
+    ];
+  }
+
+  return [];
+}
+
 export const patchBiblicalStudy = async (req, res) => {
   try {
     const { id } = req.params;
@@ -130,7 +152,7 @@ export const patchFrequency = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const { name, address, houseNumber, age, whatsapp } = req.body;
+    const { name, address, houseNumber, reference, age, whatsapp } = req.body;
     const parsedAge = Number(age);
     if (!name || !address || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
       return res
@@ -141,6 +163,7 @@ export const create = async (req, res) => {
       name: String(name).trim(),
       address: String(address).trim(),
       houseNumber: String(houseNumber).trim(),
+      reference: normalizeReference(reference),
       age: parsedAge,
       whatsapp: String(whatsapp).trim(),
       registeredBy: req.userId,
@@ -175,7 +198,7 @@ export const update = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido." });
     }
-    const { name, address, houseNumber, age, whatsapp } = req.body;
+    const { name, address, houseNumber, reference, age, whatsapp } = req.body;
     const parsedAge = Number(age);
     if (!name || !address || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
       return res.status(400).json({ message: "Nome, rua, número da casa, idade e WhatsApp são obrigatórios." });
@@ -188,6 +211,7 @@ export const update = async (req, res) => {
         name: String(name).trim(),
         address: String(address).trim(),
         houseNumber: String(houseNumber).trim(),
+        reference: normalizeReference(reference),
         age: parsedAge,
         whatsapp: String(whatsapp).trim(),
       },
@@ -202,6 +226,50 @@ export const update = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao atualizar participante." });
+  }
+};
+
+export const patchExtraScore = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+
+    const parsedPoints = Number(req.body?.points);
+    const reason = String(req.body?.reason || "").trim();
+
+    if (!Number.isFinite(parsedPoints) || parsedPoints <= 0) {
+      return res.status(400).json({ message: "Informe uma pontuação extra maior que zero." });
+    }
+
+    if (!reason) {
+      return res.status(400).json({ message: "Informe o motivo da pontuação extra." });
+    }
+
+    const filter = req.userRole === "admin" ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const participant = await Participant.findOne(filter);
+
+    if (!participant) {
+      return res.status(404).json({ message: "Participante não encontrado." });
+    }
+
+    const extraEntries = buildExtraEntries(participant);
+    extraEntries.push({
+      points: parsedPoints,
+      reason,
+      createdAt: new Date(),
+    });
+
+    participant.extraEntries = extraEntries;
+    participant.extraScore = extraEntries.reduce((sum, entry) => sum + Number(entry.points || 0), 0);
+
+    await participant.save();
+
+    res.json(participant);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao atualizar pontuação extra." });
   }
 };
 

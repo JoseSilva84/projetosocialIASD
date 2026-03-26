@@ -51,7 +51,24 @@ function getParticipantAgeLabel(age) {
 }
 
 function formatParticipantRow(participant, index) {
-  return `${index + 1}. ${participant.name || ''} | ${participant.address || ''} | ${participant.houseNumber || ''} | ${getParticipantAgeLabel(participant.age)} | ${participant.whatsapp || ''}`
+  const reference = participant.reference?.trim() ? participant.reference.trim() : 'Sem referÃªncia'
+  return `${index + 1}. ${participant.name || ''} | ${participant.address || ''} | ${participant.houseNumber || ''} | ${reference} | ${getParticipantAgeLabel(participant.age)} | ${participant.whatsapp || ''}`
+}
+
+function getParticipantExtraEntries(participant) {
+  if (Array.isArray(participant?.extraEntries) && participant.extraEntries.length > 0) {
+    return participant.extraEntries
+  }
+
+  if (typeof participant?.extraScore === 'number' && participant.extraScore > 0) {
+    return [{ points: participant.extraScore, reason: 'PontuaÃ§Ã£o extra anterior' }]
+  }
+
+  return []
+}
+
+function getParticipantExtraTotal(participant) {
+  return getParticipantExtraEntries(participant).reduce((sum, entry) => sum + Number(entry?.points || 0), 0)
 }
 
 export default function Participantes() {
@@ -60,6 +77,7 @@ export default function Participantes() {
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
   const [houseNumber, setHouseNumber] = useState('')
+  const [reference, setReference] = useState('')
   const [age, setAge] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
   const [list, setList] = useState([])
@@ -73,9 +91,12 @@ export default function Participantes() {
   const [editName, setEditName] = useState('')
   const [editAddress, setEditAddress] = useState('')
   const [editHouseNumber, setEditHouseNumber] = useState('')
+  const [editReference, setEditReference] = useState('')
   const [editAge, setEditAge] = useState('')
   const [editWhatsapp, setEditWhatsapp] = useState('')
   const [updatingIds, setUpdatingIds] = useState(new Set())
+  const [extraDrafts, setExtraDrafts] = useState({})
+  const [extraSavingIds, setExtraSavingIds] = useState(new Set())
 
   const userRole = getUserRole()
   const [rankingConfig, setRankingConfig] = useState({
@@ -166,7 +187,8 @@ export default function Participantes() {
       .map((p) => {
         const attendance = Array.isArray(p.frequencyAttended) ? p.frequencyAttended.length : 0
         const biblicalLessons = Array.isArray(p.biblicalLessonsCompleted) ? p.biblicalLessonsCompleted.length : 0
-        const extra = typeof p.extraScore === 'number' ? p.extraScore : 0
+        const extra = getParticipantExtraTotal(p)
+        const extraEntries = getParticipantExtraEntries(p)
         const score =
           attendance * Number(rankingConfig.presenceWeight || 0) +
           biblicalLessons * Number(rankingConfig.biblicalWeight || 0) +
@@ -177,6 +199,7 @@ export default function Participantes() {
           attendance,
           biblicalLessons,
           extra,
+          extraEntries,
           score,
         }
       })
@@ -564,7 +587,7 @@ export default function Participantes() {
 
     doc.setFontSize(10)
 
-    drawTextBlock('Nome | Rua | Número da casa | Idade | WhatsApp', 12, 6)
+    drawTextBlock('Nome | Rua | Número da casa | Referência | Idade | WhatsApp', 12, 6)
 
     list.forEach((p, idx) => {
       const linha = formatParticipantRow(p, idx)
@@ -673,7 +696,7 @@ export default function Participantes() {
     doc.text('Lista de Participantes', 20, y)
     y += 24
     doc.setFontSize(10)
-    doc.text('Nome | Rua | Número da casa | Idade | WhatsApp', 20, y)
+    doc.text('Nome | Rua | Número da casa | Referência | Idade | WhatsApp', 20, y)
     y += 16
 
     doc.setFontSize(14)
@@ -699,7 +722,7 @@ export default function Participantes() {
     doc.text('Lista de Participantes', 20, y)
     y += 20
     doc.setFontSize(10)
-    doc.text('Nome | Rua | Número da casa | Idade | WhatsApp', 20, y)
+    doc.text('Nome | Rua | Número da casa | Referência | Idade | WhatsApp', 20, y)
     y += 14
 
     list.forEach((p, idx) => {
@@ -791,6 +814,7 @@ export default function Participantes() {
     const n = name.trim()
     const a = address.trim()
     const hn = houseNumber.trim()
+    const ref = reference.trim()
     const parsedAge = Number(age)
     const w = whatsapp.trim()
     if (!n || !a || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
@@ -801,11 +825,12 @@ export default function Participantes() {
     try {
       await apiFetch('/participants', {
         method: 'POST',
-        body: JSON.stringify({ name: n, address: a, houseNumber: hn, age: parsedAge, whatsapp: w }),
+        body: JSON.stringify({ name: n, address: a, houseNumber: hn, reference: ref, age: parsedAge, whatsapp: w }),
       })
       setName('')
       setAddress('')
       setHouseNumber('')
+      setReference('')
       setAge('')
       setWhatsapp('')
       toast.success('Participante cadastrado com sucesso.')
@@ -828,12 +853,12 @@ export default function Participantes() {
   async function handleUndoDelete() {
     if (!recentlyDeleted) return
 
-    const { name: delName, address: delAddress, houseNumber: delHouseNumber, age: delAge, whatsapp: delWhatsapp } = recentlyDeleted
+    const { name: delName, address: delAddress, houseNumber: delHouseNumber, reference: delReference, age: delAge, whatsapp: delWhatsapp } = recentlyDeleted
     setLoadingList(true)
     try {
       const restored = await apiFetch('/participants', {
         method: 'POST',
-        body: JSON.stringify({ name: delName, address: delAddress, houseNumber: delHouseNumber, age: delAge, whatsapp: delWhatsapp }),
+        body: JSON.stringify({ name: delName, address: delAddress, houseNumber: delHouseNumber, reference: delReference, age: delAge, whatsapp: delWhatsapp }),
       })
 
       // Se houver dados em progresso, re-aplicar em endpoints específicos.
@@ -852,6 +877,17 @@ export default function Participantes() {
           body: JSON.stringify({ frequencyAttended: recentlyDeleted.frequencyAttended }),
         })
       }
+      if (getParticipantExtraEntries(recentlyDeleted).length > 0) {
+        for (const entry of getParticipantExtraEntries(recentlyDeleted)) {
+          await apiFetch(`/participants/${restored._id}/extra-score`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              points: Number(entry.points || 0),
+              reason: entry.reason || 'Pontuação extra restaurada',
+            }),
+          })
+        }
+      }
 
       toast.success('Participante restaurado com sucesso.')
       setRecentlyDeleted(null)
@@ -868,6 +904,7 @@ export default function Participantes() {
     setEditName(participant.name)
     setEditAddress(participant.address)
     setEditHouseNumber(participant.houseNumber || '')
+    setEditReference(participant.reference || '')
     setEditAge(participant.age != null ? String(participant.age) : '')
     setEditWhatsapp(participant.whatsapp)
   }
@@ -877,6 +914,7 @@ export default function Participantes() {
     setEditName('')
     setEditAddress('')
     setEditHouseNumber('')
+    setEditReference('')
     setEditAge('')
     setEditWhatsapp('')
   }
@@ -889,6 +927,7 @@ export default function Participantes() {
     const n = editName.trim()
     const a = editAddress.trim()
     const hn = editHouseNumber.trim()
+    const ref = editReference.trim()
     const parsedAge = Number(editAge)
     const w = editWhatsapp.trim()
     if (!n || !a || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
@@ -900,12 +939,13 @@ export default function Participantes() {
     try {
       await apiFetch(`/participants/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ name: n, address: a, houseNumber: hn, age: parsedAge, whatsapp: w }),
+        body: JSON.stringify({ name: n, address: a, houseNumber: hn, reference: ref, age: parsedAge, whatsapp: w }),
       })
       setEditingId(null)
       setEditName('')
       setEditAddress('')
       setEditHouseNumber('')
+      setEditReference('')
       setEditAge('')
       setEditWhatsapp('')
       toast.success('Participante atualizado com sucesso.')
@@ -972,6 +1012,55 @@ export default function Participantes() {
     [list]
   )
 
+  function updateExtraDraft(participantId, field, value) {
+    setExtraDrafts((prev) => ({
+      ...prev,
+      [participantId]: {
+        points: prev[participantId]?.points || '',
+        reason: prev[participantId]?.reason || '',
+        [field]: value,
+      },
+    }))
+  }
+
+  async function handleAddExtraScore(participantId) {
+    const draft = extraDrafts[participantId] || { points: '', reason: '' }
+    const points = Number(draft.points)
+    const reason = (draft.reason || '').trim()
+
+    if (!Number.isFinite(points) || points <= 0) {
+      toast.error('Informe uma pontuação extra maior que zero.')
+      return
+    }
+
+    if (!reason) {
+      toast.error('Informe o motivo da pontuação extra.')
+      return
+    }
+
+    setExtraSavingIds((prev) => new Set(prev).add(participantId))
+    try {
+      await apiFetch(`/participants/${participantId}/extra-score`, {
+        method: 'PATCH',
+        body: JSON.stringify({ points, reason }),
+      })
+      setExtraDrafts((prev) => ({
+        ...prev,
+        [participantId]: { points: '', reason: '' },
+      }))
+      toast.success('Pontuação extra adicionada com sucesso.')
+      await loadList()
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setExtraSavingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(participantId)
+        return next
+      })
+    }
+  }
+
   const filteredList = sortedParticipants.filter(p => {
     if (!searchTerm.trim()) return true
     const term = searchTerm.toLowerCase()
@@ -982,6 +1071,7 @@ export default function Participantes() {
     // Endereço
     if (p.address.toLowerCase().includes(term)) return true
     if ((p.houseNumber || '').toLowerCase().includes(term)) return true
+    if ((p.reference || '').toLowerCase().includes(term)) return true
     if (String(p.age ?? '').includes(term)) return true
     // Data de presença (formato completo)
     if (p.frequencyAttended?.some(date => formatDate(date).toLowerCase().includes(term))) return true
@@ -1015,7 +1105,7 @@ export default function Participantes() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Pesquisar por nome, rua, número, idade, WhatsApp, dia..."
+                placeholder="Pesquisar por nome, rua, número, referência, idade, WhatsApp, dia..."
                 className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
               />
             </div>
@@ -1096,6 +1186,16 @@ export default function Participantes() {
                           onChange={(e) => setHouseNumber(e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
                           placeholder="Ex: 123"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs text-white/50 mb-1 block">Referência</span>
+                        <input
+                          type="text"
+                          value={reference}
+                          onChange={(e) => setReference(e.target.value)}
+                          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                          placeholder="Ex: Perto da igreja"
                         />
                       </label>
                       <label className="block">
@@ -1200,6 +1300,16 @@ export default function Participantes() {
                                     onChange={(e) => setEditHouseNumber(e.target.value)}
                                     className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
                                     placeholder="Ex: 123"
+                                  />
+                                </label>
+                                <label className="block">
+                                  <span className="text-xs text-white/50">Referência</span>
+                                  <input
+                                    type="text"
+                                    value={editReference}
+                                    onChange={(e) => setEditReference(e.target.value)}
+                                    className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                                    placeholder="Ex: Perto da igreja"
                                   />
                                 </label>
                                 <label className="block">
@@ -1316,6 +1426,7 @@ export default function Participantes() {
                               </div>
                               <p className="text-white/70 mt-1 wrap-break-word">Rua: {p.address}</p>
                               <p className="text-white/60 mt-1">Número da casa: {p.houseNumber || 'Não informado'}</p>
+                              <p className="text-white/60 mt-1">Referência: {p.reference || 'Não informada'}</p>
                               <p className="text-white/60 mt-1">Idade: {getParticipantAgeLabel(p.age)}</p>
                               <p className="text-emerald-300/90 mt-1">{p.whatsapp}</p>
                               <div className="flex flex-wrap gap-2 mt-2 text-[11px]">
@@ -1604,7 +1715,7 @@ export default function Participantes() {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white/80">Nome</th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Frequência ({rankingConfig.presenceWeight}x)</th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Bíblico ({rankingConfig.biblicalWeight}x)</th>
-                      {rankingConfig.extraWeight > 0 && (
+                      {(rankingConfig.extraWeight > 0 || userRole === 'admin') && (
                         <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">
                           {rankingConfig.extraLabel} ({rankingConfig.extraWeight}x)
                         </th>
@@ -1624,9 +1735,48 @@ export default function Participantes() {
                           <td className="px-4 py-3 text-center text-white/80">
                             {item.biblicalLessons} × {rankingConfig.biblicalWeight} = {(item.biblicalLessons * rankingConfig.biblicalWeight).toFixed(1)}
                           </td>
-                          {rankingConfig.extraWeight > 0 && (
+                          {(rankingConfig.extraWeight > 0 || userRole === 'admin') && (
                             <td className="px-4 py-3 text-center text-white/80">
-                              {item.extra} × {rankingConfig.extraWeight} = {(item.extra * rankingConfig.extraWeight).toFixed(1)}
+                              <div className="space-y-3">
+                                <span
+                                  className="inline-flex cursor-help items-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-2.5 py-1 text-xs text-white/90"
+                                  title={
+                                    item.extraEntries.length > 0
+                                      ? item.extraEntries.map((entry) => `+${entry.points}: ${entry.reason}`).join('\n')
+                                      : 'Sem pontuação extra registrada.'
+                                  }
+                                >
+                                  {item.extra} x {rankingConfig.extraWeight} = {(item.extra * rankingConfig.extraWeight).toFixed(1)}
+                                </span>
+                                {userRole === 'admin' ? (
+                                  <div className="space-y-2">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="0.1"
+                                      value={extraDrafts[item.id]?.points || ''}
+                                      onChange={(e) => updateExtraDraft(item.id, 'points', e.target.value)}
+                                      className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/30"
+                                      placeholder="Pontos extras"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={extraDrafts[item.id]?.reason || ''}
+                                      onChange={(e) => updateExtraDraft(item.id, 'reason', e.target.value)}
+                                      className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/30"
+                                      placeholder="Motivo do ponto"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddExtraScore(item.id)}
+                                      disabled={extraSavingIds.has(item.id)}
+                                      className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-3 py-2 text-xs font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                      {extraSavingIds.has(item.id) ? 'Salvando...' : `Adicionar ${rankingConfig.extraLabel}`}
+                                    </button>
+                                  </div>
+                                ) : null}
+                              </div>
                             </td>
                           )}
                           <td className="px-4 py-3 text-center">
@@ -1638,7 +1788,7 @@ export default function Participantes() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={rankingConfig.extraWeight > 0 ? 6 : 5} className="px-4 py-8 text-center text-white/50">
+                        <td colSpan={rankingConfig.extraWeight > 0 || userRole === 'admin' ? 6 : 5} className="px-4 py-8 text-center text-white/50">
                           Nenhum participante cadastrado ainda
                         </td>
                       </tr>

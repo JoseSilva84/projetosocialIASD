@@ -3,6 +3,7 @@ import {
     create,
     deleteParticipant,
     listMine,
+    patchExtraScore,
     patchBiblicalStudy,
     patchFrequency,
     update,
@@ -17,6 +18,7 @@ router.post("/", create);
 router.put("/:id", update);
 router.patch("/:id/biblical-study", patchBiblicalStudy);
 router.patch("/:id/frequency", patchFrequency);
+router.patch("/:id/extra-score", patchExtraScore);
 router.delete("/:id", deleteParticipant);
 
 export default router;
