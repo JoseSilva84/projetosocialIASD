@@ -114,7 +114,7 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated })
           type="button"
           onClick={handleSave}
           disabled={!participantId}
-          className="rounded-full bg-linear-to-r from-blue-700/90 via-blue-600 to-blue-700/90 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:opacity-40"
+          className="rounded-full bg-linear-to-r from-blue-700/90 via-blue-600 to-blue-700/90 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:opacity-40 cursor-pointer"
         >
           Salvar frequência
         </button>
