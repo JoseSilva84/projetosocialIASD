@@ -1,4 +1,5 @@
 import RankingConfig from "../models/rankingConfig.model.js";
+import { syncAllParticipantScores } from "../services/participantScore.service.js";
 
 export const getRankingConfig = async (req, res) => {
   try {
@@ -9,30 +10,33 @@ export const getRankingConfig = async (req, res) => {
     res.json(config);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Erro ao obter configuração de ranking." });
+    res.status(500).json({ message: "Erro ao obter configuracao de ranking." });
   }
 };
 
 export const updateRankingConfig = async (req, res) => {
   try {
     const { presenceWeight, biblicalWeight, extraLabel, extraWeight } = req.body;
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ message: 'Acesso negado.' });
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Acesso negado." });
     }
 
     let config = await RankingConfig.findOne();
     if (!config) {
       config = new RankingConfig();
     }
+
     if (presenceWeight !== undefined) config.presenceWeight = Number(presenceWeight);
     if (biblicalWeight !== undefined) config.biblicalWeight = Number(biblicalWeight);
-    if (extraLabel !== undefined) config.extraLabel = String(extraLabel);
+    if (extraLabel !== undefined) config.extraLabel = String(extraLabel || "Extra");
     if (extraWeight !== undefined) config.extraWeight = Number(extraWeight);
 
     await config.save();
+    await syncAllParticipantScores(config);
+
     res.json(config);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Erro ao atualizar configuração de ranking." });
+    res.status(500).json({ message: "Erro ao atualizar configuracao de ranking." });
   }
 };

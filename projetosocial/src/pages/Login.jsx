@@ -92,6 +92,7 @@ export default function Login() {
             <p className="text-center text-sm text-white/60">Entrar na secretaria</p>
             <p className="text-center text-xs text-white/50">
               Usuário Administrador: (controle total).<br />
+              Usuário Convidado: (apenas visualiza).<br />
             </p>
 
             <div className="flex items-center gap-3 border-b border-white/25 pb-3">

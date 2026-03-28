@@ -86,7 +86,7 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated, r
         <p className="text-white/90 font-medium">Nenhum participante inscrito ainda.</p>
         <p className="text-sm text-white/55 mt-2">
           Cadastre alguem na aba <strong className="text-white/80">Inscricoes</strong> para depois
-          registrar frequencia.
+          registrar frequência.
         </p>
       </div>
     )
@@ -127,7 +127,7 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated, r
             disabled={!participantId}
             className="rounded-full bg-linear-to-r from-blue-700/90 via-blue-600 to-blue-700/90 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:opacity-40 cursor-pointer"
           >
-            Salvar frequencia
+            Salvar frequência
           </button>
         )}
       </div>

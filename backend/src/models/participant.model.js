@@ -75,6 +75,21 @@ const participantSchema = new mongoose.Schema(
       }],
       default: [],
     },
+    scoreSummary: {
+      frequencyCount: { type: Number, default: 0, min: 0 },
+      frequencyScore: { type: Number, default: 0, min: 0 },
+      biblicalCount: { type: Number, default: 0, min: 0 },
+      biblicalScore: { type: Number, default: 0, min: 0 },
+      extraCount: { type: Number, default: 0, min: 0 },
+      extraScore: { type: Number, default: 0, min: 0 },
+      totalScore: { type: Number, default: 0, min: 0 },
+      rankingConfigId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "RankingConfig",
+        default: null,
+      },
+      rankingUpdatedAt: { type: Date, default: null },
+    },
   },
   { timestamps: true }
 );

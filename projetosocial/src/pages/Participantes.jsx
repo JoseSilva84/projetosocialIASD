@@ -51,7 +51,7 @@ function getParticipantAgeLabel(age) {
 }
 
 function formatParticipantRow(participant, index) {
-  const reference = participant.reference?.trim() ? participant.reference.trim() : 'Sem referÃªncia'
+  const reference = participant.reference?.trim() ? participant.reference.trim() : 'Sem referência'
   return `${index + 1}. ${participant.name || ''} | ${participant.address || ''} | ${participant.houseNumber || ''} | ${reference} | ${getParticipantAgeLabel(participant.age)} | ${participant.whatsapp || ''}`
 }
 
@@ -61,7 +61,7 @@ function getParticipantExtraEntries(participant) {
   }
 
   if (typeof participant?.extraScore === 'number' && participant.extraScore > 0) {
-    return [{ points: participant.extraScore, reason: 'PontuaÃ§Ã£o extra anterior' }]
+    return [{ points: participant.extraScore, reason: 'Pontuação extra anterior' }]
   }
 
   return []
@@ -69,6 +69,37 @@ function getParticipantExtraEntries(participant) {
 
 function getParticipantExtraTotal(participant) {
   return getParticipantExtraEntries(participant).reduce((sum, entry) => sum + Number(entry?.points || 0), 0)
+}
+
+function getParticipantScoreSummary(participant, rankingConfig) {
+  const frequencyCount = Array.isArray(participant?.frequencyAttended) ? participant.frequencyAttended.length : 0
+  const biblicalCount = Array.isArray(participant?.biblicalLessonsCompleted) ? participant.biblicalLessonsCompleted.length : 0
+  const extraCount = getParticipantExtraTotal(participant)
+
+  const fallback = {
+    frequencyCount,
+    frequencyScore: Number((frequencyCount * Number(rankingConfig?.presenceWeight || 0)).toFixed(1)),
+    biblicalCount,
+    biblicalScore: Number((biblicalCount * Number(rankingConfig?.biblicalWeight || 0)).toFixed(1)),
+    extraCount,
+    extraScore: Number((extraCount * Number(rankingConfig?.extraWeight || 0)).toFixed(1)),
+  }
+
+  const summary = participant?.scoreSummary || {}
+  const totalScore =
+    typeof summary.totalScore === 'number'
+      ? summary.totalScore
+      : Number((fallback.frequencyScore + fallback.biblicalScore + fallback.extraScore).toFixed(1))
+
+  return {
+    frequencyCount: typeof summary.frequencyCount === 'number' ? summary.frequencyCount : fallback.frequencyCount,
+    frequencyScore: typeof summary.frequencyScore === 'number' ? summary.frequencyScore : fallback.frequencyScore,
+    biblicalCount: typeof summary.biblicalCount === 'number' ? summary.biblicalCount : fallback.biblicalCount,
+    biblicalScore: typeof summary.biblicalScore === 'number' ? summary.biblicalScore : fallback.biblicalScore,
+    extraCount: typeof summary.extraCount === 'number' ? summary.extraCount : fallback.extraCount,
+    extraScore: typeof summary.extraScore === 'number' ? summary.extraScore : fallback.extraScore,
+    totalScore,
+  }
 }
 
 export default function Participantes() {
@@ -97,6 +128,8 @@ export default function Participantes() {
   const [updatingIds, setUpdatingIds] = useState(new Set())
   const [extraDrafts, setExtraDrafts] = useState({})
   const [extraSavingIds, setExtraSavingIds] = useState(new Set())
+  const [rankingExtraSearch, setRankingExtraSearch] = useState('')
+  const [selectedExtraParticipantId, setSelectedExtraParticipantId] = useState('')
 
   const userRole = getUserRole()
   const [rankingConfig, setRankingConfig] = useState({
@@ -185,22 +218,19 @@ export default function Participantes() {
 
     const rankingList = [...list]
       .map((p) => {
-        const attendance = Array.isArray(p.frequencyAttended) ? p.frequencyAttended.length : 0
-        const biblicalLessons = Array.isArray(p.biblicalLessonsCompleted) ? p.biblicalLessonsCompleted.length : 0
-        const extra = getParticipantExtraTotal(p)
+        const scoreSummary = getParticipantScoreSummary(p, rankingConfig)
         const extraEntries = getParticipantExtraEntries(p)
-        const score =
-          attendance * Number(rankingConfig.presenceWeight || 0) +
-          biblicalLessons * Number(rankingConfig.biblicalWeight || 0) +
-          extra * Number(rankingConfig.extraWeight || 0)
         return {
           id: p._id,
           name: p.name || '(sem nome)',
-          attendance,
-          biblicalLessons,
-          extra,
+          attendance: scoreSummary.frequencyCount,
+          attendanceScore: scoreSummary.frequencyScore,
+          biblicalLessons: scoreSummary.biblicalCount,
+          biblicalScore: scoreSummary.biblicalScore,
+          extra: scoreSummary.extraCount,
+          extraScore: scoreSummary.extraScore,
           extraEntries,
-          score,
+          score: scoreSummary.totalScore,
         }
       })
       .sort((a, b) => b.score - a.score)
@@ -478,7 +508,7 @@ export default function Participantes() {
     })
 
     // ==============================
-    // 📐 CONFIGURAÇÃO DA PÁGINA
+    // Configuracao da pagina
     // ==============================
     const pageWidth = 841.89
     const pageHeight = 595.28
@@ -493,7 +523,7 @@ export default function Participantes() {
     let y = marginTop
 
     // ==============================
-    // 🔥 CONTROLE DE PAGINAÇÃO (CORRIGIDO)
+    // Controle de paginacao (corrigido)
     // ==============================
     const ensureBlockFits = (blockHeight) => {
       if (y + blockHeight > pageBottomLimit) {
@@ -594,7 +624,7 @@ export default function Participantes() {
 
       const lines = doc.splitTextToSize(linha, contentWidth)
 
-      // 🔥 CORREÇÃO PRINCIPAL (NUNCA MAIS PERDE LINHA)
+      // Correcao principal para nao perder linha
       const blockHeight = lines.length * 12 + 6
 
       ensureBlockFits(blockHeight)
@@ -664,7 +694,7 @@ export default function Participantes() {
     })
 
     // ==============================
-    // 📌 RODAPÉ (PAGINAÇÃO)
+    // Rodape (paginacao)
     // ==============================
     const totalPages = doc.getNumberOfPages()
 
@@ -1012,6 +1042,39 @@ export default function Participantes() {
     [list]
   )
 
+  const rankingExtraCandidates = useMemo(() => {
+    const term = rankingExtraSearch.trim().toLowerCase()
+    const baseList = [...list]
+      .map((participant) => {
+        const scoreSummary = getParticipantScoreSummary(participant, rankingConfig)
+        return {
+          id: participant._id,
+          name: participant.name || '(sem nome)',
+          score: scoreSummary.totalScore,
+        }
+      })
+      .sort((a, b) => b.score - a.score)
+
+    if (!term) {
+      return baseList.slice(0, 8)
+    }
+
+    return baseList
+      .filter((participant) => participant.name.toLowerCase().includes(term))
+      .slice(0, 8)
+  }, [list, rankingConfig, rankingExtraSearch])
+
+  const selectedExtraParticipant = useMemo(() => {
+    const fromList = sortedParticipants.find((participant) => participant._id === selectedExtraParticipantId)
+    if (fromList) return fromList
+
+    if (rankingExtraCandidates.length === 1) {
+      return sortedParticipants.find((participant) => participant._id === rankingExtraCandidates[0].id) || null
+    }
+
+    return null
+  }, [rankingExtraCandidates, selectedExtraParticipantId, sortedParticipants])
+
   function updateExtraDraft(participantId, field, value) {
     setExtraDrafts((prev) => ({
       ...prev,
@@ -1048,6 +1111,8 @@ export default function Participantes() {
         ...prev,
         [participantId]: { points: '', reason: '' },
       }))
+      setRankingExtraSearch('')
+      setSelectedExtraParticipantId(participantId)
       toast.success('Pontuação extra adicionada com sucesso.')
       await loadList()
     } catch (err) {
@@ -1708,21 +1773,116 @@ export default function Participantes() {
                 </div>
               )}
 
+              {userRole === 'admin' && (
+                <div className="mb-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                    <h3 className="text-base font-semibold text-white">Adicionar {rankingConfig.extraLabel.toLowerCase()}</h3>
+                    <p className="mt-1 text-sm text-white/60">
+                      Procure o participante pelo nome e registre a pontuacao extra no banco de dados.
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      <input
+                        type="text"
+                        value={rankingExtraSearch}
+                        onChange={(e) => {
+                          setRankingExtraSearch(e.target.value)
+                          setSelectedExtraParticipantId('')
+                        }}
+                        className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
+                        placeholder="Buscar participante por nome"
+                      />
+
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {rankingExtraCandidates.length > 0 ? (
+                          rankingExtraCandidates.map((participant) => (
+                            <button
+                              key={participant.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedExtraParticipantId(participant.id)
+                                setRankingExtraSearch(participant.name)
+                              }}
+                              className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
+                                selectedExtraParticipant?._id === participant.id
+                                  ? 'border-indigo-400/50 bg-indigo-500/15 text-white'
+                                  : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/10'
+                              }`}
+                            >
+                              <span className="block font-medium">{participant.name}</span>
+                              <span className="mt-1 block text-xs text-white/50">
+                                Total atual: {participant.score.toFixed(1)}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="sm:col-span-2 rounded-xl border border-dashed border-white/10 px-4 py-3 text-sm text-white/45">
+                            Nenhum participante encontrado para essa busca.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5">
+                    <h3 className="text-base font-semibold text-white">Lancamento selecionado</h3>
+                    {selectedExtraParticipant ? (
+                      <div className="mt-4 space-y-3">
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                          <p className="text-sm font-semibold text-white">{selectedExtraParticipant.name}</p>
+                          <p className="mt-2 text-xs text-white/55">
+                            Frequencia: {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).frequencyScore.toFixed(1)} | Biblico:{' '}
+                            {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).biblicalScore.toFixed(1)} | {rankingConfig.extraLabel}:{' '}
+                            {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).extraScore.toFixed(1)}
+                          </p>
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={extraDrafts[selectedExtraParticipant._id]?.points || ''}
+                          onChange={(e) => updateExtraDraft(selectedExtraParticipant._id, 'points', e.target.value)}
+                          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
+                          placeholder="Valor da pontuacao extra"
+                        />
+                        <input
+                          type="text"
+                          value={extraDrafts[selectedExtraParticipant._id]?.reason || ''}
+                          onChange={(e) => updateExtraDraft(selectedExtraParticipant._id, 'reason', e.target.value)}
+                          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
+                          placeholder="Motivo da pontuacao"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAddExtraScore(selectedExtraParticipant._id)}
+                          disabled={extraSavingIds.has(selectedExtraParticipant._id)}
+                          className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {extraSavingIds.has(selectedExtraParticipant._id)
+                            ? 'Salvando...'
+                            : `Adicionar ${rankingConfig.extraLabel}`}
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-white/55">
+                        Selecione um participante na busca para registrar a pontuacao extra.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Tabela de ranking */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+              <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
                 <table className="w-full text-sm">
                   <thead className="border-b border-white/10 bg-white/10">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white/80">#</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white/80">Nome</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Frequência ({rankingConfig.presenceWeight}x)</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Bíblico ({rankingConfig.biblicalWeight}x)</th>
-                      {(rankingConfig.extraWeight > 0 || userRole === 'admin') && (
-                        <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">
-                          {rankingConfig.extraLabel} ({rankingConfig.extraWeight}x)
-                        </th>
-                      )}
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-yellow-300">Pontuação</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Frequencia geral</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Biblico geral</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">{rankingConfig.extraLabel} geral</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-yellow-300">Pontuacao geral</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1732,55 +1892,32 @@ export default function Participantes() {
                           <td className="px-4 py-3 font-bold text-amber-400">{idx + 1}</td>
                           <td className="px-4 py-3 text-white">{item.name}</td>
                           <td className="px-4 py-3 text-center text-white/80">
-                            {item.attendance} × {rankingConfig.presenceWeight} = {(item.attendance * rankingConfig.presenceWeight).toFixed(1)}
+                            <span className="block font-semibold text-white">{item.attendanceScore.toFixed(1)}</span>
+                            <span className="text-xs text-white/45">
+                              {item.attendance} x {rankingConfig.presenceWeight}
+                            </span>
                           </td>
                           <td className="px-4 py-3 text-center text-white/80">
-                            {item.biblicalLessons} × {rankingConfig.biblicalWeight} = {(item.biblicalLessons * rankingConfig.biblicalWeight).toFixed(1)}
+                            <span className="block font-semibold text-white">{item.biblicalScore.toFixed(1)}</span>
+                            <span className="text-xs text-white/45">
+                              {item.biblicalLessons} x {rankingConfig.biblicalWeight}
+                            </span>
                           </td>
-                          {(rankingConfig.extraWeight > 0 || userRole === 'admin') && (
-                            <td className="px-4 py-3 text-center text-white/80">
-                              <div className="space-y-3">
-                                <span
-                                  className="inline-flex cursor-help items-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-2.5 py-1 text-xs text-white/90"
-                                  title={
-                                    item.extraEntries.length > 0
-                                      ? item.extraEntries.map((entry) => `+${entry.points}: ${entry.reason}`).join('\n')
-                                      : 'Sem pontuação extra registrada.'
-                                  }
-                                >
-                                  {item.extra} x {rankingConfig.extraWeight} = {(item.extra * rankingConfig.extraWeight).toFixed(1)}
-                                </span>
-                                {userRole === 'admin' ? (
-                                  <div className="space-y-2">
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      step="0.1"
-                                      value={extraDrafts[item.id]?.points || ''}
-                                      onChange={(e) => updateExtraDraft(item.id, 'points', e.target.value)}
-                                      className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/30"
-                                      placeholder="Pontos extras"
-                                    />
-                                    <input
-                                      type="text"
-                                      value={extraDrafts[item.id]?.reason || ''}
-                                      onChange={(e) => updateExtraDraft(item.id, 'reason', e.target.value)}
-                                      className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/30"
-                                      placeholder="Motivo do ponto"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddExtraScore(item.id)}
-                                      disabled={extraSavingIds.has(item.id)}
-                                      className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-3 py-2 text-xs font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                      {extraSavingIds.has(item.id) ? 'Salvando...' : `Adicionar ${rankingConfig.extraLabel}`}
-                                    </button>
-                                  </div>
-                                ) : null}
-                              </div>
-                            </td>
-                          )}
+                          <td className="px-4 py-3 text-center text-white/80">
+                            <span
+                              className="inline-flex cursor-help items-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-2.5 py-1 text-xs text-white/90"
+                              title={
+                                item.extraEntries.length > 0
+                                  ? item.extraEntries.map((entry) => `+${entry.points}: ${entry.reason}`).join('\n')
+                                  : 'Sem pontuacao extra registrada.'
+                              }
+                            >
+                              {item.extraScore.toFixed(1)}
+                            </span>
+                            <span className="mt-2 block text-xs text-white/45">
+                              {item.extra} x {rankingConfig.extraWeight}
+                            </span>
+                          </td>
                           <td className="px-4 py-3 text-center">
                             <span className="inline-flex items-center rounded-full bg-amber-500/20 text-amber-100 px-3 py-1 text-xs font-bold border border-amber-500/30">
                               {item.score.toFixed(1)}
@@ -1790,7 +1927,7 @@ export default function Participantes() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={rankingConfig.extraWeight > 0 || userRole === 'admin' ? 6 : 5} className="px-4 py-8 text-center text-white/50">
+                        <td colSpan={6} className="px-4 py-8 text-center text-white/50">
                           Nenhum participante cadastrado ainda
                         </td>
                       </tr>
@@ -1844,3 +1981,6 @@ export default function Participantes() {
     </ScreenShell>
   )
 }
+
+
+
