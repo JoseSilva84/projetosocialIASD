@@ -46,6 +46,23 @@ function getStreetName(address) {
   return streetName || normalizedAddress
 }
 
+const AGE_GROUPS = [
+  { label: '0-11 anos', min: 0, max: 11 },
+  { label: '12-17 anos', min: 12, max: 17 },
+  { label: '18-24 anos', min: 18, max: 24 },
+  { label: '25-39 anos', min: 25, max: 39 },
+  { label: '40-59 anos', min: 40, max: 59 },
+  { label: '60+ anos', min: 60, max: Number.POSITIVE_INFINITY },
+]
+
+function getAgeGroupLabel(age) {
+  const parsedAge = Number(age)
+  if (!Number.isFinite(parsedAge) || parsedAge < 0) return 'Idade nao informada'
+
+  const group = AGE_GROUPS.find((range) => parsedAge >= range.min && parsedAge <= range.max)
+  return group?.label || 'Idade nao informada'
+}
+
 function getParticipantAgeLabel(age) {
   const parsedAge = Number(age)
   if (!Number.isFinite(parsedAge)) return 'Idade não informada'
@@ -285,6 +302,33 @@ export default function Participantes() {
 
     const topScoreRanking = rankingList.slice(0, 10)
     const top3 = rankingList.slice(0, 3)
+    const ageDistributionMap = new Map()
+    list.forEach((participant) => {
+      const ageLabel = getAgeGroupLabel(participant.age)
+      ageDistributionMap.set(ageLabel, (ageDistributionMap.get(ageLabel) || 0) + 1)
+    })
+
+    const ageDistribution = AGE_GROUPS.map((group) => ({
+      label: group.label,
+      total: ageDistributionMap.get(group.label) || 0,
+    }))
+
+    if (ageDistributionMap.get('Idade nao informada')) {
+      ageDistribution.push({
+        label: 'Idade nao informada',
+        total: ageDistributionMap.get('Idade nao informada') || 0,
+      })
+    }
+
+    const streetMap = new Map()
+    list.forEach((participant) => {
+      const street = getStreetName(participant?.address)
+      streetMap.set(street, (streetMap.get(street) || 0) + 1)
+    })
+
+    const streetDistribution = [...streetMap.entries()]
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }))
 
     return {
       totalParticipants,
@@ -300,6 +344,8 @@ export default function Participantes() {
       rankingList,
       topScoreRanking,
       top3,
+      ageDistribution,
+      streetDistribution,
       maxDay,
       allDays,
     }
@@ -310,6 +356,8 @@ export default function Participantes() {
     bibleChart: null,
     inscriptionsChart: null,
     topFrequencyChart: null,
+    ageDistributionChart: null,
+    streetChart: null,
   })
   const drawDayMenuRef = useRef(null)
 
@@ -327,7 +375,8 @@ export default function Participantes() {
       notStudyingBible,
       inscriptionsOverTime,
       topFrequency,
-      averageFrequency,
+      ageDistribution,
+      streetDistribution,
     } = analytics
 
     // Gráfico 1: Frequência por dia
@@ -523,6 +572,79 @@ export default function Participantes() {
     }
     chartRefs.current.topFrequencyChart = new ApexCharts(document.querySelector('#top-frequency-chart'), topFrequencyOptions)
     chartRefs.current.topFrequencyChart.render()
+
+    // GrÃ¡fico 5: DistribuiÃ§Ã£o por faixa etÃ¡ria
+    const ageDistributionOptions = {
+      series: [
+        {
+          name: 'Participantes',
+          data: ageDistribution.map((group) => group.total),
+        },
+      ],
+      chart: {
+        type: 'bar',
+        height: 320,
+        background: 'transparent',
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 6,
+          columnWidth: '55%',
+        },
+      },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: ageDistribution.map((group) => group.label),
+        labels: { style: { colors: '#fff' } },
+      },
+      yaxis: {
+        title: { text: 'Quantidade', style: { color: '#fff' } },
+        labels: { style: { colors: '#fff' } },
+      },
+      colors: ['#22c55e'],
+      tooltip: { y: { formatter: (val) => `${val} participantes` } },
+      responsive: [{ breakpoint: 768, options: { chart: { height: 250 } } }],
+    }
+    chartRefs.current.ageDistributionChart = new ApexCharts(
+      document.querySelector('#age-distribution-chart'),
+      ageDistributionOptions
+    )
+    chartRefs.current.ageDistributionChart.render()
+
+    // GrÃ¡fico 6: Quantidade por rua
+    const streetOptions = {
+      series: [
+        {
+          name: 'Participantes',
+          data: streetDistribution.map((item) => item.total),
+        },
+      ],
+      chart: {
+        type: 'bar',
+        height: 320,
+        background: 'transparent',
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: '70%',
+          borderRadius: 6,
+        },
+      },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: streetDistribution.map((item) => item.name),
+        labels: { style: { colors: '#fff' } },
+      },
+      yaxis: {
+        labels: { style: { colors: '#fff' } },
+      },
+      colors: ['#14b8a6'],
+      tooltip: { y: { formatter: (val) => `${val} participantes` } },
+      responsive: [{ breakpoint: 768, options: { chart: { height: 250 } } }],
+    }
+    chartRefs.current.streetChart = new ApexCharts(document.querySelector('#street-chart'), streetOptions)
+    chartRefs.current.streetChart.render()
   }, [analytics])
 
   // useEffect para renderizar gráficos quando tab === 'dados'
@@ -1818,6 +1940,17 @@ export default function Participantes() {
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <h3 className="text-lg font-semibold text-white mb-4">Top 10 participantes por frequência</h3>
                   <div id="top-frequency-chart"></div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Participantes por faixa etaria</h3>
+                    <div id="age-distribution-chart"></div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Quantidade por rua</h3>
+                    <div id="street-chart"></div>
+                  </div>
                 </div>
               </div>
             </div>
