@@ -104,6 +104,46 @@ function getParticipantScoreSummary(participant, rankingConfig) {
   }
 }
 
+function getRankingHighlight(idx) {
+  if (idx === 0) {
+    return {
+      row: 'bg-amber-500/10 hover:bg-amber-500/14',
+      rank: 'text-amber-300',
+      name: 'text-amber-50',
+      trophy: 'text-amber-300',
+      score: 'bg-amber-400/25 text-amber-50 border-amber-300/40',
+    }
+  }
+
+  if (idx === 1) {
+    return {
+      row: 'bg-slate-300/10 hover:bg-slate-300/14',
+      rank: 'text-slate-200',
+      name: 'text-slate-50',
+      trophy: 'text-slate-200',
+      score: 'bg-slate-300/20 text-slate-50 border-slate-200/35',
+    }
+  }
+
+  if (idx === 2) {
+    return {
+      row: 'bg-orange-500/10 hover:bg-orange-500/14',
+      rank: 'text-orange-300',
+      name: 'text-orange-50',
+      trophy: 'text-orange-300',
+      score: 'bg-orange-500/20 text-orange-50 border-orange-300/35',
+    }
+  }
+
+  return {
+    row: 'hover:bg-white/5',
+    rank: 'text-amber-400',
+    name: 'text-white',
+    trophy: 'text-white/40',
+    score: 'bg-amber-500/20 text-amber-100 border-amber-500/30',
+  }
+}
+
 export default function Participantes() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('inscricoes')
@@ -1995,10 +2035,32 @@ export default function Participantes() {
                   </thead>
                   <tbody>
                     {analytics.rankingList && analytics.rankingList.length > 0 ? (
-                      analytics.rankingList.map((item, idx) => (
-                        <tr key={item.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                          <td className="px-4 py-3 font-bold text-amber-400">{idx + 1}</td>
-                          <td className="px-4 py-3 text-white">{item.name}</td>
+                      analytics.rankingList.map((item, idx) => {
+                        const highlight = getRankingHighlight(idx)
+
+                        return (
+                        <tr key={item.id} className={`border-b border-white/5 transition ${highlight.row}`}>
+                          <td className={`px-4 py-3 font-bold ${highlight.rank}`}>{idx + 1}</td>
+                          <td className={`px-4 py-3 ${highlight.name}`}>
+                            <span className="inline-flex items-center gap-2">
+                              {idx < 3 ? (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                  className={`h-4 w-4 shrink-0 ${highlight.trophy}`}
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M15 3a1 1 0 011 1v1h1.5A1.5 1.5 0 0119 6.5V7a5 5 0 01-4 4.9V13a3 3 0 01-2 2.816V17h1.5a.75.75 0 010 1.5h-9a.75.75 0 010-1.5H7v-1.184A3 3 0 015 13v-1.1A5 5 0 011 7V6.5A1.5 1.5 0 012.5 5H4V4a1 1 0 011-1h10zM4 6.5H2.5V7A3.5 3.5 0 005 10.465V6.5H4zm11 3.965A3.5 3.5 0 0017.5 7v-.5H16v3.965z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              ) : null}
+                              <span className="font-medium">{item.name}</span>
+                            </span>
+                          </td>
                           <td className="px-4 py-3 text-center text-white/80">
                             <span className="block font-semibold text-white">{item.attendanceScore.toFixed(1)}</span>
                             <span className="text-xs text-white/45">
@@ -2027,12 +2089,12 @@ export default function Participantes() {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className="inline-flex items-center rounded-full bg-amber-500/20 text-amber-100 px-3 py-1 text-xs font-bold border border-amber-500/30">
+                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold border ${highlight.score}`}>
                               {item.score.toFixed(1)}
                             </span>
                           </td>
                         </tr>
-                      ))
+                      )})
                     ) : (
                       <tr>
                         <td colSpan={6} className="px-4 py-8 text-center text-white/50">
