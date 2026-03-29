@@ -6,8 +6,9 @@ import BiblicalStudyPanel from '../components/dashboard/BiblicalStudyPanel'
 import CoursesPanel from '../components/dashboard/CoursesPanel'
 import FrequencyPanel from '../components/dashboard/FrequencyPanel'
 import { apiFetch, clearSession, getToken, getUserName, getUserRole } from '../lib/api'
+import { FREQUENCY_DAYS } from '../lib/frequencyDays'
 
-const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking']
+const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'sorteio']
 
 const TABS = [
   { id: 'inscricoes', label: 'Inscrições' },
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'frequencia', label: 'Frequência' },
   { id: 'dados', label: 'Dados' },
   { id: 'ranking', label: 'Ranking de pontuação' },
+  { id: 'sorteio', label: 'Sorteio' },
 ]
 
 function formatDate(iso) {
@@ -130,6 +132,12 @@ export default function Participantes() {
   const [extraSavingIds, setExtraSavingIds] = useState(new Set())
   const [rankingExtraSearch, setRankingExtraSearch] = useState('')
   const [selectedExtraParticipantId, setSelectedExtraParticipantId] = useState('')
+  const [drawMode, setDrawMode] = useState('nome')
+  const [selectedDrawDay, setSelectedDrawDay] = useState('')
+  const [drawNameResult, setDrawNameResult] = useState(null)
+  const [numberDrawMax, setNumberDrawMax] = useState('')
+  const [drawNumberResult, setDrawNumberResult] = useState(null)
+  const [isDrawDayMenuOpen, setIsDrawDayMenuOpen] = useState(false)
 
   const userRole = getUserRole()
   const [rankingConfig, setRankingConfig] = useState({
@@ -263,6 +271,7 @@ export default function Participantes() {
     inscriptionsChart: null,
     topFrequencyChart: null,
   })
+  const drawDayMenuRef = useRef(null)
 
   // Função para renderizar gráficos
   const renderCharts = useCallback(() => {
@@ -1075,6 +1084,76 @@ export default function Participantes() {
     return null
   }, [rankingExtraCandidates, selectedExtraParticipantId, sortedParticipants])
 
+  const frequencyDayOptions = useMemo(
+    () =>
+      FREQUENCY_DAYS.filter((day) =>
+        sortedParticipants.some(
+          (participant) =>
+            Array.isArray(participant.frequencyAttended) &&
+            participant.frequencyAttended.some((item) => item?.dayId === day.id)
+        )
+      ),
+    [sortedParticipants]
+  )
+
+  const participantsForSelectedDrawDay = useMemo(() => {
+    const dayId = Number(selectedDrawDay)
+    if (!Number.isInteger(dayId) || dayId <= 0) return []
+
+    return sortedParticipants.filter(
+      (participant) =>
+        Array.isArray(participant.frequencyAttended) &&
+        participant.frequencyAttended.some((item) => item?.dayId === dayId)
+    )
+  }, [selectedDrawDay, sortedParticipants])
+
+  const selectedDrawDayMeta = useMemo(
+    () => FREQUENCY_DAYS.find((day) => day.id === Number(selectedDrawDay)) || null,
+    [selectedDrawDay]
+  )
+
+  useEffect(() => {
+    if (frequencyDayOptions.length === 0) {
+      setSelectedDrawDay('')
+      return
+    }
+
+    const currentStillExists = frequencyDayOptions.some((day) => String(day.id) === selectedDrawDay)
+    if (!currentStillExists) {
+      setSelectedDrawDay(String(frequencyDayOptions[0].id))
+    }
+  }, [frequencyDayOptions, selectedDrawDay])
+
+  useEffect(() => {
+    setDrawNameResult(null)
+  }, [selectedDrawDay])
+
+  useEffect(() => {
+    setDrawNumberResult(null)
+  }, [numberDrawMax])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!drawDayMenuRef.current?.contains(event.target)) {
+        setIsDrawDayMenuOpen(false)
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === 'Escape') {
+        setIsDrawDayMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
   function updateExtraDraft(participantId, field, value) {
     setExtraDrafts((prev) => ({
       ...prev,
@@ -1124,6 +1203,35 @@ export default function Participantes() {
         return next
       })
     }
+  }
+
+  function handleNameDraw() {
+    if (!selectedDrawDay) {
+      toast.error('Selecione um dia da frequência para sortear por nome.')
+      return
+    }
+
+    if (participantsForSelectedDrawDay.length === 0) {
+      toast.error('Nenhum participante encontrado para o dia selecionado.')
+      return
+    }
+
+    const randomIndex = Math.floor(Math.random() * participantsForSelectedDrawDay.length)
+    const winner = participantsForSelectedDrawDay[randomIndex]
+    setDrawNameResult(winner)
+    toast.success(`Nome sorteado: ${winner.name || 'Participante sem nome'}`)
+  }
+
+  function handleNumberDraw() {
+    const parsedMax = Number(numberDrawMax)
+    if (!Number.isInteger(parsedMax) || parsedMax <= 0) {
+      toast.error('Digite um número máximo válido para o sorteio.')
+      return
+    }
+
+    const winnerNumber = Math.floor(Math.random() * parsedMax) + 1
+    setDrawNumberResult(winnerNumber)
+    toast.success(`Número sorteado: ${winnerNumber}`)
   }
 
   const filteredList = sortedParticipants.filter(p => {
@@ -1934,6 +2042,231 @@ export default function Participantes() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {tab === 'sorteio' && (
+          <section
+            className="relative rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden px-5 py-6 sm:px-8 sm:py-8"
+            aria-labelledby="sorteio-heading"
+          >
+            <div className="absolute inset-0 bg-linear-to-br from-fuchsia-950/15 via-transparent to-slate-900/25 pointer-events-none" />
+            <div className="relative">
+              <h2 id="sorteio-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                Sorteio
+              </h2>
+              <p className="text-sm text-white/55 mt-1 mb-8 text-center sm:text-left max-w-3xl">
+                Escolha entre sortear um participante por dia de frequência ou gerar um número aleatório.
+              </p>
+
+              <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <h3 className="text-base font-semibold text-white">Tipo de sorteio</h3>
+                  <div className="mt-4 grid gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDrawMode('nome')}
+                      className={`rounded-2xl border px-4 py-3 text-left transition ${
+                        drawMode === 'nome'
+                          ? 'border-fuchsia-400/50 bg-fuchsia-500/15 text-white'
+                          : 'border-white/10 bg-black/20 text-white/75 hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="block text-sm font-semibold">Sorteio por nome</span>
+                      <span className="mt-1 block text-xs text-white/55">
+                        Filtra os participantes pelo dia de frequência e sorteia um nome.
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDrawMode('numero')}
+                      className={`rounded-2xl border px-4 py-3 text-left transition ${
+                        drawMode === 'numero'
+                          ? 'border-fuchsia-400/50 bg-fuchsia-500/15 text-white'
+                          : 'border-white/10 bg-black/20 text-white/75 hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="block text-sm font-semibold">Sorteio por número</span>
+                      <span className="mt-1 block text-xs text-white/55">
+                        Define um número máximo e sorteia um valor de 1 até esse limite.
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {drawMode === 'nome' ? (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                      <div className="relative block w-full max-w-md" ref={drawDayMenuRef}>
+                        <span className="block text-xs text-white/70 font-semibold mb-2">Dia da frequência</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (frequencyDayOptions.length > 0) {
+                              setIsDrawDayMenuOpen((prev) => !prev)
+                            }
+                          }}
+                          className="flex w-full items-center justify-between rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-left text-sm text-white outline-none transition hover:bg-white/10 focus:border-white/30"
+                          aria-haspopup="listbox"
+                          aria-expanded={isDrawDayMenuOpen}
+                          disabled={frequencyDayOptions.length === 0}
+                        >
+                          <span>
+                            {selectedDrawDayMeta?.label || 'Nenhum dia com frequência registrada'}
+                          </span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className={`h-5 w-5 text-white/60 transition ${isDrawDayMenuOpen ? 'rotate-180' : ''}`}
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+
+                        {isDrawDayMenuOpen && frequencyDayOptions.length > 0 ? (
+                          <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-fuchsia-400/20 bg-slate-950/95 shadow-2xl backdrop-blur-xl">
+                            <div
+                              role="listbox"
+                              aria-label="Dias da frequência"
+                              className="max-h-64 overflow-y-auto p-2 custom-scrollbar"
+                            >
+                              {frequencyDayOptions.map((day) => {
+                                const isSelected = String(day.id) === selectedDrawDay
+                                return (
+                                  <button
+                                    key={day.id}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={isSelected}
+                                    onClick={() => {
+                                      setSelectedDrawDay(String(day.id))
+                                      setIsDrawDayMenuOpen(false)
+                                    }}
+                                    className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition ${
+                                      isSelected
+                                        ? 'bg-fuchsia-500/15 text-white ring-1 ring-fuchsia-400/30'
+                                        : 'text-white/75 hover:bg-white/8 hover:text-white'
+                                    }`}
+                                  >
+                                    <span>{day.label}</span>
+                                    {isSelected ? (
+                                      <span className="text-xs font-semibold text-fuchsia-200">Selecionado</span>
+                                    ) : null}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleNameDraw}
+                        disabled={participantsForSelectedDrawDay.length === 0}
+                        className="rounded-full bg-linear-to-r from-fuchsia-900/90 via-fuchsia-700 to-fuchsia-900/90 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Sortear nome
+                      </button>
+                    </div>
+
+                    <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <h3 className="text-sm font-semibold text-white">
+                          Participantes do {selectedDrawDayMeta?.label || 'dia selecionado'}
+                        </h3>
+                        <p className="mt-1 text-xs text-white/55">
+                          Total elegível: {participantsForSelectedDrawDay.length}
+                        </p>
+
+                        {participantsForSelectedDrawDay.length > 0 ? (
+                          <div className="mt-4 max-h-80 space-y-2 overflow-y-auto pr-1">
+                            {participantsForSelectedDrawDay.map((participant, index) => (
+                              <div
+                                key={participant._id}
+                                className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85"
+                              >
+                                <span className="font-semibold text-fuchsia-200">{index + 1}.</span> {participant.name}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-4 rounded-xl border border-dashed border-white/10 px-4 py-6 text-sm text-white/45">
+                            Nenhum participante com presença registrada nesse dia.
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="rounded-2xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-4">
+                        <h3 className="text-sm font-semibold text-white">Resultado do sorteio</h3>
+                        {drawNameResult ? (
+                          <div className="mt-4 rounded-2xl border border-fuchsia-400/30 bg-black/20 p-5">
+                            <p className="text-xs uppercase tracking-wide text-fuchsia-200/80">Nome sorteado</p>
+                            <p className="mt-2 text-2xl font-bold text-white">{drawNameResult.name}</p>
+                            <p className="mt-3 text-sm text-white/60">
+                              Dia usado no sorteio: {selectedDrawDayMeta?.label || 'Não informado'}
+                            </p>
+                            <p className="mt-1 text-sm text-white/60">
+                              WhatsApp: {drawNameResult.whatsapp || 'Não informado'}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="mt-4 rounded-xl border border-dashed border-white/10 px-4 py-6 text-sm text-white/45">
+                            Escolha um dia da frequência e clique em sortear nome.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                    <div className="max-w-md">
+                      <label className="block">
+                        <span className="block text-xs text-white/70 font-semibold mb-2">Número máximo</span>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={numberDrawMax}
+                          onChange={(e) => setNumberDrawMax(e.target.value)}
+                          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
+                          placeholder="Ex: 100"
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={handleNumberDraw}
+                        className="mt-4 rounded-full bg-linear-to-r from-fuchsia-900/90 via-fuchsia-700 to-fuchsia-900/90 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition"
+                      >
+                        Sortear número
+                      </button>
+                    </div>
+
+                    <div className="mt-6 rounded-2xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-5">
+                      <h3 className="text-sm font-semibold text-white">Resultado do sorteio</h3>
+                      {drawNumberResult != null ? (
+                        <div className="mt-4 rounded-2xl border border-fuchsia-400/30 bg-black/20 p-6 text-center">
+                          <p className="text-xs uppercase tracking-wide text-fuchsia-200/80">Número sorteado</p>
+                          <p className="mt-3 text-5xl font-black text-white">{drawNumberResult}</p>
+                          <p className="mt-3 text-sm text-white/55">Intervalo considerado: 1 até {numberDrawMax}</p>
+                        </div>
+                      ) : (
+                        <p className="mt-4 rounded-xl border border-dashed border-white/10 px-4 py-6 text-sm text-white/45">
+                          Informe o limite máximo e clique em sortear número.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>
