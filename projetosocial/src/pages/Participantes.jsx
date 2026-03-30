@@ -195,6 +195,7 @@ export default function Participantes() {
   const [numberDrawMax, setNumberDrawMax] = useState('')
   const [drawNumberResult, setDrawNumberResult] = useState(null)
   const [isDrawDayMenuOpen, setIsDrawDayMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const userRole = getUserRole()
   const [rankingConfig, setRankingConfig] = useState({
@@ -360,6 +361,7 @@ export default function Participantes() {
     streetChart: null,
   })
   const drawDayMenuRef = useRef(null)
+  const mobileMenuRef = useRef(null)
 
   // Função para renderizar gráficos
   const renderCharts = useCallback(() => {
@@ -1010,6 +1012,40 @@ export default function Participantes() {
     if (TABS_WITH_FRESH_LIST.includes(tab)) loadList()
   }, [tab, loadList])
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [tab])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!mobileMenuRef.current?.contains(event.target)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    function handleResize() {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
   async function handleSubmit(e) {
     e.preventDefault()
     const n = name.trim()
@@ -1434,7 +1470,74 @@ export default function Participantes() {
               <p className="text-xs text-white/40 mt-1">Logado como: {userLabel}</p>
             ) : null}
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex flex-col gap-3 lg:hidden" ref={mobileMenuRef}>
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Pesquisar por nome, rua, nÃºmero, referÃªncia, idade, WhatsApp, dia..."
+                  className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-black/30 text-white transition hover:bg-white/10"
+                aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-panel-menu"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
+            {isMobileMenuOpen ? (
+              <div
+                id="mobile-panel-menu"
+                className="rounded-2xl border border-white/10 bg-black/45 p-3 backdrop-blur-xl"
+              >
+                <nav className="flex flex-col gap-2" aria-label="SeÃ§Ãµes do painel">
+                  {TABS.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTab(t.id)}
+                      className={`rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
+                        tab === t.id
+                          ? 'bg-white/15 text-white shadow-inner'
+                          : 'text-white/55 hover:text-white/85 hover:bg-white/5'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </nav>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="mt-3 w-full rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/10 transition"
+                >
+                  Sair
+                </button>
+              </div>
+            ) : null}
+          </div>
+          <div className="hidden lg:flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="flex-1 max-w-xs">
               <input
                 type="text"

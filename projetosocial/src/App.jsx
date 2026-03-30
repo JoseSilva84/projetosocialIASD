@@ -23,7 +23,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Register />} />
         <Route path="/participantes" element={<Participantes />} />
-        <Route path="*" element={<HomeRedirect />} />
+        <Route path="*" element={<Navigate to="/participantes" replace />} />
       </Routes>
       <AppFooter />
       <ToastContainer
