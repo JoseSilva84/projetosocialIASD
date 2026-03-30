@@ -35,6 +35,19 @@ function normalizeReference(reference) {
   return String(reference || "").trim();
 }
 
+async function persistScoreSnapshot(participant) {
+  await Participant.updateOne(
+    { _id: participant._id },
+    {
+      $set: {
+        extraEntries: participant.extraEntries,
+        extraScore: participant.extraScore,
+        scoreSummary: participant.scoreSummary,
+      },
+    }
+  );
+}
+
 export const patchBiblicalStudy = async (req, res) => {
   try {
     if (req.userRole !== "admin") {
@@ -80,7 +93,7 @@ export const patchBiblicalStudy = async (req, res) => {
     }
 
     await syncParticipantScores(participant);
-    await participant.save();
+    await persistScoreSnapshot(participant);
 
     res.json(participant);
   } catch (err) {
@@ -129,7 +142,7 @@ export const patchFrequency = async (req, res) => {
     }
 
     await syncParticipantScores(participant);
-    await participant.save();
+    await persistScoreSnapshot(participant);
 
     res.json(participant);
   } catch (err) {
@@ -160,7 +173,7 @@ export const create = async (req, res) => {
     });
 
     await syncParticipantScores(participant);
-    await participant.save();
+    await persistScoreSnapshot(participant);
 
     res.status(201).json(participant);
   } catch (err) {
@@ -218,7 +231,7 @@ export const update = async (req, res) => {
     }
 
     await syncParticipantScores(participant);
-    await participant.save();
+    await persistScoreSnapshot(participant);
 
     res.json(participant);
   } catch (err) {
@@ -264,7 +277,7 @@ export const patchExtraScore = async (req, res) => {
     });
 
     await syncParticipantScores(participant);
-    await participant.save();
+    await persistScoreSnapshot(participant);
 
     res.json(participant);
   } catch (err) {
