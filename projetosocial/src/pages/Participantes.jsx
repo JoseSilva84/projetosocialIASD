@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import ScreenShell from '../components/ScreenShell'
@@ -90,8 +90,26 @@ function getParticipantExtraTotal(participant) {
   return getParticipantExtraEntries(participant).reduce((sum, entry) => sum + Number(entry?.points || 0), 0)
 }
 
+function getParticipantFrequencyCount(participant) {
+  return Array.isArray(participant?.frequencyAttended) ? participant.frequencyAttended.length : 0
+}
+
+function getCurrentFrequencyProgrammedDay(participants) {
+  return participants.reduce((highestDayId, participant) => {
+    if (!Array.isArray(participant?.frequencyAttended)) return highestDayId
+
+    const participantHighestDay = participant.frequencyAttended.reduce((highestForParticipant, item) => {
+      const dayId = Number(item?.dayId)
+      if (!Number.isInteger(dayId) || dayId <= 0) return highestForParticipant
+      return Math.max(highestForParticipant, dayId)
+    }, 0)
+
+    return Math.max(highestDayId, participantHighestDay)
+  }, 0)
+}
+
 function getParticipantScoreSummary(participant, rankingConfig) {
-  const frequencyCount = Array.isArray(participant?.frequencyAttended) ? participant.frequencyAttended.length : 0
+  const frequencyCount = getParticipantFrequencyCount(participant)
   const biblicalCount = Array.isArray(participant?.biblicalLessonsCompleted) ? participant.biblicalLessonsCompleted.length : 0
   const extraCount = getParticipantExtraTotal(participant)
 
@@ -1249,6 +1267,11 @@ export default function Participantes() {
     [list]
   )
 
+  const currentFrequencyProgrammedDay = useMemo(
+    () => getCurrentFrequencyProgrammedDay(sortedParticipants),
+    [sortedParticipants]
+  )
+
   const rankingExtraCandidates = useMemo(() => {
     const term = rankingExtraSearch.trim().toLowerCase()
     const baseList = [...list]
@@ -1477,7 +1500,7 @@ export default function Participantes() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Pesquisar por nome, rua, nÃºmero, referÃªncia, idade, WhatsApp, dia..."
+                  placeholder="Pesquisar por nome, rua, número, referência, idade, WhatsApp, dia..."
                   className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
                 />
               </div>
@@ -1878,10 +1901,15 @@ export default function Participantes() {
                                     {p.biblicalLessonsCompleted.length}/15 lições concluídas
                                   </span>
                                 ) : null}
-                                {p.frequencyAttended?.length > 0 ? (
-                                  <span className="rounded-full bg-blue-500/15 text-blue-100/85 px-2 py-0.5 border border-blue-500/20">
-                                    {p.frequencyAttended.length}/25 dias de frequência
-                                  </span>
+                                {currentFrequencyProgrammedDay > 0 ? (
+                                  <>
+                                    <span className="rounded-full bg-blue-500/15 text-blue-100/85 px-2 py-0.5 border border-blue-500/20">
+                                      {getParticipantFrequencyCount(p)}/{currentFrequencyProgrammedDay} dias de frequência
+                                    </span>
+                                    <span className="rounded-full bg-rose-500/15 text-rose-100/85 px-2 py-0.5 border border-rose-500/20">
+                                      {Math.max(currentFrequencyProgrammedDay - getParticipantFrequencyCount(p), 0)} faltas
+                                    </span>
+                                  </>
                                 ) : null}
                               </div>
                               <p className="text-xs text-white/40 mt-2">{formatDate(p.createdAt)}</p>
@@ -2470,7 +2498,7 @@ export default function Participantes() {
                         type="button"
                         onClick={handleNameDraw}
                         disabled={participantsForSelectedDrawDay.length === 0}
-                        className="rounded-full bg-linear-to-r from-fuchsia-900/90 via-fuchsia-700 to-fuchsia-900/90 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:cursor-not-allowed disabled:opacity-40"
+                        className="rounded-full bg-linear-to-r from-fuchsia-900/90 via-fuchsia-700 to-fuchsia-900/90 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                       >
                         Sortear nome
                       </button>
@@ -2543,7 +2571,7 @@ export default function Participantes() {
                       <button
                         type="button"
                         onClick={handleNumberDraw}
-                        className="mt-4 rounded-full bg-linear-to-r from-fuchsia-900/90 via-fuchsia-700 to-fuchsia-900/90 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition"
+                        className="mt-4 rounded-full bg-linear-to-r from-fuchsia-900/90 via-fuchsia-700 to-fuchsia-900/90 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition cursor-pointer"
                       >
                         Sortear número
                       </button>

@@ -181,7 +181,7 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated, r
                         type="button"
                         onClick={() => toggleAttended(day.id)}
                         disabled={readOnly}
-                        className={`text-xs rounded-full px-3 py-1.5 font-medium transition ${
+                        className={`text-xs rounded-full px-3 py-1.5 font-medium transition cursor-pointer ${
                           isAttended
                             ? 'bg-emerald-600/40 text-emerald-100'
                             : 'bg-white/10 text-white/75 hover:bg-white/15'

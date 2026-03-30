@@ -193,7 +193,7 @@ export default function BiblicalStudyPanel({ participants, loadingList, onUpdate
                         type="button"
                         onClick={() => setCurrentLesson(lesson.id)}
                         disabled={readOnly}
-                        className={`text-xs rounded-full px-3 py-1.5 font-medium transition ${
+                        className={`text-xs rounded-full px-3 py-1.5 font-medium transition cursor-pointer ${
                           isCurrent
                             ? 'bg-amber-500/30 text-amber-100'
                             : 'bg-white/10 text-white/75 hover:bg-white/15'
@@ -206,13 +206,13 @@ export default function BiblicalStudyPanel({ participants, loadingList, onUpdate
                         type="button"
                         onClick={() => toggleCompleted(lesson.id)}
                         disabled={readOnly}
-                        className={`text-xs rounded-full px-3 py-1.5 font-medium transition ${
+                        className={`text-xs rounded-full px-3 py-1.5 font-medium transition cursor-pointer ${
                           isDone
                             ? 'bg-emerald-600/40 text-emerald-100'
                             : 'bg-white/10 text-white/65 hover:bg-white/15'
                         } ${readOnly ? 'cursor-default opacity-80' : ''}`}
                       >
-                        {readOnly ? (isDone ? 'Concluida' : 'Pendente') : isDone ? 'Concluida' : 'Marcar concluida'}
+                        {readOnly ? (isDone ? 'Concluída' : 'Pendente') : isDone ? 'Concluida' : 'Marcar concluída'}
                       </button>
                     </div>
                   </div>
