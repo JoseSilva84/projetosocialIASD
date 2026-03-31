@@ -116,17 +116,17 @@ export default function BiblicalStudyPanel({
 
   async function handleSave() {
     if (readOnly) {
-      toast.info('Somente o administrador pode alterar o estudo biblico.')
+      toast.info('Somente o administrador pode alterar o estudo bíblico.')
       return
     }
 
     if (!participantId) {
-      toast.error('Selecione um participante ja inscrito.')
+      toast.error('Selecione um participante já inscrito.')
       return
     }
 
     if (currentLesson == null) {
-      toast.error('Escolha a licao em estudo.')
+      toast.error('Escolha a lição do estudo.')
       return
     }
 
@@ -155,8 +155,8 @@ export default function BiblicalStudyPanel({
       <div className="rounded-2xl border border-amber-500/20 bg-amber-950/20 px-6 py-10 text-center">
         <p className="text-white/90 font-medium">Nenhum participante inscrito ainda.</p>
         <p className="text-sm text-white/55 mt-2">
-          Cadastre alguem na aba <strong className="text-white/80">Inscricoes</strong> para depois
-          atribuir licoes de estudo biblico.
+          Cadastre alguem na aba <strong className="text-white/80">Inscrições</strong> para depois
+          atribuir lições ao estudo bíblico.
         </p>
       </div>
     )
@@ -194,7 +194,7 @@ export default function BiblicalStudyPanel({
 
         {readOnly ? (
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/65">
-            Visualizacao apenas. O estudo biblico so pode ser alterado pelo administrador.
+            Visualizacao apenas. O estudo bíblico so pode ser alterado pelo administrador.
           </div>
         ) : (
           <button
@@ -257,7 +257,7 @@ export default function BiblicalStudyPanel({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-xs text-amber-200/80">Licao {lesson.id}</p>
+                        <p className="text-xs text-amber-200/80">Lição {lesson.id}</p>
                         <p className="text-sm font-medium text-white mt-0.5">{lesson.title}</p>
                         <p className="text-xs text-white/45 mt-1">{lesson.ref}</p>
                       </div>

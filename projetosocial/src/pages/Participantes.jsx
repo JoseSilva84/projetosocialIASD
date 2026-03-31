@@ -342,10 +342,10 @@ export default function Participantes() {
       total: ageDistributionMap.get(group.label) || 0,
     }))
 
-    if (ageDistributionMap.get('Idade nao informada')) {
+    if (ageDistributionMap.get('Idade não informada')) {
       ageDistribution.push({
-        label: 'Idade nao informada',
-        total: ageDistributionMap.get('Idade nao informada') || 0,
+        label: 'Idade não informada',
+        total: ageDistributionMap.get('Idade não informada') || 0,
       })
     }
 
@@ -603,7 +603,7 @@ export default function Participantes() {
     chartRefs.current.topFrequencyChart = new ApexCharts(document.querySelector('#top-frequency-chart'), topFrequencyOptions)
     chartRefs.current.topFrequencyChart.render()
 
-    // GrÃ¡fico 5: DistribuiÃ§Ã£o por faixa etÃ¡ria
+    // Gráfico 5: Distribuição por faixa etária
     const ageDistributionOptions = {
       series: [
         {
@@ -641,7 +641,7 @@ export default function Participantes() {
     )
     chartRefs.current.ageDistributionChart.render()
 
-    // GrÃ¡fico 6: Quantidade por rua
+    // Gráfico 6: Quantidade por rua
     const streetOptions = {
       series: [
         {
@@ -709,7 +709,7 @@ export default function Participantes() {
     })
 
     // ==============================
-    // Configuracao da pagina
+    // Configuracao da página
     // ==============================
     const pageWidth = 841.89
     const pageHeight = 595.28
@@ -724,7 +724,7 @@ export default function Participantes() {
     let y = marginTop
 
     // ==============================
-    // Controle de paginacao (corrigido)
+    // Controle de paginação (corrigido)
     // ==============================
     const ensureBlockFits = (blockHeight) => {
       if (y + blockHeight > pageBottomLimit) {
@@ -1650,7 +1650,7 @@ export default function Participantes() {
                   key={t.id}
                   type="button"
                   onClick={() => setTab(t.id)}
-                  className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition ${
+                  className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition cursor-pointer ${
                     tab === t.id
                       ? 'bg-white/15 text-white shadow-inner'
                       : 'text-white/55 hover:text-white/85 hover:bg-white/5'
@@ -1663,7 +1663,7 @@ export default function Participantes() {
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white/80 hover:bg-white/10 transition self-center"
+              className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white/80 hover:bg-white/10 transition self-center cursor-pointer"
             >
               Sair
             </button>
@@ -1892,7 +1892,7 @@ export default function Participantes() {
                                     <button
                                       type="button"
                                       onClick={() => startEdit(p)}
-                                      className="rounded-full border px-2 py-1 text-xs transition border-blue-400/30 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20"
+                                      className="rounded-full border px-2 py-1 text-xs transition border-blue-400/30 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20 cursor-pointer"
                                       title="Editar participante"
                                       aria-label="Editar participante"
                                     >
@@ -1909,7 +1909,7 @@ export default function Participantes() {
                                       type="button"
                                       onClick={() => requestDelete(p._id)}
                                       disabled={deletingIds.has(p._id)}
-                                      className={`rounded-full border px-2 py-1 text-xs transition inline-flex items-center gap-1 ${deletingIds.has(p._id) ? 'border-white/20 bg-white/10 text-white/40 cursor-not-allowed' : 'border-red-400/30 bg-red-500/10 text-red-200 hover:bg-red-500/20'}`}
+                                      className={`rounded-full border px-2 py-1 text-xs transition inline-flex items-center gap-1 cursor-pointer ${deletingIds.has(p._id) ? 'border-white/20 bg-white/10 text-white/40 cursor-not-allowed' : 'border-red-400/30 bg-red-500/10 text-red-200 hover:bg-red-500/20'}`}
                                       title="Excluir participante"
                                       aria-label="Excluir participante"
                                     >
@@ -2392,7 +2392,7 @@ export default function Participantes() {
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
                     <h3 className="text-base font-semibold text-white">Adicionar {rankingConfig.extraLabel.toLowerCase()}</h3>
                     <p className="mt-1 text-sm text-white/60">
-                      Procure o participante pelo nome e registre a pontuacao extra no banco de dados.
+                      Procure o participante pelo nome e registre a pontuação extra no banco de dados.
                     </p>
 
                     <div className="mt-4 space-y-3">
@@ -2417,7 +2417,7 @@ export default function Participantes() {
                                 setSelectedExtraParticipantId(participant.id)
                                 setRankingExtraSearch(participant.name)
                               }}
-                              className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
+                              className={`rounded-xl border px-3 py-2 text-left text-sm transition cursor-pointer ${
                                 selectedExtraParticipant?._id === participant.id
                                   ? 'border-indigo-400/50 bg-indigo-500/15 text-white'
                                   : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/10'
@@ -2439,13 +2439,13 @@ export default function Participantes() {
                   </div>
 
                   <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5">
-                    <h3 className="text-base font-semibold text-white">Lancamento selecionado</h3>
+                    <h3 className="text-base font-semibold text-white">Lançamento selecionado</h3>
                     {selectedExtraParticipant ? (
                       <div className="mt-4 space-y-3">
                         <div className="rounded-xl border border-white/10 bg-black/20 p-4">
                           <p className="text-sm font-semibold text-white">{selectedExtraParticipant.name}</p>
                           <p className="mt-2 text-xs text-white/55">
-                            Frequencia: {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).frequencyScore.toFixed(1)} | Biblico:{' '}
+                            Frequência: {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).frequencyScore.toFixed(1)} | Bíblico:{' '}
                             {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).biblicalScore.toFixed(1)} | {rankingConfig.extraLabel}:{' '}
                             {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).extraScore.toFixed(1)}
                           </p>
@@ -2457,20 +2457,20 @@ export default function Participantes() {
                           value={extraDrafts[selectedExtraParticipant._id]?.points || ''}
                           onChange={(e) => updateExtraDraft(selectedExtraParticipant._id, 'points', e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
-                          placeholder="Valor da pontuacao extra"
+                          placeholder="Valor da pontuação extra"
                         />
                         <input
                           type="text"
                           value={extraDrafts[selectedExtraParticipant._id]?.reason || ''}
                           onChange={(e) => updateExtraDraft(selectedExtraParticipant._id, 'reason', e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
-                          placeholder="Motivo da pontuacao"
+                          placeholder="Motivo da pontuação"
                         />
                         <button
                           type="button"
                           onClick={() => handleAddExtraScore(selectedExtraParticipant._id)}
                           disabled={extraSavingIds.has(selectedExtraParticipant._id)}
-                          className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                         >
                           {extraSavingIds.has(selectedExtraParticipant._id)
                             ? 'Salvando...'
@@ -2479,7 +2479,7 @@ export default function Participantes() {
                       </div>
                     ) : (
                       <p className="mt-4 text-sm text-white/55">
-                        Selecione um participante na busca para registrar a pontuacao extra.
+                        Selecione um participante na busca para registrar a pontuação extra.
                       </p>
                     )}
                   </div>
@@ -2493,10 +2493,10 @@ export default function Participantes() {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white/80">#</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white/80">Nome</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Frequencia geral</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Biblico geral</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Frequência geral</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">Estudo bíblico</th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-white/80">{rankingConfig.extraLabel} geral</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-yellow-300">Pontuacao geral</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-yellow-300">Pontuação geral</th>
                     </tr>
                   </thead>
                   <tbody>

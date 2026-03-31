@@ -127,7 +127,7 @@ export default function FrequencyPanel({
 
         {readOnly ? (
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/65">
-            Visualizacao apenas. A frequencia so pode ser alterada pelo administrador.
+            Visualizacao apenas. A frequência só pode ser alterada pelo administrador.
           </div>
         ) : (
           <button
@@ -143,12 +143,12 @@ export default function FrequencyPanel({
 
       {!participantId ? (
         <p className="text-sm text-white/45 text-center py-6">
-          Escolha um participante para ver o painel de frequencia.
+          Escolha um participante para ver o painel de frequência.
         </p>
       ) : (
         <>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 space-y-2">
-            <h3 className="text-sm font-semibold text-blue-200/90">Resumo da frequencia</h3>
+            <h3 className="text-sm font-semibold text-blue-200/90">Resumo da frequência</h3>
             <ul className="text-xs text-white/65 space-y-2">
               <li className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-sm bg-emerald-400/80" /> Presente

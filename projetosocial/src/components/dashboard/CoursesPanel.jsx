@@ -56,7 +56,7 @@ export default function CoursesPanel() {
             <p className="text-sm text-white/75 mt-3">{open.description}</p>
             <p className="text-sm text-white/60 mt-4 leading-relaxed">{open.detail}</p>
             <p className="text-xs text-white/45 mt-5 border-t border-white/10 pt-4">
-              Para turmas, horários e vagas, fale com a coordenação do projeto na secretaria.
+              Para turmas, horários e vagas, fale com a coordenação do projeto na secretária.
             </p>
             <div className="mt-6 flex flex-wrap gap-2 justify-end">
               <button
