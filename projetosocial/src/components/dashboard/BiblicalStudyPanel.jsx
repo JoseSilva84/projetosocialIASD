@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { apiFetch } from '../../lib/api'
 import { BIBLICAL_LESSONS } from '../../lib/biblicalLessons'
@@ -11,6 +11,10 @@ function participantIdString(p) {
     return id.toString()
   }
   return String(id)
+}
+
+function getCompletedSet(participant) {
+  return new Set(participant?.biblicalLessonsCompleted || [])
 }
 
 function getRankingVisual(index) {
@@ -57,10 +61,22 @@ function getRankingVisual(index) {
   }
 }
 
-export default function BiblicalStudyPanel({ participants, loadingList, onUpdated, readOnly = false }) {
-  const [participantId, setParticipantId] = useState('')
-  const [currentLesson, setCurrentLesson] = useState(null)
-  const [completed, setCompleted] = useState(() => new Set())
+export default function BiblicalStudyPanel({
+  participants,
+  loadingList,
+  onUpdated,
+  readOnly = false,
+  initialParticipantId = '',
+}) {
+  const [participantId, setParticipantId] = useState(initialParticipantId)
+  const [currentLesson, setCurrentLesson] = useState(() => {
+    const initialParticipant = participants.find((p) => participantIdString(p) === initialParticipantId)
+    return initialParticipant?.selectedBiblicalLesson != null ? initialParticipant.selectedBiblicalLesson : null
+  })
+  const [completed, setCompleted] = useState(() => {
+    const initialParticipant = participants.find((p) => participantIdString(p) === initialParticipantId)
+    return getCompletedSet(initialParticipant)
+  })
   const [rankingLimit, setRankingLimit] = useState(5)
   const [rankingMetric, setRankingMetric] = useState('completed')
 
@@ -86,17 +102,6 @@ export default function BiblicalStudyPanel({ participants, loadingList, onUpdate
 
     return rankingLimit === 'all' ? ranked : ranked.slice(0, rankingLimit)
   }, [participants, rankingLimit, rankingMetric])
-
-  useEffect(() => {
-    if (!selected) {
-      setCurrentLesson(null)
-      setCompleted(new Set())
-      return
-    }
-
-    setCurrentLesson(selected.selectedBiblicalLesson != null ? selected.selectedBiblicalLesson : null)
-    setCompleted(new Set(selected.biblicalLessonsCompleted || []))
-  }, [selected])
 
   function toggleCompleted(lessonId) {
     if (readOnly) return
@@ -166,7 +171,13 @@ export default function BiblicalStudyPanel({ participants, loadingList, onUpdate
           <span className="text-xs text-white/50 mb-2 block">Participante inscrito</span>
           <select
             value={participantId}
-            onChange={(e) => setParticipantId(e.target.value)}
+            onChange={(e) => {
+              const nextParticipantId = e.target.value
+              const nextSelected = participants.find((p) => participantIdString(p) === nextParticipantId)
+              setParticipantId(nextParticipantId)
+              setCurrentLesson(nextSelected?.selectedBiblicalLesson != null ? nextSelected.selectedBiblicalLesson : null)
+              setCompleted(getCompletedSet(nextSelected))
+            }}
             className="participant-select w-full rounded-xl border border-white/15 px-4 py-3 text-sm outline-none focus:border-amber-400/50 cursor-pointer"
           >
             <option value="">Selecione...</option>

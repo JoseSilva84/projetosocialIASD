@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { apiFetch } from '../../lib/api'
 import { FREQUENCY_DAYS } from '../../lib/frequencyDays'
@@ -12,29 +12,33 @@ function participantIdString(p) {
   return String(id)
 }
 
-export default function FrequencyPanel({ participants, loadingList, onUpdated, readOnly = false }) {
-  const [participantId, setParticipantId] = useState('')
-  const [attended, setAttended] = useState(() => new Map())
+function getAttendedMap(participant) {
+  const attendedMap = new Map()
+  if (Array.isArray(participant?.frequencyAttended)) {
+    participant.frequencyAttended.forEach((item) => {
+      attendedMap.set(item.dayId, item.markedDate)
+    })
+  }
+  return attendedMap
+}
+
+export default function FrequencyPanel({
+  participants,
+  loadingList,
+  onUpdated,
+  readOnly = false,
+  initialParticipantId = '',
+}) {
+  const [participantId, setParticipantId] = useState(initialParticipantId)
+  const [attended, setAttended] = useState(() => {
+    const initialParticipant = participants.find((p) => participantIdString(p) === initialParticipantId)
+    return getAttendedMap(initialParticipant)
+  })
 
   const selected = useMemo(
     () => participants.find((p) => participantIdString(p) === participantId),
     [participants, participantId]
   )
-
-  useEffect(() => {
-    if (!selected) {
-      setAttended(new Map())
-      return
-    }
-
-    const attendedMap = new Map()
-    if (selected.frequencyAttended) {
-      selected.frequencyAttended.forEach((item) => {
-        attendedMap.set(item.dayId, item.markedDate)
-      })
-    }
-    setAttended(attendedMap)
-  }, [selected])
 
   function toggleAttended(dayId) {
     if (readOnly) return
@@ -101,7 +105,12 @@ export default function FrequencyPanel({ participants, loadingList, onUpdated, r
           <span className="text-xs text-white/50 mb-2 block">Participante inscrito</span>
           <select
             value={participantId}
-            onChange={(e) => setParticipantId(e.target.value)}
+            onChange={(e) => {
+              const nextParticipantId = e.target.value
+              const nextSelected = participants.find((p) => participantIdString(p) === nextParticipantId)
+              setParticipantId(nextParticipantId)
+              setAttended(getAttendedMap(nextSelected))
+            }}
             className="participant-select w-full rounded-xl border border-white/15 px-4 py-3 text-sm outline-none focus:border-blue-400/50 cursor-pointer"
           >
             <option value="">Selecione...</option>

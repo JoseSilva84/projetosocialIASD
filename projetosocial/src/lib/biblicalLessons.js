@@ -2,7 +2,7 @@
 export const BIBLICAL_LESSONS = [
   { id: 1, title: 'A BÍBLIA SAGRADA', ref: 'João 17:17' },
   { id: 2, title: 'A ORIGEM DO MAL', ref: 'Gênesis 3' },
-  { id: 3, title: 'FÉ ARREPENDIMENTO E CONFISSÃO', ref: 'Atos 3:15' },
+  { id: 3, title: 'SALVAÇÃO', ref: 'João 3:16' },
   { id: 4, title: 'SINAIS DA VOLTA DE CRISTO', ref: 'Mateus 24' },
   { id: 5, title: 'A VOLTA DE CRISTO', ref: 'João 14:1-3' },
   { id: 6, title: 'O MILÊNIO', ref: 'Apocalipse 20' },

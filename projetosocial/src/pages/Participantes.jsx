@@ -139,6 +139,14 @@ function getParticipantScoreSummary(participant, rankingConfig) {
   }
 }
 
+function getParticipantIdString(participantOrId) {
+  if (participantOrId == null) return ''
+  if (typeof participantOrId === 'object' && typeof participantOrId?.toString === 'function') {
+    return participantOrId.toString()
+  }
+  return String(participantOrId)
+}
+
 function getRankingHighlight(idx) {
   if (idx === 0) {
     return {
@@ -182,6 +190,8 @@ function getRankingHighlight(idx) {
 export default function Participantes() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('inscricoes')
+  const [selectedBiblicalParticipantId, setSelectedBiblicalParticipantId] = useState('')
+  const [selectedFrequencyParticipantId, setSelectedFrequencyParticipantId] = useState('')
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
   const [houseNumber, setHouseNumber] = useState('')
@@ -1272,6 +1282,67 @@ export default function Participantes() {
     [sortedParticipants]
   )
 
+  const attendanceSummary = useMemo(() => {
+    const participantStats = sortedParticipants
+      .map((participant) => {
+        const presenceCount = getParticipantFrequencyCount(participant)
+        const absences = Math.max(currentFrequencyProgrammedDay - presenceCount, 0)
+
+        return {
+          id: getParticipantIdString(participant._id),
+          name: participant.name || '(sem nome)',
+          presenceCount,
+          absences,
+        }
+      })
+      .sort((a, b) => {
+        if (b.presenceCount !== a.presenceCount) return b.presenceCount - a.presenceCount
+        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+      })
+
+    const topAttendees = participantStats.slice(0, 5)
+    const highestAbsences = [...participantStats]
+      .sort((a, b) => {
+        if (b.absences !== a.absences) return b.absences - a.absences
+        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+      })
+      .slice(0, 5)
+    const noAbsenceCount =
+      currentFrequencyProgrammedDay > 0
+        ? participantStats.filter((participant) => participant.absences === 0).length
+        : 0
+    const inactiveCount = participantStats.filter((participant) => participant.presenceCount === 0).length
+    const latestDay = analytics.maxDay
+    const latestDayStats =
+      latestDay > 0
+        ? analytics.frequencyByDay.find((day) => day.day === latestDay) || null
+        : null
+
+    return {
+      topAttendees,
+      highestAbsences,
+      noAbsenceCount,
+      inactiveCount,
+      latestDay,
+      latestDayStats,
+    }
+  }, [analytics.frequencyByDay, analytics.maxDay, currentFrequencyProgrammedDay, sortedParticipants])
+
+  function handleParticipantTabNavigation(nextTab, participantId) {
+    const normalizedParticipantId = getParticipantIdString(participantId)
+
+    if (nextTab === 'biblico') {
+      setSelectedBiblicalParticipantId(normalizedParticipantId)
+    }
+
+    if (nextTab === 'frequencia') {
+      setSelectedFrequencyParticipantId(normalizedParticipantId)
+    }
+
+    setTab(nextTab)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const rankingExtraCandidates = useMemo(() => {
     const term = rankingExtraSearch.trim().toLowerCase()
     const baseList = [...list]
@@ -1718,7 +1789,7 @@ export default function Participantes() {
                   </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto max-h-80 px-4 py-4 sm:px-5 sm:py-5 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto max-h-[26rem] px-4 py-4 sm:px-5 sm:py-5 custom-scrollbar">
                   {loadingList ? (
                     <p className="text-sm text-white/50 text-center py-8">Carregando…</p>
                   ) : filteredList.length === 0 ? (
@@ -1892,20 +1963,32 @@ export default function Participantes() {
                               <p className="text-emerald-300/90 mt-1">{p.whatsapp}</p>
                               <div className="flex flex-wrap gap-2 mt-2 text-[11px]">
                                 {p.selectedBiblicalLesson != null ? (
-                                  <span className="rounded-full bg-amber-500/20 text-amber-100/90 px-2 py-0.5 border border-amber-500/25">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleParticipantTabNavigation('biblico', p._id)}
+                                    className="cursor-pointer rounded-full bg-amber-500/20 text-amber-100/90 px-2 py-0.5 border border-amber-500/25 transition hover:bg-amber-500/30 hover:border-amber-400/40"
+                                  >
                                     Estudo bíblico: lição {p.selectedBiblicalLesson}
-                                  </span>
+                                  </button>
                                 ) : null}
                                 {p.biblicalLessonsCompleted?.length > 0 ? (
-                                  <span className="rounded-full bg-emerald-500/15 text-emerald-100/85 px-2 py-0.5 border border-emerald-500/20">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleParticipantTabNavigation('biblico', p._id)}
+                                    className="cursor-pointer rounded-full bg-emerald-500/15 text-emerald-100/85 px-2 py-0.5 border border-emerald-500/20 transition hover:bg-emerald-500/25 hover:border-emerald-400/35"
+                                  >
                                     {p.biblicalLessonsCompleted.length}/15 lições concluídas
-                                  </span>
+                                  </button>
                                 ) : null}
                                 {currentFrequencyProgrammedDay > 0 ? (
                                   <>
-                                    <span className="rounded-full bg-blue-500/15 text-blue-100/85 px-2 py-0.5 border border-blue-500/20">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleParticipantTabNavigation('frequencia', p._id)}
+                                      className="cursor-pointer rounded-full bg-blue-500/15 text-blue-100/85 px-2 py-0.5 border border-blue-500/20 transition hover:bg-blue-500/25 hover:border-blue-400/35"
+                                    >
                                       {getParticipantFrequencyCount(p)}/{currentFrequencyProgrammedDay} dias de frequência
-                                    </span>
+                                    </button>
                                     <span className="rounded-full bg-rose-500/15 text-rose-100/85 px-2 py-0.5 border border-rose-500/20">
                                       {Math.max(currentFrequencyProgrammedDay - getParticipantFrequencyCount(p), 0)} faltas
                                     </span>
@@ -1941,10 +2024,12 @@ export default function Participantes() {
                 sistema.
               </p>
               <BiblicalStudyPanel
+                key={selectedBiblicalParticipantId || 'biblical-panel'}
                 participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
                 readOnly={userRole !== 'admin'}
+                initialParticipantId={selectedBiblicalParticipantId}
               />
             </div>
           </section>
@@ -1982,11 +2067,128 @@ export default function Participantes() {
                 Escolha um participante <strong className="text-white/85">já inscrito</strong> e marque os dias de presença.
               </p>
               <FrequencyPanel
+                key={selectedFrequencyParticipantId || 'frequency-panel'}
                 participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
                 readOnly={userRole !== 'admin'}
+                initialParticipantId={selectedFrequencyParticipantId}
               />
+
+              <div className="mt-8 space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-sm font-semibold text-white/80">Dia programado atual</h3>
+                    <p className="mt-2 text-2xl font-bold text-blue-300">
+                      {currentFrequencyProgrammedDay > 0 ? `Dia ${currentFrequencyProgrammedDay}` : 'Sem registros'}
+                    </p>
+                    <p className="mt-2 text-xs text-white/55">
+                      Baseado no maior dia já marcado entre os participantes.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-sm font-semibold text-white/80">Sem faltas até agora</h3>
+                    <p className="mt-2 text-2xl font-bold text-emerald-300">{attendanceSummary.noAbsenceCount}</p>
+                    <p className="mt-2 text-xs text-white/55">
+                      Participantes com presença completa até o dia atual.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-sm font-semibold text-white/80">Sem nenhuma presença</h3>
+                    <p className="mt-2 text-2xl font-bold text-rose-300">{attendanceSummary.inactiveCount}</p>
+                    <p className="mt-2 text-xs text-white/55">
+                      Pessoas que ainda não tiveram presença registrada.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h3 className="text-sm font-semibold text-white/80">Último fechamento</h3>
+                    <p className="mt-2 text-2xl font-bold text-cyan-300">
+                      {attendanceSummary.latestDayStats
+                        ? `${attendanceSummary.latestDayStats.present} presentes`
+                        : 'Sem dados'}
+                    </p>
+                    <p className="mt-2 text-xs text-white/55">
+                      {attendanceSummary.latestDayStats
+                        ? `${attendanceSummary.latestDayStats.absent} ausentes no dia ${attendanceSummary.latestDay}.`
+                        : 'Os indicadores aparecerão quando houver frequência registrada.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                    <h3 className="text-lg font-semibold text-white">Participantes com mais presenças</h3>
+                    <p className="mt-1 text-sm text-white/55">
+                      Ranking rápido para identificar quem está mais engajado.
+                    </p>
+                    <div className="mt-4 space-y-3">
+                      {attendanceSummary.topAttendees.length > 0 ? (
+                        attendanceSummary.topAttendees.map((participant, index) => (
+                          <div
+                            key={`presence-${participant.id}`}
+                            className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-white">
+                                {index + 1}. {participant.name}
+                              </p>
+                              <p className="text-xs text-white/55">
+                                {participant.absences} faltas registradas até o momento.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleParticipantTabNavigation('frequencia', participant.id)}
+                              className="cursor-pointer rounded-full border border-blue-400/25 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/20"
+                            >
+                              {participant.presenceCount} presenças
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-white/45">Ainda não há presenças registradas.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                    <h3 className="text-lg font-semibold text-white">Participantes com mais faltas</h3>
+                    <p className="mt-1 text-sm text-white/55">
+                      Indicador útil para acompanhamento e busca ativa.
+                    </p>
+                    <div className="mt-4 space-y-3">
+                      {attendanceSummary.highestAbsences.some((participant) => participant.absences > 0) ? (
+                        attendanceSummary.highestAbsences.map((participant, index) => (
+                          <div
+                            key={`absence-${participant.id}`}
+                            className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-white">
+                                {index + 1}. {participant.name}
+                              </p>
+                              <p className="text-xs text-white/55">
+                                {participant.presenceCount} presenças no total.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleParticipantTabNavigation('frequencia', participant.id)}
+                              className="cursor-pointer rounded-full border border-rose-400/25 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 transition hover:bg-rose-500/20"
+                            >
+                              {participant.absences} faltas
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-white/45">
+                          Nenhuma falta registrada até agora.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         )}
