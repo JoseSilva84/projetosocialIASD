@@ -153,18 +153,19 @@ export const patchFrequency = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const { name, address, houseNumber, reference, age, whatsapp } = req.body;
+    const { name, address, neighborhood, houseNumber, reference, age, whatsapp } = req.body;
     const parsedAge = Number(age);
 
-    if (!name || !address || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
+    if (!name || !address || !neighborhood || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
       return res.status(400).json({
-        message: "Nome, rua, numero da casa, idade e WhatsApp sao obrigatorios.",
+        message: "Nome, rua, bairro, numero da casa, idade e WhatsApp sao obrigatorios.",
       });
     }
 
     const participant = await Participant.create({
       name: String(name).trim(),
       address: String(address).trim(),
+      neighborhood: String(neighborhood).trim(),
       houseNumber: String(houseNumber).trim(),
       reference: normalizeReference(reference),
       age: parsedAge,
@@ -204,11 +205,11 @@ export const update = async (req, res) => {
       return res.status(400).json({ message: "ID invalido." });
     }
 
-    const { name, address, houseNumber, reference, age, whatsapp } = req.body;
+    const { name, address, neighborhood, houseNumber, reference, age, whatsapp } = req.body;
     const parsedAge = Number(age);
-    if (!name || !address || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
+    if (!name || !address || !neighborhood || !houseNumber || !whatsapp || !Number.isInteger(parsedAge) || parsedAge < 0) {
       return res.status(400).json({
-        message: "Nome, rua, numero da casa, idade e WhatsApp sao obrigatorios.",
+        message: "Nome, rua, bairro, numero da casa, idade e WhatsApp sao obrigatorios.",
       });
     }
 
@@ -218,6 +219,7 @@ export const update = async (req, res) => {
       {
         name: String(name).trim(),
         address: String(address).trim(),
+        neighborhood: String(neighborhood).trim(),
         houseNumber: String(houseNumber).trim(),
         reference: normalizeReference(reference),
         age: parsedAge,
@@ -303,5 +305,18 @@ export const deleteParticipant = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao excluir participante." });
+  }
+};
+
+export const deleteAllParticipants = async (req, res) => {
+  try {
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Somente o administrador pode excluir todos os participantes." });
+    }
+    await Participant.deleteMany({});
+    res.json({ message: "Todos os participantes foram excluidos com sucesso." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao excluir todos os participantes." });
   }
 };

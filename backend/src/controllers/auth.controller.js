@@ -70,3 +70,41 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Erro ao entrar." });
   }
 };
+
+export const getUsers = async (req, res) => {
+  try {
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Somente o administrador pode carregar a lista de usuarios." });
+    }
+    const users = await User.find({}, "-passwordHash").sort({ name: 1 });
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao buscar usuarios." });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Somente o administrador pode excluir usuarios." });
+    }
+
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario nao encontrado." });
+    }
+
+    if (user.role === "admin") {
+      return res.status(403).json({ message: "Nao e possivel excluir um administrador." });
+    }
+
+    await User.findByIdAndDelete(id);
+    res.json({ message: "Usuario excluido com sucesso." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao excluir usuario." });
+  }
+};

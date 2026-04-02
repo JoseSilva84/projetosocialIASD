@@ -1,23 +1,23 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import ScreenShell from '../components/ScreenShell'
 import BiblicalStudyPanel from '../components/dashboard/BiblicalStudyPanel'
-import CoursesPanel from '../components/dashboard/CoursesPanel'
+import ConfiguracaoPanel from '../components/dashboard/ConfiguracaoPanel'
 import FrequencyPanel from '../components/dashboard/FrequencyPanel'
 import { apiFetch, clearSession, getToken, getUserName, getUserRole } from '../lib/api'
 import { FREQUENCY_DAYS } from '../lib/frequencyDays'
 
 const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'sorteio']
 
-const TABS = [
+const ALL_TABS = [
   { id: 'inscricoes', label: 'Inscrições' },
   { id: 'biblico', label: 'Estudo bíblico' },
-  { id: 'cursos', label: 'Cursos' },
   { id: 'frequencia', label: 'Frequência' },
   { id: 'dados', label: 'Dados' },
   { id: 'ranking', label: 'Ranking de pontuação' },
   { id: 'sorteio', label: 'Sorteio' },
+  { id: 'configuracao', label: 'Configuração' },
 ]
 
 function formatDate(iso) {
@@ -71,7 +71,8 @@ function getParticipantAgeLabel(age) {
 
 function formatParticipantRow(participant, index) {
   const reference = participant.reference?.trim() ? participant.reference.trim() : 'Sem referência'
-  return `${index + 1}. ${participant.name || ''} | ${participant.address || ''} | ${participant.houseNumber || ''} | ${reference} | ${getParticipantAgeLabel(participant.age)} | ${participant.whatsapp || ''}`
+  const neighborhoodStr = participant.neighborhood?.trim() ? participant.neighborhood.trim() : ''
+  return `${index + 1}. ${participant.name || ''} | ${participant.address || ''} | ${neighborhoodStr} | ${participant.houseNumber || ''} | ${reference} | ${getParticipantAgeLabel(participant.age)} | ${participant.whatsapp || ''}`
 }
 
 function getParticipantExtraEntries(participant) {
@@ -194,6 +195,7 @@ export default function Participantes() {
   const [selectedFrequencyParticipantId, setSelectedFrequencyParticipantId] = useState('')
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
+  const [neighborhood, setNeighborhood] = useState('')
   const [houseNumber, setHouseNumber] = useState('')
   const [reference, setReference] = useState('')
   const [age, setAge] = useState('')
@@ -208,6 +210,7 @@ export default function Participantes() {
   const [editingId, setEditingId] = useState(null)
   const [editName, setEditName] = useState('')
   const [editAddress, setEditAddress] = useState('')
+  const [editNeighborhood, setEditNeighborhood] = useState('')
   const [editHouseNumber, setEditHouseNumber] = useState('')
   const [editReference, setEditReference] = useState('')
   const [editAge, setEditAge] = useState('')
@@ -216,7 +219,7 @@ export default function Participantes() {
   const [extraDrafts, setExtraDrafts] = useState({})
   const [extraSavingIds, setExtraSavingIds] = useState(new Set())
   const [rankingExtraSearch, setRankingExtraSearch] = useState('')
-  const [selectedExtraParticipantId, setSelectedExtraParticipantId] = useState('')
+  const [selectedExtraParticipantIds, setSelectedExtraParticipantIds] = useState([])
   const [drawMode, setDrawMode] = useState('nome')
   const [selectedDrawDay, setSelectedDrawDay] = useState('')
   const [drawNameResult, setDrawNameResult] = useState(null)
@@ -350,12 +353,20 @@ export default function Participantes() {
     }
 
     const streetMap = new Map()
+    const neighborhoodMap = new Map()
     list.forEach((participant) => {
       const street = getStreetName(participant?.address)
       streetMap.set(street, (streetMap.get(street) || 0) + 1)
+      
+      const pNeighborhood = participant?.neighborhood?.trim() || 'Não informado'
+      neighborhoodMap.set(pNeighborhood, (neighborhoodMap.get(pNeighborhood) || 0) + 1)
     })
 
     const streetDistribution = [...streetMap.entries()]
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }))
+
+    const neighborhoodDistribution = [...neighborhoodMap.entries()]
       .map(([name, total]) => ({ name, total }))
       .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }))
 
@@ -375,6 +386,7 @@ export default function Participantes() {
       top3,
       ageDistribution,
       streetDistribution,
+      neighborhoodDistribution,
       maxDay,
       allDays,
     }
@@ -407,6 +419,7 @@ export default function Participantes() {
       topFrequency,
       ageDistribution,
       streetDistribution,
+      neighborhoodDistribution,
     } = analytics
 
     // Gráfico 1: Frequência por dia
@@ -675,6 +688,47 @@ export default function Participantes() {
     }
     chartRefs.current.streetChart = new ApexCharts(document.querySelector('#street-chart'), streetOptions)
     chartRefs.current.streetChart.render()
+
+    // Gráfico 7: Quantidade por bairro
+    const neighborhoodOptions = {
+      series: [
+        {
+          name: 'Participantes',
+          data: neighborhoodDistribution.map((item) => item.total),
+        },
+      ],
+      chart: {
+        type: 'bar',
+        height: 320,
+        background: 'transparent',
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: '70%',
+          borderRadius: 6,
+        },
+      },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: neighborhoodDistribution.map((item) => item.name),
+        labels: { style: { colors: '#fff' } },
+      },
+      yaxis: {
+        labels: { style: { colors: '#fff' } },
+      },
+      colors: ['#0ea5e9'],
+      tooltip: { y: { formatter: (val) => `${val} participantes` } },
+      responsive: [{ breakpoint: 768, options: { chart: { height: 250 } } }],
+    }
+    
+    // Certifique-se de que o elemento não seja nulo antes de criar o gráfico
+    const neighElement = document.querySelector('#neighborhood-chart');
+    if (neighElement) {
+      chartRefs.current.neighborhoodChart = new ApexCharts(neighElement, neighborhoodOptions)
+      chartRefs.current.neighborhoodChart.render()
+    }
+
   }, [analytics])
 
   // useEffect para renderizar gráficos quando tab === 'dados'
@@ -818,7 +872,7 @@ export default function Participantes() {
 
     doc.setFontSize(10)
 
-    drawTextBlock('Nome | Rua | Número da casa | Referência | Idade | WhatsApp', 12, 6)
+    drawTextBlock('Nome | Rua | Bairro | Número da casa | Referência | Idade | WhatsApp', 12, 6)
 
     list.forEach((p, idx) => {
       const linha = formatParticipantRow(p, idx)
@@ -927,7 +981,7 @@ export default function Participantes() {
     doc.text('Lista de Participantes', 20, y)
     y += 24
     doc.setFontSize(10)
-    doc.text('Nome | Rua | Número da casa | Referência | Idade | WhatsApp', 20, y)
+    doc.text('Nome | Rua | Bairro | Número da casa | Referência | Idade | WhatsApp', 20, y)
     y += 16
 
     doc.setFontSize(14)
@@ -953,7 +1007,7 @@ export default function Participantes() {
     doc.text('Lista de Participantes', 20, y)
     y += 20
     doc.setFontSize(10)
-    doc.text('Nome | Rua | Número da casa | Referência | Idade | WhatsApp', 20, y)
+    doc.text('Nome | Rua | Bairro | Número da casa | Referência | Idade | WhatsApp', 20, y)
     y += 14
 
     list.forEach((p, idx) => {
@@ -1078,22 +1132,24 @@ export default function Participantes() {
     e.preventDefault()
     const n = name.trim()
     const a = address.trim()
+    const nh = neighborhood.trim()
     const hn = houseNumber.trim()
     const ref = reference.trim()
     const parsedAge = Number(age)
     const w = whatsapp.trim()
-    if (!n || !a || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
-      toast.error('Preencha nome, rua, número da casa, idade e WhatsApp.')
+    if (!n || !a || !nh || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
+      toast.error('Preencha nome, rua, bairro, número da casa, idade e WhatsApp.')
       return
     }
     setLoading(true)
     try {
       await apiFetch('/participants', {
         method: 'POST',
-        body: JSON.stringify({ name: n, address: a, houseNumber: hn, reference: ref, age: parsedAge, whatsapp: w }),
+        body: JSON.stringify({ name: n, address: a, neighborhood: nh, houseNumber: hn, reference: ref, age: parsedAge, whatsapp: w }),
       })
       setName('')
       setAddress('')
+      setNeighborhood('')
       setHouseNumber('')
       setReference('')
       setAge('')
@@ -1118,12 +1174,12 @@ export default function Participantes() {
   async function handleUndoDelete() {
     if (!recentlyDeleted) return
 
-    const { name: delName, address: delAddress, houseNumber: delHouseNumber, reference: delReference, age: delAge, whatsapp: delWhatsapp } = recentlyDeleted
+    const { name: delName, address: delAddress, neighborhood: delNeighborhood, houseNumber: delHouseNumber, reference: delReference, age: delAge, whatsapp: delWhatsapp } = recentlyDeleted
     setLoadingList(true)
     try {
       const restored = await apiFetch('/participants', {
         method: 'POST',
-        body: JSON.stringify({ name: delName, address: delAddress, houseNumber: delHouseNumber, reference: delReference, age: delAge, whatsapp: delWhatsapp }),
+        body: JSON.stringify({ name: delName, address: delAddress, neighborhood: delNeighborhood, houseNumber: delHouseNumber, reference: delReference, age: delAge, whatsapp: delWhatsapp }),
       })
 
       // Se houver dados em progresso, re-aplicar em endpoints específicos.
@@ -1168,6 +1224,7 @@ export default function Participantes() {
     setEditingId(participant._id)
     setEditName(participant.name)
     setEditAddress(participant.address)
+    setEditNeighborhood(participant.neighborhood || '')
     setEditHouseNumber(participant.houseNumber || '')
     setEditReference(participant.reference || '')
     setEditAge(participant.age != null ? String(participant.age) : '')
@@ -1178,6 +1235,7 @@ export default function Participantes() {
     setEditingId(null)
     setEditName('')
     setEditAddress('')
+    setEditNeighborhood('')
     setEditHouseNumber('')
     setEditReference('')
     setEditAge('')
@@ -1191,12 +1249,13 @@ export default function Participantes() {
 
     const n = editName.trim()
     const a = editAddress.trim()
+    const nh = editNeighborhood.trim()
     const hn = editHouseNumber.trim()
     const ref = editReference.trim()
     const parsedAge = Number(editAge)
     const w = editWhatsapp.trim()
-    if (!n || !a || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
-      toast.error('Preencha nome, rua, número da casa, idade e WhatsApp.')
+    if (!n || !a || !nh || !hn || !w || !Number.isInteger(parsedAge) || parsedAge < 0) {
+      toast.error('Preencha nome, rua, bairro, número da casa, idade e WhatsApp.')
       return
     }
 
@@ -1204,11 +1263,12 @@ export default function Participantes() {
     try {
       await apiFetch(`/participants/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ name: n, address: a, houseNumber: hn, reference: ref, age: parsedAge, whatsapp: w }),
+        body: JSON.stringify({ name: n, address: a, neighborhood: nh, houseNumber: hn, reference: ref, age: parsedAge, whatsapp: w }),
       })
       setEditingId(null)
       setEditName('')
       setEditAddress('')
+      setEditNeighborhood('')
       setEditHouseNumber('')
       setEditReference('')
       setEditAge('')
@@ -1365,16 +1425,18 @@ export default function Participantes() {
       .slice(0, 8)
   }, [list, rankingConfig, rankingExtraSearch])
 
-  const selectedExtraParticipant = useMemo(() => {
-    const fromList = sortedParticipants.find((participant) => participant._id === selectedExtraParticipantId)
-    if (fromList) return fromList
+  const selectedExtraParticipants = useMemo(() => {
+    return sortedParticipants.filter((participant) => selectedExtraParticipantIds.includes(participant._id))
+  }, [selectedExtraParticipantIds, sortedParticipants])
 
-    if (rankingExtraCandidates.length === 1) {
-      return sortedParticipants.find((participant) => participant._id === rankingExtraCandidates[0].id) || null
-    }
-
-    return null
-  }, [rankingExtraCandidates, selectedExtraParticipantId, sortedParticipants])
+  function handleToggleExtraParticipant(id) {
+    setSelectedExtraParticipantIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((p) => p !== id)
+      }
+      return [...prev, id]
+    })
+  }
 
   const frequencyDayOptions = useMemo(
     () =>
@@ -1457,8 +1519,8 @@ export default function Participantes() {
     }))
   }
 
-  async function handleAddExtraScore(participantId) {
-    const draft = extraDrafts[participantId] || { points: '', reason: '' }
+  async function handleAddExtraScoreBulk() {
+    const draft = extraDrafts['bulk'] || { points: '', reason: '' }
     const points = Number(draft.points)
     const reason = (draft.reason || '').trim()
 
@@ -1472,26 +1534,42 @@ export default function Participantes() {
       return
     }
 
-    setExtraSavingIds((prev) => new Set(prev).add(participantId))
+    const ids = selectedExtraParticipants.map(p => p._id)
+    if (ids.length === 0) {
+      toast.error('Selecione pelo menos um participante.')
+      return
+    }
+
+    setExtraSavingIds((prev) => {
+      const next = new Set(prev)
+      ids.forEach(id => next.add(id))
+      return next
+    })
+
     try {
-      await apiFetch(`/participants/${participantId}/extra-score`, {
-        method: 'PATCH',
-        body: JSON.stringify({ points, reason }),
-      })
+      await Promise.all(
+        ids.map((id) =>
+          apiFetch(`/participants/${id}/extra-score`, {
+            method: 'PATCH',
+            body: JSON.stringify({ points, reason }),
+          })
+        )
+      )
+
       setExtraDrafts((prev) => ({
         ...prev,
-        [participantId]: { points: '', reason: '' },
+        ['bulk']: { points: '', reason: '' },
       }))
       setRankingExtraSearch('')
-      setSelectedExtraParticipantId(participantId)
-      toast.success('Pontuação extra adicionada com sucesso.')
+      setSelectedExtraParticipantIds([])
+      toast.success('Pontuação extra adicionada com sucesso aos participantes.')
       await loadList()
     } catch (err) {
       toast.error(err.message)
     } finally {
       setExtraSavingIds((prev) => {
         const next = new Set(prev)
-        next.delete(participantId)
+        ids.forEach(id => next.delete(id))
         return next
       })
     }
@@ -1553,6 +1631,8 @@ export default function Participantes() {
     return false
   })
 
+  const visibleTabs = ALL_TABS.filter((t) => t.id !== 'configuracao' || userRole === 'admin')
+
   return (
     <ScreenShell maxWidthClass="max-w-7xl" alignClass="items-start sm:items-center">
       <div className="mx-auto w-full space-y-6">
@@ -1605,8 +1685,8 @@ export default function Participantes() {
                 id="mobile-panel-menu"
                 className="rounded-2xl border border-white/10 bg-black/45 p-3 backdrop-blur-xl"
               >
-                <nav className="flex flex-col gap-2" aria-label="SeÃ§Ãµes do painel">
-                  {TABS.map((t) => (
+                <nav className="flex flex-col gap-2" aria-label="Seções do painel">
+                  {visibleTabs.map((t) => (
                     <button
                       key={t.id}
                       type="button"
@@ -1645,7 +1725,7 @@ export default function Participantes() {
               className="flex flex-wrap justify-center gap-2 rounded-2xl border border-white/10 bg-black/30 p-1.5"
               aria-label="Seções do painel"
             >
-              {TABS.map((t) => (
+              {visibleTabs.map((t) => (
                 <button
                   key={t.id}
                   type="button"
@@ -1718,6 +1798,16 @@ export default function Participantes() {
                           onChange={(e) => setHouseNumber(e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
                           placeholder="Ex: 123"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs text-white/50 mb-1 block">Bairro</span>
+                        <input
+                          type="text"
+                          value={neighborhood}
+                          onChange={(e) => setNeighborhood(e.target.value)}
+                          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                          placeholder="Nome do bairro"
                         />
                       </label>
                       <label className="block">
@@ -1832,6 +1922,16 @@ export default function Participantes() {
                                     onChange={(e) => setEditHouseNumber(e.target.value)}
                                     className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
                                     placeholder="Ex: 123"
+                                  />
+                                </label>
+                                <label className="block">
+                                  <span className="text-xs text-white/50">Bairro</span>
+                                  <input
+                                    type="text"
+                                    value={editNeighborhood}
+                                    onChange={(e) => setEditNeighborhood(e.target.value)}
+                                    className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                                    placeholder="Nome do bairro"
                                   />
                                 </label>
                                 <label className="block">
@@ -1958,6 +2058,7 @@ export default function Participantes() {
                               </div>
                               <p className="text-white/70 mt-1 wrap-break-word">Rua: {p.address}</p>
                               <p className="text-white/60 mt-1">Número da casa: {p.houseNumber || 'Não informado'}</p>
+                              <p className="text-white/60 mt-1">Bairro: {p.neighborhood?.trim() ? p.neighborhood : 'Não informado'}</p>
                               <p className="text-white/60 mt-1">Referência: {p.reference || 'Não informada'}</p>
                               <p className="text-white/60 mt-1">Idade: {getParticipantAgeLabel(p.age)}</p>
                               <p className="text-emerald-300/90 mt-1">{p.whatsapp}</p>
@@ -2035,20 +2136,20 @@ export default function Participantes() {
           </section>
         )}
 
-        {tab === 'cursos' && (
+        {tab === 'configuracao' && userRole === 'admin' && (
           <section
             className="relative rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden px-5 py-6 sm:px-8 sm:py-8"
-            aria-labelledby="cursos-heading"
+            aria-labelledby="configuracao-heading"
           >
             <div className="absolute inset-0 bg-linear-to-br from-violet-950/15 via-transparent to-slate-900/25 pointer-events-none" />
             <div className="relative">
-              <h2 id="cursos-heading" className="text-lg font-bold text-white text-center sm:text-left">
-                Cursos do projeto
+              <h2 id="configuracao-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                Configurações da Plataforma
               </h2>
               <p className="text-sm text-white/55 mt-1 mb-8 text-center sm:text-left">
-                Ofertas formativas da secretaria — detalhes com a equipe.
+                Gerencie permissões de acesso e realize manutenções no banco de dados.
               </p>
-              <CoursesPanel />
+              <ConfiguracaoPanel />
             </div>
           </section>
         )}
@@ -2285,6 +2386,11 @@ export default function Participantes() {
                     <div id="street-chart"></div>
                   </div>
                 </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Quantidade por bairro</h3>
+                  <div id="neighborhood-chart"></div>
+                </div>
               </div>
             </div>
           </section>
@@ -2401,7 +2507,6 @@ export default function Participantes() {
                         value={rankingExtraSearch}
                         onChange={(e) => {
                           setRankingExtraSearch(e.target.value)
-                          setSelectedExtraParticipantId('')
                         }}
                         className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
                         placeholder="Buscar participante por nome"
@@ -2413,12 +2518,9 @@ export default function Participantes() {
                             <button
                               key={participant.id}
                               type="button"
-                              onClick={() => {
-                                setSelectedExtraParticipantId(participant.id)
-                                setRankingExtraSearch(participant.name)
-                              }}
+                              onClick={() => handleToggleExtraParticipant(participant.id)}
                               className={`rounded-xl border px-3 py-2 text-left text-sm transition cursor-pointer ${
-                                selectedExtraParticipant?._id === participant.id
+                                selectedExtraParticipantIds.includes(participant.id)
                                   ? 'border-indigo-400/50 bg-indigo-500/15 text-white'
                                   : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/10'
                               }`}
@@ -2440,46 +2542,48 @@ export default function Participantes() {
 
                   <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5">
                     <h3 className="text-base font-semibold text-white">Lançamento selecionado</h3>
-                    {selectedExtraParticipant ? (
+                    {selectedExtraParticipants.length > 0 ? (
                       <div className="mt-4 space-y-3">
-                        <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                          <p className="text-sm font-semibold text-white">{selectedExtraParticipant.name}</p>
-                          <p className="mt-2 text-xs text-white/55">
-                            Frequência: {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).frequencyScore.toFixed(1)} | Bíblico:{' '}
-                            {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).biblicalScore.toFixed(1)} | {rankingConfig.extraLabel}:{' '}
-                            {getParticipantScoreSummary(selectedExtraParticipant, rankingConfig).extraScore.toFixed(1)}
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-4 max-h-40 overflow-y-auto">
+                          <p className="text-sm font-semibold text-white mb-2">
+                            {selectedExtraParticipants.length} participante(s) selecionado(s):
                           </p>
+                          <ul className="text-xs text-white/70 space-y-1 list-disc pl-4">
+                            {selectedExtraParticipants.map(p => (
+                              <li key={p._id}>{p.name} (Atual: {getParticipantScoreSummary(p, rankingConfig).totalScore.toFixed(1)})</li>
+                            ))}
+                          </ul>
                         </div>
                         <input
                           type="number"
                           min="0"
                           step="0.1"
-                          value={extraDrafts[selectedExtraParticipant._id]?.points || ''}
-                          onChange={(e) => updateExtraDraft(selectedExtraParticipant._id, 'points', e.target.value)}
+                          value={extraDrafts['bulk']?.points || ''}
+                          onChange={(e) => updateExtraDraft('bulk', 'points', e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
-                          placeholder="Valor da pontuação extra"
+                          placeholder="Valor da pontuação extra (para todos)"
                         />
                         <input
                           type="text"
-                          value={extraDrafts[selectedExtraParticipant._id]?.reason || ''}
-                          onChange={(e) => updateExtraDraft(selectedExtraParticipant._id, 'reason', e.target.value)}
+                          value={extraDrafts['bulk']?.reason || ''}
+                          onChange={(e) => updateExtraDraft('bulk', 'reason', e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
                           placeholder="Motivo da pontuação"
                         />
                         <button
                           type="button"
-                          onClick={() => handleAddExtraScore(selectedExtraParticipant._id)}
-                          disabled={extraSavingIds.has(selectedExtraParticipant._id)}
+                          onClick={() => handleAddExtraScoreBulk()}
+                          disabled={selectedExtraParticipants.some(p => extraSavingIds.has(p._id))}
                           className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                         >
-                          {extraSavingIds.has(selectedExtraParticipant._id)
+                          {selectedExtraParticipants.some(p => extraSavingIds.has(p._id))
                             ? 'Salvando...'
                             : `Adicionar ${rankingConfig.extraLabel}`}
                         </button>
                       </div>
                     ) : (
                       <p className="mt-4 text-sm text-white/55">
-                        Selecione um participante na busca para registrar a pontuação extra.
+                        Selecione um ou mais participantes na busca para registrar a pontuação extra em massa.
                       </p>
                     )}
                   </div>

@@ -28,6 +28,7 @@ const participantSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     address: { type: String, required: true, trim: true },
+    neighborhood: { type: String, trim: true, default: "" },
     houseNumber: { type: String, required: true, trim: true },
     reference: { type: String, trim: true, default: "" },
     age: { type: Number, required: true, min: 0, max: 130 },

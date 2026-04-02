@@ -7,6 +7,7 @@ import {
     patchBiblicalStudy,
     patchFrequency,
     update,
+    deleteAllParticipants,
 } from "../controllers/participant.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
@@ -19,6 +20,7 @@ router.put("/:id", update);
 router.patch("/:id/biblical-study", patchBiblicalStudy);
 router.patch("/:id/frequency", patchFrequency);
 router.patch("/:id/extra-score", patchExtraScore);
+router.delete("/all", deleteAllParticipants);
 router.delete("/:id", deleteParticipant);
 
 export default router;
