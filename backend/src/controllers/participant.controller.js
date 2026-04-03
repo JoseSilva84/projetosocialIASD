@@ -85,7 +85,8 @@ export const patchBiblicalStudy = async (req, res) => {
       return res.status(400).json({ message: "Nenhum campo para atualizar." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
+    const isManager = req.userRole === "admin" || req.userRole === "secretario";
+    const filter = isManager ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndUpdate(filter, { $set: update }, { new: true, runValidators: true });
 
     if (!participant) {
@@ -134,7 +135,8 @@ export const patchFrequency = async (req, res) => {
       return res.status(400).json({ message: "Nenhum campo para atualizar." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
+    const isManager = req.userRole === "admin" || req.userRole === "secretario";
+    const filter = isManager ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndUpdate(filter, { $set: update }, { new: true, runValidators: true });
 
     if (!participant) {
@@ -219,7 +221,8 @@ export const update = async (req, res) => {
       });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
+    const isManager = req.userRole === "admin" || req.userRole === "secretario";
+    const filter = isManager ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndUpdate(
       filter,
       {
@@ -301,7 +304,8 @@ export const deleteParticipant = async (req, res) => {
       return res.status(400).json({ message: "ID invalido." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
+    const isManager = req.userRole === "admin" || req.userRole === "secretario";
+    const filter = isManager ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndDelete(filter);
     if (!participant) {
       return res.status(404).json({ message: "Participante nao encontrado." });
