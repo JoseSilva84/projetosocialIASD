@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import Participant from "../models/participant.model.js";
 import {
-  syncParticipantScores,
-  syncParticipantScoresIfNeeded,
+    syncParticipantScores,
+    syncParticipantScoresIfNeeded,
 } from "../services/participantScore.service.js";
 
 function validateLessonNumbers(arr) {
@@ -50,8 +50,8 @@ async function persistScoreSnapshot(participant) {
 
 export const patchBiblicalStudy = async (req, res) => {
   try {
-    if (req.userRole !== "admin") {
-      return res.status(403).json({ message: "Somente o administrador pode alterar o estudo biblico." });
+    if (req.userRole !== "admin" && req.userRole !== "secretario") {
+      return res.status(403).json({ message: "Somente o administrador ou secretário pode alterar o estudo biblico." });
     }
 
     const { id } = req.params;
@@ -85,7 +85,7 @@ export const patchBiblicalStudy = async (req, res) => {
       return res.status(400).json({ message: "Nenhum campo para atualizar." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndUpdate(filter, { $set: update }, { new: true, runValidators: true });
 
     if (!participant) {
@@ -104,8 +104,8 @@ export const patchBiblicalStudy = async (req, res) => {
 
 export const patchFrequency = async (req, res) => {
   try {
-    if (req.userRole !== "admin") {
-      return res.status(403).json({ message: "Somente o administrador pode alterar a frequencia." });
+    if (req.userRole !== "admin" && req.userRole !== "secretario") {
+      return res.status(403).json({ message: "Somente o administrador ou secretário pode alterar a frequencia." });
     }
 
     const { id } = req.params;
@@ -134,7 +134,7 @@ export const patchFrequency = async (req, res) => {
       return res.status(400).json({ message: "Nenhum campo para atualizar." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndUpdate(filter, { $set: update }, { new: true, runValidators: true });
 
     if (!participant) {
@@ -153,6 +153,10 @@ export const patchFrequency = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
+    if (!req.groupId) {
+      return res.status(400).json({ message: "Grupo não selecionado." });
+    }
+
     const { name, address, neighborhood, houseNumber, reference, age, whatsapp } = req.body;
     const parsedAge = Number(age);
 
@@ -171,6 +175,7 @@ export const create = async (req, res) => {
       age: parsedAge,
       whatsapp: String(whatsapp).trim(),
       registeredBy: req.userId,
+      groupId: req.groupId,
     });
 
     await syncParticipantScores(participant);
@@ -185,10 +190,11 @@ export const create = async (req, res) => {
 
 export const listMine = async (req, res) => {
   try {
-    const query = ["admin", "user", "convidado"].includes(req.userRole)
-      ? {}
-      : { registeredBy: req.userId };
+    if (!req.groupId) {
+      return res.status(400).json({ message: "Grupo não selecionado." });
+    }
 
+    const query = { groupId: req.groupId };
     const list = await Participant.find(query).sort({ createdAt: -1 });
     await syncParticipantScoresIfNeeded(list);
     res.json(list);
@@ -213,7 +219,7 @@ export const update = async (req, res) => {
       });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndUpdate(
       filter,
       {
@@ -264,7 +270,7 @@ export const patchExtraScore = async (req, res) => {
       return res.status(400).json({ message: "Informe o motivo da pontuacao extra." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOne(filter);
 
     if (!participant) {
@@ -295,7 +301,7 @@ export const deleteParticipant = async (req, res) => {
       return res.status(400).json({ message: "ID invalido." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id } : { _id: id, registeredBy: req.userId };
+    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
     const participant = await Participant.findOneAndDelete(filter);
     if (!participant) {
       return res.status(404).json({ message: "Participante nao encontrado." });
@@ -313,8 +319,14 @@ export const deleteAllParticipants = async (req, res) => {
     if (req.userRole !== "admin") {
       return res.status(403).json({ message: "Somente o administrador pode excluir todos os participantes." });
     }
-    await Participant.deleteMany({});
-    res.json({ message: "Todos os participantes foram excluidos com sucesso." });
+
+    const groupId = req.query.groupId || req.groupId;
+    if (!groupId) {
+      return res.status(400).json({ message: "groupId é obrigatório para a exclusão." });
+    }
+
+    await Participant.deleteMany({ groupId });
+    res.json({ message: `Todos os participantes do grupo ${groupId} foram excluídos com sucesso.` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao excluir todos os participantes." });

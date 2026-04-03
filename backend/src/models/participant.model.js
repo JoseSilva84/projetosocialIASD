@@ -38,6 +38,11 @@ const participantSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    groupId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Group",
+      required: true,
+    },
     selectedBiblicalLesson: {
       type: Number,
       min: 1,

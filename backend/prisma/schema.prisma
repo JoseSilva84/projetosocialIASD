@@ -16,11 +16,24 @@ model User {
   role    String @default("user")
 }
 
+model Group {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  name         String @unique
+  passwordHash String
+  createdBy    String
+  participants Participant[]
+}
+
 model Participant {
   id          String @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   address     String
+  neighborhood String
   houseNumber String
+  reference   String
   age         Int
   whatsapp    String
+  registeredBy String
+  groupId     String
+  group       Group @relation(fields: [groupId], references: [id])
 }

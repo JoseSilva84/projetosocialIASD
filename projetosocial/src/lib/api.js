@@ -19,6 +19,7 @@ export function clearSession() {
   setToken(null)
   localStorage.removeItem('userName')
   localStorage.removeItem('userRole')
+  clearGroup()
 }
 
 export function getUserName() {
@@ -29,10 +30,35 @@ export function getUserRole() {
   return localStorage.getItem('userRole') || 'user'
 }
 
+export function getGroupId() {
+  return localStorage.getItem('groupId')
+}
+
+export function setGroupId(id) {
+  if (id) localStorage.setItem('groupId', id)
+  else localStorage.removeItem('groupId')
+}
+
+export function saveGroup({ id, name }) {
+  setGroupId(id)
+  if (name) localStorage.setItem('groupName', name)
+}
+
+export function clearGroup() {
+  setGroupId(null)
+  localStorage.removeItem('groupName')
+}
+
+export function getGroupName() {
+  return localStorage.getItem('groupName') || ''
+}
+
 export async function apiFetch(path, options = {}) {
   const token = getToken()
+  const groupId = getGroupId()
   const headers = { 'Content-Type': 'application/json', ...options.headers }
   if (token) headers.Authorization = `Bearer ${token}`
+  if (groupId) headers['x-group-id'] = groupId
   const res = await fetch(`${API_PREFIX}${path}`, { ...options, headers })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {

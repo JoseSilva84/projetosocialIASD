@@ -1,3 +1,4 @@
+import ApexCharts from 'apexcharts'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -5,7 +6,7 @@ import ScreenShell from '../components/ScreenShell'
 import BiblicalStudyPanel from '../components/dashboard/BiblicalStudyPanel'
 import ConfiguracaoPanel from '../components/dashboard/ConfiguracaoPanel'
 import FrequencyPanel from '../components/dashboard/FrequencyPanel'
-import { apiFetch, clearSession, getToken, getUserName, getUserRole } from '../lib/api'
+import { apiFetch, clearSession, getGroupId, getToken, getUserName, getUserRole } from '../lib/api'
 import { FREQUENCY_DAYS } from '../lib/frequencyDays'
 
 const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'sorteio']
@@ -475,7 +476,7 @@ export default function Participantes() {
       tooltip: {
         shared: true,
         intersect: false,
-        custom: function ({series, dataPointIndex}) {
+        custom: function ({dataPointIndex}) {
           const day = frequencyByDay[dataPointIndex]?.day
           const presentNames = analytics.presentNamesByDay[day] || []
           const absentNames = analytics.absentNamesByDay[day] || []
@@ -736,13 +737,15 @@ export default function Participantes() {
     if (tab !== 'dados') return
     if (analytics.totalParticipants === 0) return
 
+    const chartsSnapshot = { ...chartRefs.current }
+
     const timer = setTimeout(() => {
       renderCharts()
     }, 100)
 
     return () => {
       clearTimeout(timer)
-      Object.values(chartRefs.current).forEach((chart) => {
+      Object.values(chartsSnapshot).forEach((chart) => {
         if (chart) chart.destroy()
       })
     }
@@ -1084,6 +1087,12 @@ export default function Participantes() {
       navigate('/login', { replace: true })
       return
     }
+
+    if (!getGroupId()) {
+      navigate('/group-select', { replace: true })
+      return
+    }
+
     loadList()
     loadRankingConfig()
   }, [navigate, loadList, loadRankingConfig])
@@ -2129,7 +2138,7 @@ export default function Participantes() {
                 participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
-                readOnly={userRole !== 'admin'}
+                readOnly={userRole !== 'admin' && userRole !== 'secretario'}
                 initialParticipantId={selectedBiblicalParticipantId}
               />
             </div>
@@ -2172,7 +2181,7 @@ export default function Participantes() {
                 participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
-                readOnly={userRole !== 'admin'}
+                readOnly={userRole !== 'admin' && userRole !== 'secretario'}
                 initialParticipantId={selectedFrequencyParticipantId}
               />
 

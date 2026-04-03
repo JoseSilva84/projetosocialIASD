@@ -84,6 +84,36 @@ export const getUsers = async (req, res) => {
   }
 };
 
+export const createUser = async (req, res) => {
+  try {
+    if (req.userRole !== "admin") {
+      return res.status(403).json({ message: "Somente o administrador pode criar usuarios." });
+    }
+
+    const { name, password, role } = req.body;
+    if (!name || !password) {
+      return res.status(400).json({ message: "Nome e senha são obrigatórios." });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: "A senha deve ter pelo menos 6 caracteres." });
+    }
+    const trimmed = String(name).trim();
+    const existing = await User.findOne({ name: trimmed });
+    if (existing) {
+      return res.status(409).json({ message: "Este nome de usuário já está em uso." });
+    }
+    const userRole = role && ['admin', 'secretario', 'user', 'convidado'].includes(role) ? role : 'user';
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    const user = await User.create({ name: trimmed, passwordHash, role: userRole });
+    res.status(201).json({
+      user: { id: user._id, name: user.name, role: user.role },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao criar usuario." });
+  }
+};
+
 export const deleteUser = async (req, res) => {
   try {
     if (req.userRole !== "admin") {

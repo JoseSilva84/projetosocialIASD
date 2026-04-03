@@ -2,17 +2,25 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import './App.css'
 import AppFooter from './components/AppFooter'
+import { getGroupId, getToken } from './lib/api'
+import GroupSelect from './pages/GroupSelect'
 import Login from './pages/Login'
-import Register from './pages/Register'
 import Participantes from './pages/Participantes'
-import { getToken } from './lib/api'
+import Register from './pages/Register'
 
 function HomeRedirect() {
-  return getToken() ? (
-    <Navigate to="/participantes" replace />
-  ) : (
-    <Navigate to="/login" replace />
-  )
+  const token = getToken()
+  const groupId = getGroupId()
+
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (!groupId) {
+    return <Navigate to="/group-select" replace />
+  }
+
+  return <Navigate to="/participantes" replace />
 }
 
 function App() {
@@ -22,8 +30,9 @@ function App() {
         <Route path="/" element={<HomeRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Register />} />
+        <Route path="/group-select" element={<GroupSelect />} />
         <Route path="/participantes" element={<Participantes />} />
-        <Route path="*" element={<Navigate to="/participantes" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AppFooter />
       <ToastContainer
