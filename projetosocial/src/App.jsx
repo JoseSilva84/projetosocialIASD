@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import './App.css'
 import AppFooter from './components/AppFooter'
-import { getGroupId, getToken } from './lib/api'
+import { getGroupId, getToken, getUserRole } from './lib/api'
 import GroupSelect from './pages/GroupSelect'
 import Login from './pages/Login'
 import Participantes from './pages/Participantes'
@@ -11,8 +11,14 @@ import Register from './pages/Register'
 function HomeRedirect() {
   const token = getToken()
   const groupId = getGroupId()
+  const role = getUserRole()
 
   if (!token) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Secretários podem acessar /login para cadastro rápido
+  if (role === 'secretario') {
     return <Navigate to="/login" replace />
   }
 

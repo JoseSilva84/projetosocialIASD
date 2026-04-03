@@ -3,9 +3,15 @@ import Group from "../src/models/group.model.js";
 import Participant from "../src/models/participant.model.js";
 
 async function main() {
-  const group = await Group.findOne({ name: "Boipeba" });
+  const targetGroupName = process.env.ASSIGN_GROUP_NAME || process.env.DEFAULT_GROUP_NAME;
+  if (!targetGroupName) {
+    console.error("É necessário informar ASSIGN_GROUP_NAME ou DEFAULT_GROUP_NAME no ambiente para atribuir participantes.");
+    process.exit(1);
+  }
+
+  const group = await Group.findOne({ name: targetGroupName.trim() });
   if (!group) {
-    console.error("Grupo Boipeba não encontrado.");
+    console.error(`Grupo ${targetGroupName} não encontrado.`);
     process.exit(1);
   }
 

@@ -4,6 +4,13 @@ import Group from "../models/group.model.js";
 
 const SALT_ROUNDS = 10;
 
+function isStrongPassword(password) {
+  if (!password || typeof password !== 'string') return false;
+  const trimmed = password.trim();
+  const weakPasswords = ['12345678', 'password', 'admin', 'boi123', '123456789', 'qwerty'];
+  return trimmed.length >= 8 && !weakPasswords.includes(trimmed.toLowerCase());
+}
+
 export const createGroup = async (req, res) => {
   try {
     if (!["admin", "secretario"].includes(req.userRole)) {
@@ -14,8 +21,8 @@ export const createGroup = async (req, res) => {
     if (!name || !password) {
       return res.status(400).json({ message: "Nome e senha são obrigatórios." });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ message: "A senha deve ter pelo menos 6 caracteres." });
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ message: "A senha deve ter pelo menos 8 caracteres e não ser uma senha fraca." });
     }
 
     const trimmedName = String(name).trim();
@@ -129,15 +136,19 @@ export const deleteGroup = async (req, res) => {
       return res.status(404).json({ message: "Grupo não encontrado." });
     }
 
-    // Verificar se há participantes no grupo
     const Participant = mongoose.model("Participant");
-    const count = await Participant.countDocuments({ groupId: id });
-    if (count > 0) {
-      return res.status(400).json({ message: "Não é possível excluir um grupo que possui participantes." });
+
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        await Participant.deleteMany({ groupId: id }).session(session);
+        await Group.deleteOne({ _id: id }).session(session);
+      });
+    } finally {
+      session.endSession();
     }
 
-    await Group.findByIdAndDelete(id);
-    res.json({ message: "Grupo excluído com sucesso." });
+    res.json({ message: "Grupo e todos os participantes associados foram excluídos com sucesso." });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao excluir grupo." });

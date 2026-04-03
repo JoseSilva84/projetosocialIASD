@@ -1761,7 +1761,7 @@ export default function Participantes() {
 
         {tab === 'inscricoes' && (
           <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8">
-            {userRole === 'admin' && (
+            {(userRole === 'admin' || userRole === 'secretario') && (
               <div className="relative w-full max-w-xl shrink-0 rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto">
                 <div className="absolute inset-0 bg-linear-to-br from-slate-500/15 via-transparent to-slate-700/15" />
 
@@ -1996,7 +1996,7 @@ export default function Participantes() {
                             <>
                               <div className="flex items-start justify-between gap-2">
                                 <p className="font-medium text-white">{p.name}</p>
-                                {userRole === 'admin' && (
+                                {(userRole === 'admin' || userRole === 'secretario') && (
                                   <div className="flex gap-1">
                                     <button
                                       type="button"
@@ -2502,7 +2502,7 @@ export default function Participantes() {
                 </div>
               )}
 
-              {userRole === 'admin' && (
+              {userRole === 'admin' || userRole === 'secretario' ? (
                 <div className="mb-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
                     <h3 className="text-base font-semibold text-white">Adicionar {rankingConfig.extraLabel.toLowerCase()}</h3>
@@ -2597,7 +2597,7 @@ export default function Participantes() {
                     )}
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {/* Tabela de ranking */}
               <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">

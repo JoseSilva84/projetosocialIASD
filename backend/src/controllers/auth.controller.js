@@ -4,21 +4,28 @@ import User from "../models/user.model.js";
 
 const SALT_ROUNDS = 10;
 
+function isStrongPassword(password) {
+  if (!password || typeof password !== 'string') return false;
+  const trimmed = password.trim();
+  const weakPasswords = ['12345678', 'password', 'admin', 'boi123', '123456789', 'qwerty'];
+  return trimmed.length >= 8 && !weakPasswords.includes(trimmed.toLowerCase());
+}
+
 export const register = async (req, res) => {
   try {
     const { name, password } = req.body;
     if (!name || !password) {
       return res.status(400).json({ message: "Nome e senha são obrigatórios." });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ message: "A senha deve ter pelo menos 6 caracteres." });
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ message: "A senha deve ter pelo menos 8 caracteres e não ser uma senha fraca." });
     }
     const trimmed = String(name).trim();
     const existing = await User.findOne({ name: trimmed });
     if (existing) {
       return res.status(409).json({ message: "Este nome de usuário já está em uso." });
     }
-    const role = trimmed === 'admin' ? 'admin' : 'user';
+    const role = 'user';
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await User.create({ name: trimmed, passwordHash, role });
     const token = jwt.sign({ sub: user._id.toString(), role: user.role }, process.env.JWT_SECRET, {
@@ -42,12 +49,6 @@ export const login = async (req, res) => {
     }
     const trimmed = String(name).trim();
     let user = await User.findOne({ name: trimmed });
-
-    // Suporte rápido para admin padrão
-    if (!user && trimmed.toLowerCase() === 'admin' && password === 'user') {
-      const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-      user = await User.create({ name: 'admin', passwordHash, role: 'admin' });
-    }
 
     if (!user) {
       return res.status(401).json({ message: "Nome ou senha inválidos." });
@@ -94,15 +95,16 @@ export const createUser = async (req, res) => {
     if (!name || !password) {
       return res.status(400).json({ message: "Nome e senha são obrigatórios." });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ message: "A senha deve ter pelo menos 6 caracteres." });
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ message: "A senha deve ter pelo menos 8 caracteres e não ser uma senha fraca." });
     }
     const trimmed = String(name).trim();
     const existing = await User.findOne({ name: trimmed });
     if (existing) {
       return res.status(409).json({ message: "Este nome de usuário já está em uso." });
     }
-    const userRole = role && ['admin', 'secretario', 'user', 'convidado'].includes(role) ? role : 'user';
+    const allowedRoles = ['secretario', 'user', 'convidado'];
+    const userRole = role && allowedRoles.includes(role) ? role : 'user';
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await User.create({ name: trimmed, passwordHash, role: userRole });
     res.status(201).json({

@@ -250,8 +250,8 @@ export const update = async (req, res) => {
 
 export const patchExtraScore = async (req, res) => {
   try {
-    if (req.userRole !== "admin") {
-      return res.status(403).json({ message: "Somente o administrador pode alterar a pontuacao extra." });
+    if (req.userRole !== "admin" && req.userRole !== "secretario") {
+      return res.status(403).json({ message: "Somente o administrador ou secretário pode alterar a pontuacao extra." });
     }
 
     const { id } = req.params;
@@ -270,7 +270,7 @@ export const patchExtraScore = async (req, res) => {
       return res.status(400).json({ message: "Informe o motivo da pontuacao extra." });
     }
 
-    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, registeredBy: req.userId, groupId: req.groupId };
+    const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, groupId: req.groupId };
     const participant = await Participant.findOne(filter);
 
     if (!participant) {

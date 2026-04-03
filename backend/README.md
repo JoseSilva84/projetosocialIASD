@@ -47,6 +47,10 @@ Crie um arquivo `.env` na raiz do `backend`:
 | `DATABASE_URL` | URI de conexão MongoDB (ex.: Atlas) |
 | `JWT_SECRET` | Segredo para assinar e verificar JWT |
 | `PORT` | Porta do servidor (padrão: `3000`) |
+| `DEFAULT_GROUP_NAME` | (opcional) nome do grupo seed. Não deixe valores secretos codificados em fonte. |
+| `DEFAULT_GROUP_PASSWORD` | (opcional) senha do grupo seed, deve ter ao menos 8 caracteres e não ser genérica. |
+| `DEFAULT_ADMIN_NAME` | (opcional) nome do usuário admin seed. |
+| `DEFAULT_ADMIN_PASSWORD` | (opcional) senha do admin seed, deve ter ao menos 8 caracteres e não ser fraca. |
 
 O `dotenv` é carregado em `src/config/database.js` antes do `mongoose.connect`, para que `DATABASE_URL` esteja definida ao subir em ES modules.
 

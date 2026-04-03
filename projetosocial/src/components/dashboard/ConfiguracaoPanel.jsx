@@ -108,23 +108,25 @@ export default function ConfiguracaoPanel() {
     }
   }
 
-  const handleDeleteAllParticipants = async () => {
+  const handleDeleteGroupAndParticipants = async () => {
     if (!selectedGroupId) {
-      toast.error('Selecione um grupo antes de excluir participantes.')
+      toast.error('Selecione um grupo antes de excluir.')
       return
     }
 
-    if (!window.confirm(`ALERTA MÁXIMO!\n\nVocê tem certeza ABSOLUTA que deseja DELETAR TODOS OS PARTICIPANTES do grupo selecionado? Essa ação NÃO PODE ser revertida!`)) return
+    if (!window.confirm(`PERIGO EXTREMO!\n\nVocê tem certeza ABSOLUTA que deseja excluir o grupo inteiro (e todos os participantes associados)? Esta ação NÃO PODE ser revertida!`)) return
     
-    if (!window.confirm('Você entende que TODOS os dados serão apagados definitivamente?')) return
+    if (!window.confirm('Você entende que TODOS os dados do grupo serão apagados permanentemente?')) return
 
     setLoadingAction(true)
     try {
-      await apiFetch(`/participants/all?groupId=${encodeURIComponent(selectedGroupId)}`, { method: 'DELETE' })
-      toast.success('Todos os participantes do grupo selecionado foram excluídos com sucesso.')
+      await apiFetch(`/groups/${encodeURIComponent(selectedGroupId)}`, { method: 'DELETE' })
+      toast.success('Grupo e todos os participantes associados foram excluídos com sucesso.')
+      setSelectedGroupId('')
+      setGroupId('')
       fetchUsers()
     } catch (err) {
-      toast.error('Erro ao excluir participantes do grupo: ' + err.message)
+      toast.error('Erro ao excluir grupo: ' + err.message)
     } finally {
       setLoadingAction(false)
     }
@@ -261,7 +263,7 @@ export default function ConfiguracaoPanel() {
       <div className="bg-red-950/20 border border-red-900/30 rounded-2xl p-5">
         <h3 className="text-lg font-bold text-red-400 mb-2">Zona de Perigo por Grupo</h3>
         <p className="text-sm text-white/60 mb-3">
-          Selecione o grupo e delete apenas os participantes deste grupo.
+          Selecione o grupo e delete o grupo inteiro com todos os participantes.
         </p>
 
         <div className="mb-4">
@@ -284,14 +286,14 @@ export default function ConfiguracaoPanel() {
         </div>
 
         <p className="text-sm text-white/60 mb-5">
-          Esta ação apaga permanentemente todos os participantes do grupo selecionado, incluindo histórico de frequência e estudos.
+          Esta ação apaga permanentemente o grupo selecionado e todos os participantes do grupo, incluindo histórico de frequência e estudos.
         </p>
         <button
-          onClick={handleDeleteAllParticipants}
+          onClick={handleDeleteGroupAndParticipants}
           disabled={loadingAction || !selectedGroupId}
           className="text-sm font-bold bg-red-600 text-white px-5 py-2.5 rounded-xl border border-red-800 hover:bg-red-500 transition shadow-lg cursor-pointer disabled:opacity-50"
         >
-          Deletar participantes do grupo
+          Deletar grupo e participantes
         </button>
       </div>
     </div>
