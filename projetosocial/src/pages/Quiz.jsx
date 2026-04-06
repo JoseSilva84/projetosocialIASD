@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import jogo from '../../../backend/quiz.json'
@@ -22,39 +22,42 @@ function shuffleArray(array) {
 
 function buildOptions(question, questions) {
   const correctText = normalizeText(question.resposta)
-  const options = []
+  const options = [{ text: correctText, isCorrect: true }]
 
-  if (Array.isArray(question.opcoes) && question.opcoes.length >= 2) {
-    const correctOption = question.opcoes.find((option) => {
-      if (Array.isArray(question.resposta)) {
-        return question.resposta.some((answer) => normalizeText(answer) === normalizeText(option))
-      }
-      return normalizeText(option) === correctText
-    })
-    const wrongOption = question.opcoes.find((option) => {
-      if (Array.isArray(question.resposta)) {
-        return !question.resposta.some((answer) => normalizeText(answer) === normalizeText(option))
-      }
-      return normalizeText(option) !== correctText
-    }) || question.opcoes.find((option) => option !== correctOption) || question.opcoes[0]
+  // Get distractors from other questions in the same study
+  const distractors = questions
+    .filter((q) => q !== question)
+    .map((q) => normalizeText(q.resposta))
+    .filter((text) => text && text !== correctText)
 
-    if (correctOption) {
-      options.push({ text: normalizeText(correctOption), isCorrect: true })
-      options.push({ text: normalizeText(wrongOption), isCorrect: false })
+  // Shuffle and take up to 2 distractors
+  const shuffledDistractors = shuffleArray(distractors).slice(0, 2)
+
+  // If not enough distractors, create simple variations
+  while (shuffledDistractors.length < 2) {
+    const variation = correctText + ' (alternativa incorreta)'
+    if (!shuffledDistractors.includes(variation)) {
+      shuffledDistractors.push(variation)
     } else {
-      options.push({ text: correctText, isCorrect: true })
-      options.push({ text: normalizeText(question.opcoes[0]), isCorrect: false })
+      break
     }
-  } else {
-    const distractor = questions
-      .map((item) => normalizeText(item.resposta))
-      .filter((text) => text && text !== correctText)[0] || 'Nenhuma das alternativas'
-
-    options.push({ text: correctText, isCorrect: true })
-    options.push({ text: distractor, isCorrect: false })
   }
 
+  shuffledDistractors.forEach((distractor) => {
+    options.push({ text: distractor, isCorrect: false })
+  })
+
   return shuffleArray(options)
+}
+
+function getRandomQuestions(studies) {
+  const allQuestions = []
+  for (const study of studies) {
+    if (study.perguntas && Array.isArray(study.perguntas)) {
+      allQuestions.push(...study.perguntas)
+    }
+  }
+  return shuffleArray(allQuestions)
 }
 
 function getStudyIndexFromParam(raw) {
@@ -98,6 +101,8 @@ const Quiz = () => {
   const [score, setScore] = useState(0)
   const [questionPoints, setQuestionPoints] = useState(10)
   const [confirmOption, setConfirmOption] = useState(null)
+  const [timeLeft, setTimeLeft] = useState(20)
+  const [isTimerPaused, setIsTimerPaused] = useState(false)
 
   const loadParticipants = async () => {
     try {
@@ -133,13 +138,22 @@ const Quiz = () => {
   }, [])
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search)
-    setStudyIndex(getStudyIndexFromParam(params.get('study')))
-    setSelectedScoringParticipantId(params.get('participant') || '')
-  }, [location.search])
+    setTimeLeft(20)
+    setIsTimerPaused(false)
+  }, [questionIndex])
 
   const studies = useMemo(() => jogo.estudos || [], [])
-  const currentStudy = useMemo(() => studies[studyIndex] || { perguntas: [] }, [studies, studyIndex])
+  const currentStudy = useMemo(() => {
+    if (studyIndex === -1) {
+      // Perguntas Aleatórias
+      return {
+        tema: 'Perguntas Aleatórias',
+        estudo: 'Aleató​rio',
+        perguntas: getRandomQuestions(studies)
+      }
+    }
+    return studies[studyIndex] || { perguntas: [] }
+  }, [studies, studyIndex])
   const questions = useMemo(() => currentStudy.perguntas || [], [currentStudy])
   const question = questions[questionIndex]
 
@@ -149,7 +163,7 @@ const Quiz = () => {
   }, [question, questions])
 
   const handleStudyChange = (event) => {
-    const nextIndex = Number(event.target.value)
+    const nextIndex = parseInt(event.target.value, 10)
     setStudyIndex(nextIndex)
     setQuestionIndex(0)
     setSelectedOption(null)
@@ -157,30 +171,53 @@ const Quiz = () => {
     setScore(0)
     setQuestionPoints(10)
     setConfirmOption(null)
+    setTimeLeft(20)
+    setIsTimerPaused(false)
   }
 
-  const resumeAudioContext = async () => {
+  const resumeAudioContext = useCallback(async () => {
     if (audioContext.state === 'suspended') {
       await audioContext.resume()
     }
-  }
+  }, [audioContext])
 
-  const playSuccessSound = async () => {
+  const playSuccessSound = useCallback(async () => {
     await resumeAudioContext()
     playTone(audioContext, 880, 0.16, 'triangle')
     playTone(audioContext, 1040, 0.12, 'triangle', 0.12)
     await new Promise((resolve) => setTimeout(resolve, 260))
-  }
+  }, [audioContext, resumeAudioContext])
 
-  const playErrorSound = async () => {
+  const playErrorSound = useCallback(async () => {
     await resumeAudioContext()
     playTone(audioContext, 220, 0.14, 'sine')
     playTone(audioContext, 180, 0.14, 'sine', 0.12)
     await new Promise((resolve) => setTimeout(resolve, 280))
+  }, [audioContext, resumeAudioContext])
+
+  useEffect(() => {
+    if (isTimerPaused || selectedOption) {
+      return
+    }
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
+      return () => clearTimeout(timer)
+    } else if (timeLeft === 0 && !selectedOption) {
+      setSelectedOption('timeout')
+      setIsCorrect(false)
+      playErrorSound()
+      toast.error('Tempo esgotado!')
+    }
+  }, [timeLeft, selectedOption, playErrorSound, isTimerPaused])
+
+  const handleToggleTimer = () => {
+    if (!selectedOption && timeLeft > 0) {
+      setIsTimerPaused(!isTimerPaused)
+    }
   }
 
   const handleOptionClick = (option) => {
-    if (selectedOption || !question) return
+    if (selectedOption || timeLeft === 0 || !question) return
     setConfirmOption(option)
   }
 
@@ -225,6 +262,8 @@ const Quiz = () => {
     setQuestionIndex((prev) => prev + 1)
     setSelectedOption(null)
     setIsCorrect(null)
+    setTimeLeft(20)
+    setIsTimerPaused(false)
   }
 
   const handleRestart = () => {
@@ -234,6 +273,8 @@ const Quiz = () => {
     setScore(0)
     setQuestionPoints(10)
     setConfirmOption(null)
+    setTimeLeft(20)
+    setIsTimerPaused(false)
   }
 
   const sortedParticipants = useMemo(() => {
@@ -246,9 +287,9 @@ const Quiz = () => {
   }, [participants])
 
   return (
-    <div className="px-4 py-8 max-w-6xl mx-auto">
+    <div className="px-4 py-8 max-w-6xl mx-auto overflow-x-hidden">
       <div className="mb-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-        <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-950/80 p-6 shadow-2xl shadow-black/20">
+        <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-950/80 p-4 sm:p-6 shadow-2xl shadow-black/20">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <button
               type="button"
@@ -273,6 +314,7 @@ const Quiz = () => {
                 onChange={handleStudyChange}
                 className="rounded-3xl bg-slate-900/90 border border-white/10 px-4 py-3 text-white outline-none transition focus:border-amber-400 cursor-pointer"
               >
+                <option value={-1}>🎲 Perguntas Aleatórias</option>
                 {studies.map((study, index) => (
                   <option key={study.estudo || index} value={index}>
                     Estudo {study.estudo} — {study.tema}
@@ -313,7 +355,7 @@ const Quiz = () => {
           )}
         </div>
 
-        <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/80 p-6 shadow-inner shadow-black/20">
+        <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/80 p-4 sm:p-6 shadow-inner shadow-black/20">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Resumo do quiz</p>
@@ -325,9 +367,6 @@ const Quiz = () => {
               Acertos: {score} / {questions.length || 1}
             </div>
           </div>
-          <div className="rounded-3xl bg-slate-950/90 p-4 text-sm text-slate-300">
-            Use este quiz para revisar cada lição do estudo atual. Ao finalizar, registre a pontuação manualmente no ranking.
-          </div>
         </div>
       </div>
 
@@ -337,7 +376,7 @@ const Quiz = () => {
         </div>
       ) : (
         <>
-          <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-6 shadow-2xl shadow-black/20">
+          <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-4 sm:p-6 shadow-2xl shadow-black/20">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -345,12 +384,31 @@ const Quiz = () => {
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold text-white">{question?.pergunta}</h2>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
-                {isCorrect === null ? 'Escolha uma alternativa' : isCorrect ? 'Resposta correta' : 'Resposta incorreta'}
-              </div>
+              <button
+                type="button"
+                onClick={handleToggleTimer}
+                disabled={!!selectedOption || timeLeft === 0}
+                className={`flex items-center gap-2 rounded-full px-5 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition cursor-pointer shadow-lg shadow-black/40 ${
+                  isTimerPaused
+                    ? 'border border-yellow-500/50 bg-linear-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 hover:from-yellow-500/30 hover:to-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed'
+                    : 'border border-cyan-500/50 bg-linear-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 hover:from-cyan-500/30 hover:to-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                {isTimerPaused ? (
+                  <>
+                    <span className="text-lg">⏸</span>
+                    <span>{timeLeft}s</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">▶</span>
+                    <span>{timeLeft}s</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
               {options.map((option, index) => {
                 const selected = selectedOption === option.text
                 const optionClass = selected
@@ -365,7 +423,7 @@ const Quiz = () => {
                     key={`${option.text}-${index}`}
                     disabled={!!selectedOption}
                     onClick={() => handleOptionClick(option)}
-                    className={`rounded-3xl border px-5 py-5 text-left text-sm font-medium transition cursor-pointer ${optionClass}`}
+                    className={`rounded-3xl border px-4 py-4 sm:px-5 sm:py-5 text-left text-sm font-medium transition cursor-pointer ${optionClass}`}
                   >
                     {option.text}
                   </button>
@@ -435,7 +493,7 @@ const Quiz = () => {
 
           {selectedOption && questionIndex === questions.length - 1 && (
             <section className="mt-6">
-              <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-6">
+              <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4 sm:p-6">
                 <h3 className="text-lg font-semibold text-white">Resumo da lição</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-400">
                   {currentStudy.tema}
@@ -467,20 +525,38 @@ const Quiz = () => {
         </>
       )}
 
-      <section className="mt-8 rounded-3xl border border-white/10 bg-slate-900/80 p-6">
+      <section className="mt-8 rounded-3xl border border-white/10 bg-slate-900/80 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-white">Ranking dos Participantes</h3>
         <p className="mt-2 text-sm text-slate-400">Pontuações atualizadas em tempo real.</p>
         <div className="mt-4 space-y-2">
           {sortedParticipants.slice(0, 10).map((participant, index) => {
             const scoreSummary = participant.scoreSummary || {}
             const totalScore = scoreSummary.totalScore || 0
+            let rankClass = 'text-amber-400'
+            let bgClass = 'bg-white/5'
+            let medal = ''
+            if (index === 0) {
+              rankClass = 'text-yellow-400'
+              bgClass = 'bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 border border-yellow-500/20'
+              medal = '🥇'
+            } else if (index === 1) {
+              rankClass = 'text-gray-300'
+              bgClass = 'bg-gradient-to-r from-gray-400/10 to-gray-500/10 border border-gray-400/20'
+              medal = '🥈'
+            } else if (index === 2) {
+              rankClass = 'text-orange-400'
+              bgClass = 'bg-gradient-to-r from-orange-500/10 to-orange-600/10 border border-orange-500/20'
+              medal = '🥉'
+            }
             return (
-              <div key={participant._id} className="flex items-center justify-between rounded-3xl bg-white/5 px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-amber-400">#{index + 1}</span>
-                  <span className="text-sm text-white">{participant.name}</span>
+              <div key={participant._id} className={`flex items-center justify-between rounded-3xl ${bgClass} px-3 py-3 sm:px-4 sm:py-3`}>
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <span className={`text-sm sm:text-base font-semibold ${rankClass} shrink-0`}>
+                    {medal || `#${index + 1}`}
+                  </span>
+                  <span className="text-sm sm:text-base text-white truncate">{participant.name}</span>
                 </div>
-                <span className="text-sm font-semibold text-white">{totalScore} pontos</span>
+                <span className="text-sm sm:text-base font-semibold text-white shrink-0 ml-2">{totalScore} pts</span>
               </div>
             )
           })}
