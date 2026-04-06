@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import ScreenShell from '../components/ScreenShell'
-import { apiFetch, getToken, getUserRole, saveSession } from '../lib/api'
+import { apiFetch, clearGroup, getToken, getUserRole, saveSession } from '../lib/api'
 
 const LockIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -70,8 +70,9 @@ export default function Login() {
       setIsLoggedIn(true)
       setUserRole(role)
     } else if (token) {
-      // Se estiver logado mas não for secretário, redirecionar
-      navigate('/participantes', { replace: true })
+      // Se estiver logado mas não for secretário, redirecionar para seleção de grupo
+      clearGroup() // Limpar grupo para forçar seleção
+      navigate('/group-select', { replace: true })
     }
   }, [navigate])
 
@@ -90,8 +91,9 @@ export default function Login() {
         body: JSON.stringify({ name: n, password: p }),
       })
       saveSession(data)
+      clearGroup() // Limpar grupo selecionado para forçar seleção após login
       toast.success('Login realizado com sucesso.')
-      navigate('/participantes', { replace: true })
+      navigate('/group-select', { replace: true })
     } catch (err) {
       toast.error(err.message)
     } finally {
