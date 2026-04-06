@@ -40,13 +40,15 @@ export default function GroupSelect() {
 
     setLoadingVerify(true)
     try {
-      const data = await apiFetch(`/groups/${selectedGroup._id}/verify`, {
+      const data = await apiFetch('/auth/select-group', {
         method: 'POST',
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ groupId: selectedGroup._id, password })
       })
-      saveGroup(data)
+      // Salvar novo token e grupo
+      localStorage.setItem('token', data.token)
+      saveGroup(data.group)
       navigate('/participantes')
-    } catch {
+    } catch (err) {
       toast.error('Senha incorreta.')
     } finally {
       setLoadingVerify(false)

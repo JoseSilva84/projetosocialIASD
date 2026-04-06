@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import Group from "../models/group.model.js";
 import User from "../models/user.model.js";
 
 const SALT_ROUNDS = 10;
@@ -138,5 +139,39 @@ export const deleteUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao excluir usuario." });
+  }
+};
+
+export const selectGroup = async (req, res) => {
+  try {
+    const { groupId, password } = req.body;
+    if (!groupId || !password) {
+      return res.status(400).json({ message: "ID do grupo e senha são obrigatórios." });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Grupo não encontrado." });
+    }
+
+    const isValid = await bcrypt.compare(password, group.passwordHash);
+    if (!isValid) {
+      return res.status(401).json({ message: "Senha incorreta." });
+    }
+
+    // Gerar novo token com groupId
+    const token = jwt.sign(
+      { sub: req.userId, role: req.userRole, groupId: groupId },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      group: { id: group._id, name: group.name }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao selecionar grupo." });
   }
 };

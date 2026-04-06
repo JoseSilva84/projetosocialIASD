@@ -10,7 +10,7 @@ export function requireAuth(req, res, next) {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = payload.sub;
     req.userRole = payload.role || 'user';
-    req.groupId = req.headers['x-group-id'] || null;
+    req.groupId = payload.groupId || null;
     next();
   } catch {
     return res.status(401).json({ message: "Token inválido ou expirado." });

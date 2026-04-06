@@ -58,35 +58,6 @@ export const listGroups = async (req, res) => {
   }
 };
 
-export const verifyGroupPassword = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { password } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "ID inválido." });
-    }
-
-    const group = await Group.findById(id);
-    if (!group) {
-      return res.status(404).json({ message: "Grupo não encontrado." });
-    }
-
-    const isValid = await bcrypt.compare(password, group.passwordHash);
-    if (!isValid) {
-      return res.status(401).json({ message: "Senha incorreta." });
-    }
-
-    res.json({
-      id: group._id,
-      name: group.name,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erro ao verificar senha." });
-  }
-};
-
 export const assignParticipantsToGroup = async (req, res) => {
   try {
     if (req.userRole !== "admin") {
