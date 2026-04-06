@@ -149,6 +149,13 @@ function getParticipantIdString(participantOrId) {
   return String(participantOrId)
 }
 
+function mapLessonToQuizStudy(lesson) {
+  const studyCount = 3
+  if (!Number.isFinite(Number(lesson)) || lesson < 1) return 1
+  const normalized = Math.min(Math.max(1, Number(lesson)), studyCount * 5)
+  return Math.min(Math.floor((normalized - 1) / 5) + 1, studyCount)
+}
+
 function getRankingHighlight(idx) {
   if (idx === 0) {
     return {
@@ -193,6 +200,7 @@ export default function Participantes() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('inscricoes')
   const [selectedBiblicalParticipantId, setSelectedBiblicalParticipantId] = useState('')
+  const [selectedBiblicalLesson, setSelectedBiblicalLesson] = useState(null)
   const [selectedFrequencyParticipantId, setSelectedFrequencyParticipantId] = useState('')
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
@@ -2125,19 +2133,40 @@ export default function Participantes() {
           >
             <div className="absolute inset-0 bg-linear-to-br from-amber-950/15 via-transparent to-slate-900/25 pointer-events-none" />
             <div className="relative">
-              <h2 id="biblico-heading" className="text-lg font-bold text-white text-center sm:text-left">
-                Estudo bíblico — dashboard interativo
-              </h2>
-              <p className="text-sm text-white/55 mt-1 mb-8 text-center sm:text-left max-w-2xl">
-                Escolha um participante <strong className="text-white/85">já inscrito</strong>, defina a
-                lição em estudo (anel ou cartões) e marque as concluídas. Salve para registrar no
-                sistema.
-              </p>
+              <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 id="biblico-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                    Estudo bíblico — dashboard interativo
+                  </h2>
+                  <p className="text-sm text-white/55 mt-1 max-w-2xl text-center sm:text-left">
+                    Escolha um participante <strong className="text-white/85">já inscrito</strong>, defina a
+                    lição em estudo (anel ou cartões) e marque as concluídas. Salve para registrar no
+                    sistema.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const study = mapLessonToQuizStudy(selectedBiblicalLesson)
+                    const params = new URLSearchParams()
+                    params.set('study', String(study))
+                    if (selectedBiblicalParticipantId) {
+                      params.set('participant', selectedBiblicalParticipantId)
+                    }
+                    navigate(`/quiz?${params.toString()}`)
+                  }}
+                  className="rounded-full bg-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-amber-500 transition cursor-pointer"
+                >
+                  Quiz bíblico
+                </button>
+              </div>
               <BiblicalStudyPanel
                 key={selectedBiblicalParticipantId || 'biblical-panel'}
                 participants={sortedParticipants}
                 loadingList={loadingList}
                 onUpdated={loadList}
+                onLessonSelected={setSelectedBiblicalLesson}
+                onParticipantSelected={setSelectedBiblicalParticipantId}
                 readOnly={userRole !== 'admin' && userRole !== 'secretario'}
                 initialParticipantId={selectedBiblicalParticipantId}
               />

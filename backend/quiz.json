@@ -1,0 +1,1672 @@
+{
+  "titulo": "Quiz - Ouvindo a Voz de Deus",
+  "estudos": [
+    {
+      "estudo": 1,
+      "tema": "A Bíblia Sagrada",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Como Jesus considerava a Bíblia? (João 17:17)",
+          "resposta": "A Palavra de Deus é a verdade. 'Santifica-os na verdade, a Tua Palavra é a verdade.'",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Qual é a situação de muitos estudantes da Bíblia e o que necessitam para entendê-la? (Atos 8:26-31)",
+          "resposta": "Estudam e não entendem. Para entendê-la, alguém precisa guiá-los/explicar.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual é a maneira correta de estudar a Bíblia? (Isaías 28:10)",
+          "opcoes": [
+            "Comparar os textos que tratam do mesmo assunto.",
+            "Buscar outras passagens que explicam o assunto.",
+            "Estudar sem pedir a orientação do Espírito Santo.",
+            "Um pouco aqui, e um pouco ali sobre o mesmo assunto."
+          ],
+          "resposta": ["Comparar os textos que tratam do mesmo assunto.", "Buscar outras passagens que explicam o assunto.", "Um pouco aqui, e um pouco ali sobre o mesmo assunto."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Que benefício recebe o estudante das Escrituras? (João 5:39)",
+          "resposta": "Através da Bíblia, encontramos a vida eterna. Ela testifica de Jesus. Jesus é o personagem central da Bíblia.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Que outro benefício prático advém de examinar a Bíblia? (João 16:13; 8:32)",
+          "resposta": "O Espírito Santo guia em toda a verdade. E é a verdade que nos liberta.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Quem dirigiu os profetas ao escreverem a Bíblia? (2Pedro 1:21)",
+          "resposta": "Homens santos falaram da parte de Deus, movidos/impelidos pelo Espírito Santo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Quanto do texto bíblico é inspirado por Deus? (2Timóteo 3:16)",
+          "opcoes": [
+            "Somente o Antigo Testamento.",
+            "Somente o Novo Testamento.",
+            "Toda a Bíblia é inspirada por Deus."
+          ],
+          "resposta": "Toda a Bíblia é inspirada por Deus.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 8,
+          "pergunta": "Que parte da Bíblia não foi escrita por autores humanos? (Êxodo 31:18)",
+          "resposta": "Os Dez Mandamentos (as tábuas de pedra), escritos pelo dedo de Deus.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 9,
+          "pergunta": "Está alguém autorizado a alterar a Bíblia? (Malaquias 3:6; Apocalipse 22:18,19)",
+          "resposta": "Não. Deus não muda, e ninguém pode acrescentar nem tirar nada das Escrituras.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 10,
+          "pergunta": "Como são chamados os praticantes dos ensinos bíblicos? (João 13:17; Tiago 1:22)",
+          "resposta": "Bem-aventurados/felizes, se praticardes os ensinamentos da Bíblia.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 2,
+      "tema": "A Beleza da Criação Divina",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Como era a Terra antes de ser criada? (Gênesis 1:2)",
+          "resposta": "A Terra era sem forma e vazia.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Como foi formado o Universo? (Hebreus 11:3; Salmo 33:6,9)",
+          "resposta": "Mediante a Palavra de Deus. Ele falou e tudo se fez; ordenou e tudo passou a existir.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Quem participou do ato da criação? (Gênesis 1:1-2; João 1:1-3)",
+          "resposta": "No princípio criou Deus (Pai) os céus e a Terra. O Espírito de Deus pairava sobre as águas. Todas as coisas foram feitas por meio de Jesus (o Verbo/Filho). As três Pessoas da Divindade: Pai, Filho e Espírito Santo.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 4,
+          "pergunta": "Como foi o processo diário da criação? (Gênesis 1)",
+          "resposta": {
+            "1_dia": "Luz (versos 3-5)",
+            "2_dia": "Firmamento/céu (versos 6-8)",
+            "3_dia": "Terra seca, mares e vegetação (versos 9-12)",
+            "4_dia": "Sol, lua e estrelas (versos 13-19)",
+            "5_dia": "Aves e criaturas aquáticas (versos 20-23)",
+            "6_dia": "Animais terrestres e o ser humano (versos 24-26, 31)",
+            "7_dia": "Descanso - Deus abençoou e santificou o sábado (Gênesis 2:1-3)"
+          },
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 5,
+          "pergunta": "Como se deu a criação do homem e da mulher? (Gênesis 1:26,27; 2:7,18-25)",
+          "resposta": "Homem foi criado do pó da terra. Mulher foi criada da costela de Adão. Ambos foram criados à imagem de Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Que presente o primeiro casal recebeu de Deus? (Gênesis 2:8,15)",
+          "resposta": "Receberam de Deus um lindo e maravilhoso jardim (o Jardim do Éden).",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Sob que condição eles viveriam eternamente no Jardim do Éden? (Gênesis 2:15-17)",
+          "resposta": "Não comer da árvore do conhecimento do bem e do mal. A desobediência acarretaria: 1) deixar o jardim e 2) ficar sujeitos à morte.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 3,
+      "tema": "A Origem do Mal",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "De quantos anjos é composto o exército de Deus? (Apocalipse 5:11)",
+          "resposta": "É composto de milhares e milhares (miríades de miríades) de anjos.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Que descrição a Bíblia faz de Lúcifer, o ex-líder dos anjos? (Ezequiel 28:14,15,17)",
+          "resposta": "'Perfeito eras nos teus caminhos', até cometer iniquidade. Iniquidade é transgressão da Lei de Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Que outros pecados esse anjo cometeu? (Isaías 14:12-14)",
+          "opcoes": [
+            "Queria assentar-se no trono de Deus.",
+            "Pretendia ser semelhante ao Altíssimo.",
+            "Queria o lugar de Deus e ser adorado.",
+            "Amou a Deus."
+          ],
+          "resposta": ["Queria assentar-se no trono de Deus.", "Pretendia ser semelhante ao Altíssimo.", "Queria o lugar de Deus e ser adorado."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Qual foi o resultado da rebeldia desse anjo? (Apocalipse 12:7-9)",
+          "resposta": "Houve no Céu uma grande guerra/batalha entre Cristo e Satanás. Lúcifer e a terça parte dos anjos foram expulsos do Céu.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Que advertência Deus fez a Adão e Eva no Éden? (Gênesis 2:15-17)",
+          "resposta": "Deus disse: Não comam da árvore do conhecimento do bem e do mal. Se comerem, certamente morrerão.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Contrariando a advertência divina, o que a serpente disse à mulher? (Gênesis 3:1-5)",
+          "resposta": "A serpente disse: 'É certo que não morrereis. Sereis como deuses.'",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Que certeza Deus transmitiu a Adão e Eva, quando eles pecaram? (Gênesis 3:15)",
+          "resposta": "Jesus Cristo, o descendente da mulher, esmagaria a cabeça da serpente (Satanás). Ele viria ao mundo, morreria e ressuscitaria, decretando o fim do domínio de Satanás.",
+          "tipo": "completar"
+        },
+        {
+          "id": 8,
+          "pergunta": "De que maneira Satanás nos engana hoje? (2Coríntios 11:14,15; Mateus 24:24)",
+          "resposta": "Transformando-se em anjo de luz. Realizando falsos sinais e prodígios.",
+          "tipo": "completar"
+        },
+        {
+          "id": 9,
+          "pergunta": "Contra quem o inimigo está especialmente irado em nossos dias? (Apocalipse 12:12,17)",
+          "opcoes": [
+            "Contra aqueles que não seguem mandamento algum.",
+            "Contra aqueles que seguem os dez mandamentos.",
+            "Contra aqueles que escolhem alguns mandamentos para obedecer."
+          ],
+          "resposta": "Contra aqueles que seguem os dez mandamentos.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 10,
+          "pergunta": "Como nos é possível vencer Satanás? (Efésios 6:10-18)",
+          "resposta": "Revestindo-nos de toda a armadura de Deus. Tendo o escudo da fé, seguindo a Palavra de Deus, orando em todo o tempo.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 4,
+      "tema": "O Plano da Salvação",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Quantos são pecadores e qual é o resultado do pecado? (Romanos 5:12; 6:23)",
+          "resposta": "A morte passou a todos os homens, porquanto todos pecaram. O salário do pecado é a morte.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Que reação Deus manifestou diante da entrada do pecado? (Gênesis 3:8-10)",
+          "opcoes": [
+            "Abandonou o homem.",
+            "Não Se importou.",
+            "Procurou o homem."
+          ],
+          "resposta": "Procurou o homem.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual a condição da natureza humana após o pecado? (Gênesis 6:5; Salmo 51:5; Jeremias 13:23; 17:9; Mateus 15:19)",
+          "opcoes": [
+            "Ficou mais santa.",
+            "Tornou-se corrompida e depravada.",
+            "Permaneceu como era."
+          ],
+          "resposta": "Tornou-se corrompida e depravada.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Quais são outras características da natureza humana pecaminosa? (Efésios 2:3; 4:18; 1Coríntios 2:14; Romanos 7:15-19,23,24)",
+          "resposta": "Querer o bem está em mim, mas não consigo praticá-lo. O homem natural não compreende/aceita as coisas de Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Que plano Deus estabeleceu para nos salvar da morte eterna? (João 3:16)",
+          "resposta": "Deus amou o mundo de tal maneira que deu o Seu Filho Unigênito, para que todo aquele que nEle crê não pereça, mas tenha a vida eterna.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 6,
+          "pergunta": "O que Jesus fez por nós na cruz? (1Pedro 2:24; Isaías 53:5,6)",
+          "resposta": "Carregou em Seu corpo sobre o madeiro os nossos pecados. O Senhor fez cair sobre Ele a iniquidade de todos nós.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Quem pode mudar a natureza humana? (1Samuel 10:6; João 8:32)",
+          "resposta": "O Espírito Santo transforma e o conhecimento da verdade liberta.",
+          "tipo": "completar"
+        },
+        {
+          "id": 8,
+          "pergunta": "A salvação depende de nossas boas obras? (Efésios 2:8-9; Gálatas 2:16)",
+          "opcoes": ["Sim", "Não"],
+          "resposta": "Não.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 9,
+          "pergunta": "Como pode o homem alcançar a salvação? (1João 5:11-12; Hebreus 5:9)",
+          "resposta": "Aceitando a Cristo, o Autor da salvação eterna para todos os que lhe obedecem.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 5,
+      "tema": "Fé, Arrependimento e Confissão",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "O que é fé e qual é sua importância na vida cristã? (Hebreus 11:1,6; Romanos 5:1; Tiago 2:26)",
+          "resposta": "Fé é certeza. Ela agrada a Deus e produz paz. A fé sem obras é morta.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Qual é o objetivo da fé? (1João 5:4; 1Pedro 1:9)",
+          "resposta": "Vencer o mundo. O fim da fé é a salvação da alma.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Como desenvolver a fé? (Romanos 10:17)",
+          "resposta": "A fé vem enquanto ouvimos a Palavra de Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "O que Jesus veio fazer? (Lucas 5:32)",
+          "resposta": "Chamar pecadores ao arrependimento.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "O que nos leva ao arrependimento? (Romanos 2:4)",
+          "resposta": "A bondade/benignidade de Deus nos leva ao arrependimento.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "O que faz o pecador arrependido? (Salmo 38:18)",
+          "resposta": "Ele confessa os pecados a Jesus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "O que acontece com aquele que não confessa seus pecados? (Provérbios 28:13)",
+          "resposta": "Jamais prosperará. Mas quem confessa e deixa alcançará misericórdia.",
+          "tipo": "completar"
+        },
+        {
+          "id": 8,
+          "pergunta": "O que Deus faz quando confessamos nossos pecados? (1João 1:9; Miquéias 7:18,19; Isaías 43:25)",
+          "resposta": "Ele nos perdoa e nos purifica. Lança nossos pecados nas profundezas do mar.",
+          "tipo": "completar"
+        },
+        {
+          "id": 9,
+          "pergunta": "O que Deus espera de nós hoje? (Isaías 55:7)",
+          "resposta": "Deixemos o caminho do ímpio, nos convertamos e nos voltemos para Deus, pois é rico em perdoar.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 6,
+      "tema": "Sinais da Volta de Cristo",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que sinais seriam vistos no MUNDO SOCIAL antes da volta de Cristo? (Mateus 24:6,7,10; 2Timóteo 3:1-4)",
+          "resposta": "Guerras e rumores de guerras, nação contra nação, fome, pestilências e terremotos em vários lugares.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Que três grandes sinais no MUNDO NATURAL indicam a proximidade da volta de Jesus? (Mateus 24:7,29)",
+          "resposta": "1) Terremotos; 2) Escurecimento do Sol e da Lua (19/05/1780); 3) Queda de estrelas (13/11/1833).",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Que sinais seriam vistos no MUNDO RELIGIOSO antes da volta de Cristo? (Mateus 24:4,5,11,24)",
+          "resposta": "Haverá falsos cristos e falsos profetas. O engano será baseado em sinais e prodígios. A iniquidade será multiplicada.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Além desses, que importante sinal foi mencionado por Cristo? (Mateus 24:14)",
+          "resposta": "A pregação do evangelho verdadeiro em todo o mundo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "O que fazer para não ser enganado por 'outro evangelho'? (2João 4:1)",
+          "resposta": "Devo verificar/testar se o ensino está de acordo com a Palavra de Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Por que Deus manda provar o ensino dos profetas? (Mateus 7:15; 2Pedro 3:16)",
+          "opcoes": [
+            "Porque o engano, às vezes, parece verdade.",
+            "Para comprovar se o que é ensinado está de acordo com a Bíblia.",
+            "Porque, na Bíblia, tudo é fácil de entender."
+          ],
+          "resposta": ["Porque o engano, às vezes, parece verdade.", "Para comprovar se o que é ensinado está de acordo com a Bíblia."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 7,
+          "pergunta": "Como saber se uma doutrina é verdadeira? (João 7:17; Isaías 28:10)",
+          "opcoes": [
+            "Doutrina de acordo com toda a Bíblia.",
+            "Doutrina baseada em um só livro da Bíblia ou só no Novo Testamento.",
+            "Doutrina baseada em uma parábola e poucos versos da Bíblia."
+          ],
+          "resposta": "Doutrina de acordo com toda a Bíblia.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 8,
+          "pergunta": "Se os sinais estão se cumprindo, por que Jesus ainda não voltou? (2Pedro 3:9)",
+          "resposta": "Jesus está sendo longânimo/paciente, para que ninguém se perca.",
+          "tipo": "completar"
+        },
+        {
+          "id": 9,
+          "pergunta": "Que atitudes devemos ter no tempo do fim? (Lucas 21:28,34; Mateus 6:33)",
+          "resposta": "1) Exultar e erguer a cabeça. 2) Buscar a Deus em primeiro lugar.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 7,
+      "tema": "A Segunda Vinda de Cristo",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Como será a segunda vinda de Cristo? (João 14:1-3; Atos 1:9-11)",
+          "resposta": "Jesus virá de modo pessoal, visível e literal, da mesma forma que subiu ao Céu.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 2,
+          "pergunta": "O que ocorrerá com os salvos vivos na segunda vinda de Cristo? (1Tessalonicenses 4:16,17)",
+          "resposta": "Os mortos em Cristo ressuscitarão primeiro; depois, os vivos que restarem serão arrebatados juntos com eles nas nuvens, para encontrar o Senhor nos ares.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 3,
+          "pergunta": "O que ocorrerá com os vivos que não se prepararam para a segunda vinda de Cristo? (Apocalipse 6:15-17; 9:6; 2Tessalonicenses 2:8)",
+          "resposta": "Buscarão esconderijo nas rochas e pedirão aos montes que caiam sobre eles. Buscarão a morte, mas ela fugirá deles. Os ímpios serão destruídos ao verem o resplendor da glória de Jesus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "De quantas ressurreições a Bíblia fala? (João 5:28,29; Daniel 12:2)",
+          "opcoes": ["nenhuma", "uma", "duas", "várias"],
+          "resposta": "Duas. A primeira é a ressurreição da vida (dos justos) e a segunda é a ressurreição da condenação.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "Quanto tempo existirá entre a primeira e a segunda ressurreição? (Apocalipse 20:6)",
+          "opcoes": ["200 anos", "500 anos", "1000 anos"],
+          "resposta": "1000 anos (o milênio).",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 6,
+          "pergunta": "Qual será o cântico dos salvos naquele grandioso dia? (Isaías 25:9)",
+          "resposta": "Eis que Este é o nosso Deus, em quem esperávamos. Na Sua salvação nos alegraremos e nos regozijaremos.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Que convite Jesus nos faz hoje? (Mateus 11:28-29)",
+          "opcoes": ["Apartai-vos de Mim.", "Vinde a Mim.", "Nenhum convite."],
+          "resposta": "Vinde a Mim.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 8,
+          "pergunta": "Qual será o resultado da rejeição ao convite de Jesus? (Mateus 25:41)",
+          "resposta": "Irão para o fogo eterno preparado para o diabo e seus anjos.",
+          "tipo": "dissertativa"
+        }
+      ]
+    },
+    {
+      "estudo": 8,
+      "tema": "O Milênio",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Para onde irão os salvos após a volta de Cristo e quanto tempo ali permanecerão? (Apocalipse 20:6)",
+          "opcoes": [
+            "Irão para o Céu e reinarão com Cristo durante mil anos.",
+            "Serão sacerdotes de Deus; sobre eles a morte não terá mais poder.",
+            "Permanecerão vivos na Terra."
+          ],
+          "resposta": ["Irão para o Céu e reinarão com Cristo durante mil anos.", "Serão sacerdotes de Deus; sobre eles a morte não terá mais poder."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 2,
+          "pergunta": "O que os salvos farão no Céu durante os mil anos? (Apocalipse 20:4; 1Coríntios 6:2)",
+          "opcoes": [
+            "Os salvos receberão autoridade de julgar.",
+            "Os salvos decidirão o retorno de Lúcifer ao Céu.",
+            "Os salvos entenderão porque muitos não estarão lá."
+          ],
+          "resposta": ["Os salvos receberão autoridade de julgar.", "Os salvos entenderão porque muitos não estarão lá."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Como ficará a Terra durante esse período? (Jeremias 4:23-26; 25:33)",
+          "resposta": "A Terra ficará sem forma e vazia, voltará a ser um abismo. Nela não haverá pessoas vivas. As cidades ficarão todas destruídas. A Terra ficará cheia de pessoas mortas.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Quem permanecerá na Terra durante os mil anos? (Apocalipse 20:1-3)",
+          "resposta": "Nesse período, na Terra, ficarão vivos apenas Satanás e seus anjos, circunstancialmente presos.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Passados os mil anos, o que ocorrerá a Satanás e os ímpios? (Apocalipse 20:5-7)",
+          "resposta": "Os ímpios ressuscitarão. Satanás será solto de sua prisão, pois terá novamente a quem tentar.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Que outros eventos marcam o fim dos mil anos? (Apocalipse 21:2,10; 20:5,7)",
+          "resposta": "A Cidade Santa (Nova Jerusalém) descerá para a Terra. Dentro da cidade estarão os salvos com Cristo. Fora da cidade, estarão os perdidos juntamente com Satanás.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "O que Satanás fará com seu grande exército quando a Cidade Santa se aproximar da Terra? (Apocalipse 20:8)",
+          "resposta": "Reunirá seu exército, como a areia do mar, e se preparará para atacar e tentar possuir a Cidade Santa.",
+          "tipo": "completar"
+        },
+        {
+          "id": 8,
+          "pergunta": "Qual será a sentença final daqueles que rejeitaram a Deus e Sua vontade? (Apocalipse 20:9; Mateus 25:41)",
+          "resposta": "Descerá fogo do Céu e consumirá os que rejeitaram a salvação. O fogo foi preparado para o diabo e seus anjos.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 9,
+      "tema": "A Verdade Sobre a Morte",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que material Deus usou para criar o homem? (Gênesis 2:7)",
+          "resposta": "Pó da terra, e soprou em seu nariz o fôlego de vida. Portanto: corpo + fôlego de vida = alma vivente/ser humano.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Como a Bíblia se refere à alma? (Ezequiel 18:4; Gênesis 46:27; Deuteronômio 10:22)",
+          "resposta": "Todas as almas são de Deus. Alma significa pessoa viva.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "O que acontece com a pessoa quando morre?",
+          "resposta": {
+            "a": "Corpo volta a ser pó (Gn 3:19).",
+            "b": "Espírito/fôlego de vida volta para Deus (Ec 12:7).",
+            "c": "Memória é entregue ao esquecimento (Ec 9:5).",
+            "d": "A pessoa (alma vivente) vai para a sepultura (Ec 9:5,10; Jó 7:9,10).",
+            "e": "Os mortos não têm conhecimento de coisa alguma."
+          },
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 4,
+          "pergunta": "Quem, unicamente, possui imortalidade? (2Timóteo 6:16)",
+          "resposta": "O único que possui imortalidade é Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Sob que condição o homem conservaria sua imortalidade? (Gênesis 2:16,17)",
+          "resposta": "A condição era não comer do fruto da árvore do conhecimento do bem e do mal, ou seja, obedecer.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "O que o pecado ocasionou ao ser humano? (Romanos 5:12; 6:23)",
+          "resposta": "O pecado trouxe a morte, que por sua vez, passou a todos os homens.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Como Jesus considerou a morte? (João 11:11-14)",
+          "resposta": "Jesus afirmou que a morte é um sono.",
+          "tipo": "completar"
+        },
+        {
+          "id": 8,
+          "pergunta": "Até quando os mortos em Cristo permanecerão dormindo na sepultura? (João 5:28,29; 2Tessalonicenses 4:16)",
+          "resposta": "Até a segunda vinda de Jesus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 9,
+          "pergunta": "Qual será a recompensa dos que participarem da primeira ressurreição? (2Coríntios 15:51-53)",
+          "resposta": "Receberão a imortalidade perdida, num momento e fechar de olhos.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 10,
+      "tema": "A Nova Terra",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "O que o Senhor prometeu criar após o milênio? (2Pedro 3:13)",
+          "resposta": "Novos céus e nova Terra, onde habita a justiça.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Quem ficará fora da cidade e quem entrará nela? (Apocalipse 21:8,27; 2Coríntios 6:9,10)",
+          "resposta": "Ficarão de fora os ímpios e pecadores. Entrarão somente aqueles que têm o nome no livro da vida.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "O que não haverá na Nova Terra? (Apocalipse 21:4; Isaías 35:5,6,9,10)",
+          "opcoes": [
+            "Morte, luto, pranto e dor.",
+            "Vida eterna.",
+            "Deficientes físicos e enfermos.",
+            "Voz de choro e clamor."
+          ],
+          "resposta": ["Morte, luto, pranto e dor.", "Deficientes físicos e enfermos.", "Voz de choro e clamor."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Quais serão as atividades dos salvos na Nova Terra? (Isaías 65:21,22)",
+          "resposta": "Plantarão e colherão; cada um desfrutará do trabalho de suas mãos.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Como serão os animais na Nova Terra? (Isaías 65:25)",
+          "resposta": "O lobo e o cordeiro (e outros animais antes ferozes) pastarão juntos em harmonia.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Quão frequentemente os salvos adorarão a Deus na Nova Terra? (Isaías 66:22,23)",
+          "resposta": "De um sábado a outro, virá toda a carne a adorar perante Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Para quem Deus preparou essa cidade? (1Coríntios 2:9)",
+          "resposta": "Deus preparou esse novo lar para aqueles que O amam.",
+          "tipo": "completar"
+        },
+        {
+          "id": 8,
+          "pergunta": "Qual é a marca daqueles que amam Jesus? (João 14:15)",
+          "resposta": "Aquele que Me ama guardará os Meus mandamentos.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 11,
+      "tema": "Salvação pela Graça",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Como ocorria a salvação, segundo o Antigo Testamento? (Gênesis 6:8; 15:6; Salmo 6:4; 13:5; 86:15)",
+          "resposta": "A salvação, no Antigo Testamento, era unicamente pela graça.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "De acordo com o Novo Testamento, como podemos ser salvos? (Atos 15:11; Efésios 2:8; Romanos 3:24; 1João 5:11-12)",
+          "resposta": "A salvação no Novo Testamento é pela graça, mediante a fé. Há apenas um método de salvação em toda a Bíblia.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "O que Jesus fez para nos salvar? (Hebreus 9:22; Romanos 5:8)",
+          "resposta": "Jesus nos salva através de Sua morte/sangue na cruz.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Quais são os seis passos que confirmam a salvação?",
+          "resposta": {
+            "1": "Crer em Jesus como Salvador (At 16:31; 4:12).",
+            "2": "Arrepender-se e converter-se (At 3:19).",
+            "3": "Confessar os pecados (1Jo 1:9).",
+            "4": "Seguir os mandamentos de Jesus (Mt 19:16,17).",
+            "5": "Ser batizado por imersão (Mc 16:16).",
+            "6": "Ser perseverante (Mt 24:13)."
+          },
+          "tipo": "dissertativa"
+        }
+      ]
+    },
+    {
+      "estudo": 12,
+      "tema": "O Santuário de Deus",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que pedido especial fez Deus a Moisés? (Êxodo 25:8)",
+          "resposta": "Que construísse um santuário para que Deus pudesse habitar no meio do povo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Em que consistia o serviço diário do santuário? (Êxodo 29:38-42)",
+          "opcoes": [
+            "Oferecer dois cordeiros.",
+            "Oferecer dois cavalos.",
+            "Oferecer duas aves."
+          ],
+          "resposta": "Oferecer dois cordeiros (um de manhã e um à tarde).",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual era a festa que dava fim ao ciclo anual das cerimônias? (Levítico 23:27-31)",
+          "opcoes": ["Páscoa", "Pentecostes", "Expiação"],
+          "resposta": "Expiação (Dia da Expiação).",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Em que consistia a purificação do santuário? (Levítico 16)",
+          "resposta": "O sacerdote oferecia um bezerro por si e por sua família. Lançava sorte sobre os dois bodes. O sangue do bode era aspergido no lugar santíssimo. Os pecados eram transferidos para o bode Azazel, que era enviado ao deserto.",
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "Que acontecimento marcou a consumação do ritual do santuário terrestre? (Mateus 27:50,51; Hebreus 8:1,2)",
+          "resposta": "O véu do santuário se rasgou em duas partes de alto a baixo. Com a morte de Cristo, o santuário terrestre perdeu sua função. Cristo hoje ministra no verdadeiro santuário celestial.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Quais as evidências bíblicas de um santuário no Céu? (Êxodo 25:40; Apocalipse 4:5; 11:19)",
+          "resposta": "Abriu-se o santuário de Deus no Céu, e foi vista a arca da aliança. O santuário terrestre era cópia do celestial.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 13,
+      "tema": "O Juízo",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Para onde foi Jesus após Sua ascensão? (Hebreus 8:1,2; 9:24; Apocalipse 1:12,13)",
+          "resposta": "Foi atuar como ministro do santuário e do verdadeiro tabernáculo que o Senhor edificou.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Que profecia revela a data do início do Juízo? (Daniel 9:24-27)",
+          "opcoes": ["1260 anos", "1290 anos", "1335 anos", "2300 tardes e manhãs/anos"],
+          "resposta": "2300 tardes e manhãs/anos.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual é o papel de Jesus no julgamento? (João 5:22; Daniel 7:9,10)",
+          "resposta": "O Pai a ninguém julga. Mas ao Filho confiou todo o julgamento.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Além de Juiz, qual é a outra função desempenhada por Jesus? (1João 2:1)",
+          "resposta": "Temos um advogado/intercessor que intercede por nós junto ao Pai.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "O que Deus julgará? (Eclesiastes 12:14)",
+          "opcoes": [
+            "Somente as coisas boas.",
+            "Somente as coisas más.",
+            "Somente as coisas mais graves.",
+            "Todas as coisas."
+          ],
+          "resposta": "Todas as coisas.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 6,
+          "pergunta": "De que modo seremos julgados? (Apocalipse 20:12)",
+          "resposta": "Conforme o que está escrito nos livros (dos registros celestiais).",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Quantos comparecerão perante o tribunal de Cristo? (2Coríntios 5:10)",
+          "resposta": "Todos nós compareceremos perante o tribunal de Cristo.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 8,
+          "pergunta": "Que devemos fazer para sermos aprovados no Juízo? (Romanos 8:1)",
+          "resposta": "Nenhuma condenação há para os que estão em Cristo Jesus e guardam Seus mandamentos.",
+          "tipo": "completar"
+        },
+        {
+          "id": 9,
+          "pergunta": "Qual é a norma pela qual seremos julgados? (Tiago 2:10-12; Eclesiastes 12:13,14)",
+          "resposta": "Seremos julgados pela lei dos dez mandamentos.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 14,
+      "tema": "As Leis na Bíblia",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que tipos de leis encontramos na Bíblia?",
+          "resposta": {
+            "a": "Leis civis (Êxodo 21-22).",
+            "b": "Leis cerimoniais, envolvendo sacrifícios e ofertas (Levítico 1-4).",
+            "c": "Leis de saúde (Levítico 11).",
+            "d": "Lei moral - os dez mandamentos (Êxodo 20:3-17)."
+          },
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 2,
+          "pergunta": "Com a morte de Cristo, o que ocorreria com a lei cerimonial? (Daniel 9:27; Efésios 2:15; Colossenses 2:14)",
+          "opcoes": [
+            "Continuaria em vigor.",
+            "Seria cancelada.",
+            "Essa lei nunca existiu."
+          ],
+          "resposta": "Seria cancelada.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual foi a atitude de Jesus para com a lei dos dez mandamentos? (Mateus 5:17)",
+          "resposta": "Não penseis que vim revogar a lei e os profetas. Jesus confirmou a lei moral.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Qual foi a atitude de Jesus para com a lei moral? (João 15:10; Tiago 2:10-12)",
+          "resposta": "Jesus guardou os mandamentos do Pai. A fé não anula a lei; antes, a confirma.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "A fé em Cristo anula nossa obrigação de seguir os dez mandamentos? (Romanos 3:31)",
+          "opcoes": ["Sim", "Não"],
+          "resposta": "Não. Antes, a confirma.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 6,
+          "pergunta": "O que Jesus espera dos Seus seguidores? (1João 2:6; 5:2,3; Eclesiastes 12:13)",
+          "resposta": "Amar a Deus e guardar os Seus mandamentos, porque isto é o dever de todo o homem.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Quais são os benefícios da obediência aos mandamentos de Deus? (Salmo 19:7-11)",
+          "resposta": "Alegria, restauração e grande recompensa. A obediência é resultado da salvação, não a causa.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 15,
+      "tema": "A Lei Moral",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Quais são os dez mandamentos e quem é Seu autor? (Êxodo 20:3-17; 31:18)",
+          "opcoes": ["Moisés", "Pedro", "Salomão", "Deus"],
+          "resposta": "Deus.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 2,
+          "pergunta": "Segundo Jesus, em quantas partes estão divididos os dez mandamentos? (Mateus 22:36-40)",
+          "resposta": "A primeira parte: Amor a Deus; e a segunda, amor ao próximo. Destes dois mandamentos dependem toda a lei e os profetas.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual foi a atitude de Jesus em relação à validade dos mandamentos? (Mateus 5:17,18; 19:17; João 15:10)",
+          "opcoes": ["Confirmou", "Alterou, em parte", "Aboliu"],
+          "resposta": "Confirmou.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Deus permite mudanças em Sua Palavra ou nos mandamentos? (Malaquias 3:6; Apocalipse 22:18,19)",
+          "opcoes": ["Sim", "Não"],
+          "resposta": "Não.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "O que Paulo escreveu sobre os mandamentos de Deus? (Romanos 3:31; 7:12)",
+          "resposta": "Anulamos a lei pela fé? De maneira nenhuma. Antes, confirmamos a lei. A lei é santa e o mandamento santo, justo e bom.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "O que, segundo a Bíblia, aconteceria no futuro com a lei de Deus? (Daniel 8:12; 7:25)",
+          "opcoes": [
+            "A verdade de Deus seria jogada por terra.",
+            "Os dez mandamentos seriam alterados (mudariam os tempos e a lei).",
+            "Os homens teriam a permissão de Deus para mudar os Seus mandamentos."
+          ],
+          "resposta": ["A verdade de Deus seria jogada por terra.", "Os dez mandamentos seriam alterados (mudariam os tempos e a lei)."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 7,
+          "pergunta": "O que os homens fizeram com a verdade de Deus? (Romanos 1:25)",
+          "opcoes": [
+            "Seguiram a verdade.",
+            "Amaram a verdade.",
+            "Mudaram a verdade em mentira."
+          ],
+          "resposta": "Mudaram a verdade em mentira.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 8,
+          "pergunta": "O que muitos seguem hoje em lugar dos mandamentos de Deus? (Marcos 7:6-9,13)",
+          "opcoes": [
+            "Seguem tradições.",
+            "Seguem mandamentos de homens.",
+            "Seguem a Bíblia."
+          ],
+          "resposta": ["Seguem tradições.", "Seguem mandamentos de homens."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 9,
+          "pergunta": "O que é mais importante para Deus? (Atos 5:29; Tito 1:14)",
+          "resposta": "Antes importa obedecer a Deus que aos homens. Devemos rejeitar os mandamentos e as tradições de homens que nos desviam da verdade.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 16,
+      "tema": "O Mandamento Esquecido",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "O que diz o quarto mandamento? (Êxodo 20:8-11)",
+          "resposta": "Lembra-te do dia de sábado para o santificar. Em seis dias fez o Senhor os céus e a Terra, e ao sétimo dia descansou; por isso abençoou o dia de sábado e o santificou. O sétimo dia é o sábado.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Quem estabeleceu o sábado, quando e por quê? (Gênesis 2:1-3; Marcos 2:27,28)",
+          "resposta": "Deus estabeleceu o sábado na criação, antes de entrar o pecado no mundo. Fez isso para benefício do homem (para todos os seres humanos, não só para os judeus).",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Que dia Deus ordenou que fosse observado no tempo dos profetas? (Êx 16:23; Is 58:13,14; Jr 17:24,17; Ez 20:12,20; Ne 13:15,19)",
+          "resposta": "O sábado (sétimo dia) foi ordenado em todos esses períodos dos profetas.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Que dia foi observado por Jesus? (Lucas 4:16,31)",
+          "opcoes": ["Sábado", "Domingo", "Sexta-feira"],
+          "resposta": "Sábado.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "Que dia guardavam os seguidores de Jesus? (Lucas 23:53-56; Atos 13:14,27,42,44; 17:2; 18:4)",
+          "opcoes": ["Sábado", "Domingo", "Sexta-feira"],
+          "resposta": "Sábado.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 6,
+          "pergunta": "Que dia os salvos guardarão na Nova Terra? (Isaías 66:22-23)",
+          "opcoes": ["Sábado", "Domingo", "Sexta-feira"],
+          "resposta": "Sábado.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 7,
+          "pergunta": "Podemos ignorar esse mandamento? (Tiago 2:10-12; 1João 2:4)",
+          "opcoes": ["Sim", "Não"],
+          "resposta": "Não. A guarda do sábado é uma demonstração de amor a Deus.",
+          "tipo": "unica_escolha"
+        }
+      ]
+    },
+    {
+      "estudo": 17,
+      "tema": "Do Sábado para o Domingo",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Quantos e quais são os textos bíblicos que falam do domingo? (Mateus 28:1; Marcos 16:1,9; Lucas 24:1; João 20:1,19; Atos 20:7; 1Coríntios 16:2)",
+          "resposta": "Nenhum desses oito textos refere-se ao domingo como dia de adoração. O símbolo da ressurreição de Cristo é o batismo, não o domingo.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 2,
+          "pergunta": "O que ocorreria na Igreja cristã antes da volta de Jesus? (2Tessalonicenses 2:3,4; Daniel 8:12)",
+          "resposta": "A verdade seria jogada por terra pela apostasia. A igreja passaria por um período de abandono da verdade.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Que prática era observada entre os pagãos nos tempos de Moisés? (Deuteronômio 4:19; 17:2,3)",
+          "opcoes": [
+            "Adoração dos astros.",
+            "Adoração a Deus.",
+            "Adoração de animais."
+          ],
+          "resposta": "Adoração dos astros (Sol, Lua, estrelas).",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Que costume havia entre o povo de Deus nos tempos de Moisés? (Êxodo 16:22,23; Atos 15:21)",
+          "opcoes": [
+            "Observância do sábado.",
+            "Adoração ao Sol.",
+            "Adoração à imagens."
+          ],
+          "resposta": "Observância do sábado.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "Que hábito Jesus e o apóstolo Paulo tinham em comum? (Lucas 4:16; Atos 17:2)",
+          "opcoes": [
+            "Observar o sábado.",
+            "Observar o domingo.",
+            "Observar a sexta-feira."
+          ],
+          "resposta": "Observar o sábado.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 6,
+          "pergunta": "Como Jesus considera certas práticas cristãs que não têm fundamento bíblico? (Marcos 7:6-8,13)",
+          "resposta": "Em vão Me adoram, ensinando doutrinas que são preceitos de homens.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Quem ordenou a guarda do domingo e quando isso ocorreu?",
+          "resposta": "Foi o imperador Constantino, no dia 7 de março de 321 d.C. A Igreja Romana adotou oficialmente a observância do Domingo no ano 364 d.C. (Concílio de Calcedônia).",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 8,
+          "pergunta": "Quem instituiu a observância do sábado e quando isso ocorreu? (Gênesis 2:1-3; Êxodo 20:8-11)",
+          "opcoes": [
+            "Judeus, no Monte Sinai.",
+            "Romanos, na Palestina.",
+            "Deus, na criação."
+          ],
+          "resposta": "Deus, na criação.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 9,
+          "pergunta": "Quem deve ter prioridade em nossa obediência? (Atos 5:29; Tito 1:14)",
+          "resposta": "Antes importa obedecer a Deus. Não se importem com mandamentos de homens desviados da verdade.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 18,
+      "tema": "Princípios de Saúde",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que cuidado Deus teve para com o homem recém-criado? (Gênesis 1:29,30)",
+          "resposta": "O ser humano deveria ter uma dieta/alimentação natural (à base de grãos, frutas, verduras e legumes).",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Quando Deus permitiu ao homem o uso de alimentação cárnea? (Gênesis 9:3,4)",
+          "opcoes": [
+            "Após a entrada do pecado.",
+            "Na criação.",
+            "Após o dilúvio."
+          ],
+          "resposta": "Após o dilúvio.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Mesmo permitindo o uso da carne, que orientações deu o Senhor? (Levíticos 11:47)",
+          "resposta": "Deus pediu para fazer diferença entre animais imundos e limpos.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Quais são as características dos animais limpos? (Levítico 11:2-12)",
+          "resposta": "O animal deve ruminar e ter os cascos divididos em dois. Dos rios e mares, usar apenas os que têm escamas e nadadeiras.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "O que a Bíblia fala sobre o uso de bebidas alcoólicas? (Provérbios 20:1; 23:29-35)",
+          "opcoes": [
+            "Permite moderadamente.",
+            "Não permite.",
+            "Deixa a nosso critério."
+          ],
+          "resposta": "Não permite.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 6,
+          "pergunta": "Por que Deus se preocupa com a nossa alimentação? (1Coríntios 6:19,20)",
+          "resposta": "Nosso corpo é o templo do Espírito Santo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "O que Deus deseja para cada um dos Seus filhos? (3João 2; Êxodo 15:26)",
+          "resposta": "Que tenhamos saúde e que nenhuma enfermidade venha sobre nós.",
+          "tipo": "completar"
+        },
+        {
+          "id": 8,
+          "pergunta": "Qual é a boa notícia de Deus para quem não conhecia o assunto que estudamos? (Atos 17:30; Tiago 4:17)",
+          "resposta": "Deus não leva em conta os tempos de ignorância.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 19,
+      "tema": "O Dom de Profecia",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Qual, diz a Bíblia, seria um dos sinais do fim? (Mateus 24:24)",
+          "resposta": "Falsos cristos e falsos profetas que enganariam através de sinais e prodígios.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Como saber se um profeta é verdadeiro ou falso? (1João 4:1)",
+          "resposta": "Devemos testar/provar os espíritos para saber se são de Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Quais as características de um profeta verdadeiro, segundo a Bíblia?",
+          "resposta": {
+            "a": "Aceita a encarnação de Cristo (1Jo 4:2).",
+            "b": "Manifesta bons frutos em sua vida (Mt 7:15-23).",
+            "c": "Cumprem-se as suas profecias (Dt 18:21,22).",
+            "d": "Vive em conformidade com a Bíblia e a lei de Deus (Dt 13:1-3; Is 8:19,20).",
+            "e": "Suas visões são acompanhadas de fenômenos físicos (Dn 10:7-10)."
+          },
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 4,
+          "pergunta": "Que mulheres tiveram o dom de profecia na Bíblia?",
+          "resposta": {
+            "a": "Miriã - Êxodo 15:20.",
+            "b": "Débora - Juízes 4:4.",
+            "c": "Ana - Lucas 2:36.",
+            "d": "Filhas de Filipe - Atos 21:8,9."
+          },
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 5,
+          "pergunta": "Que Igreja teria o verdadeiro dom de profecia? (Apocalipse 12:17; 19:10)",
+          "resposta": "Nos últimos dias, o verdadeiro dom de profecia seria visto dentro da Igreja que segue os mandamentos de Deus.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 6,
+          "pergunta": "Por que os adventistas do sétimo dia aceitam que o dom de profecia manifestou-se através do ministério de Ellen G. White?",
+          "resposta": "a) Seus ensinos são fundamentados na Bíblia. b) Ela exalta a pessoa de Cristo. c) O cumprimento de suas profecias. d) Os frutos positivos em sua vida. e) Adventistas e não adventistas aceitam seus escritos como inspirados. f) Sua vida e seus ensinos estavam em conformidade com a Bíblia e a lei de Deus.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 7,
+          "pergunta": "Qual é a nossa segurança nos dias finais? (2Crônicas 20:20; 1Tessalonicenses 5:20)",
+          "resposta": "Crer no verdadeiro dom de profecia. Assim estaremos bem fundamentados e seguros.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 20,
+      "tema": "O Dízimo",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Como Deus manifestou Seu amor por nós? (1João 4:9)",
+          "opcoes": ["Entregando-Se", "Negando-Se", "Castigando"],
+          "resposta": "Entregando-Se (dando Seu Filho).",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 2,
+          "pergunta": "Por que razão Deus possui direito sobre nós e nossos bens? (Gênesis 1:1; Salmos 24:1; 50:10,11)",
+          "opcoes": [
+            "Porque é o Criador.",
+            "Porque é o Mantenedor.",
+            "Porque é o Redentor.",
+            "Porque é o Interesseiro."
+          ],
+          "resposta": ["Porque é o Criador.", "Porque é o Mantenedor.", "Porque é o Redentor."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Que percentual de nossas rendas Deus reservou para que Lhe devolvêssemos como ato de adoração? (Levítico 27:30)",
+          "opcoes": ["5%", "20%", "10%", "0%"],
+          "resposta": "10%.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Qual é o destino dos dízimos? (Números 18:21; 1Coríntios 9:14; Malaquias 3:10)",
+          "resposta": "O dízimo é para a manutenção dos levitas/pastores que pregam o evangelho.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "O que Deus diz daqueles que retêm os dízimos e ofertas? (Malaquias 3:8; Ageu 1:6)",
+          "opcoes": [
+            "Aceita suas desculpas.",
+            "Não diz nada.",
+            "Reprova sua atitude."
+          ],
+          "resposta": "Reprova sua atitude.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 6,
+          "pergunta": "Que promessas Deus faz aos que fielmente Lhe devolvem o dízimo? (Provérbios 3:9,10; Malaquias 3:10-12)",
+          "resposta": "Deus abrirá as janelas do céu e derramará bênçãos sem medida; reprovará o devorador e as colheitas não serão destruídas.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 7,
+          "pergunta": "O que Deus espera de nós? (2Coríntios 9:7; Atos 17:30)",
+          "opcoes": [
+            "Fidelidade sistemática.",
+            "Dar sempre com alegria e generosidade.",
+            "Participar quando posso e quando quero."
+          ],
+          "resposta": ["Fidelidade sistemática.", "Dar sempre com alegria e generosidade."],
+          "tipo": "multipla_escolha"
+        }
+      ]
+    },
+    {
+      "estudo": 21,
+      "tema": "Ofertar, um Ato de Adoração",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que reconhecimento a pessoa demonstra ao ofertar a Deus? (Deuteronômio 16:16; 1Crônicas 29:13,14)",
+          "resposta": "Reconhece que tudo vem de Deus e das Suas mãos Lho devolvemos.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Em que nível de importância a Bíblia coloca dízimos e ofertas como elementos de adoração? (Malaquias 3:8)",
+          "resposta": "Dízimos e ofertas têm sentidos diferentes, mas são complementares e estão em pé de igualdade como atos de adoração.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 3,
+          "pergunta": "Quais são os critérios bíblicos para a separação das ofertas? (Deuteronômio 16:17; 1Coríntios 16:2; 2Coríntios 9:5)",
+          "resposta": "A oferta deve ser: individual e voluntária; planejada; regular e sistemática; proporcional às bênçãos recebidas.",
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Antes de adorar a Deus com a devolução fiel de dízimos e ofertas, o que devemos entregar-Lhe primeiro? (2Coríntios 8:5)",
+          "resposta": "Os cristãos macedônios, em primeiro lugar, entregaram-se ao Senhor. A entrega pessoal precede a entrega material.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Qual deve ser a motivação para ofertarmos? (1Coríntios 13:1-3; João 3:16)",
+          "opcoes": [
+            "Enriquecer a Deus.",
+            "Ser reconhecido como generoso.",
+            "Amor a Deus e a Sua causa."
+          ],
+          "resposta": "Amor a Deus e a Sua causa.",
+          "tipo": "unica_escolha"
+        }
+      ]
+    },
+    {
+      "estudo": 22,
+      "tema": "Como Identificar a Igreja Verdadeira",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Qual é a recomendação da Bíblia para encontrar a Igreja verdadeira? (João 7:17; 1Timóteo 3:15)",
+          "resposta": "A Igreja verdadeira é conhecida pela doutrina. Ela aceita toda a Bíblia como única regra de fé e prática.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 2,
+          "pergunta": "Qual é a primeira coluna que sustenta a Igreja de Deus? (Efésios 2:19,20)",
+          "resposta": "Fundamento dos apóstolos (Novo Testamento) e dos profetas (Antigo Testamento), sendo Jesus Cristo a pedra principal.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual é a segunda coluna? (Atos 16:30,31; 4:12)",
+          "resposta": "A salvação é unicamente pela fé em Cristo.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 4,
+          "pergunta": "Qual é a terceira coluna? (João 14:1-3)",
+          "resposta": "O ensino da volta de Jesus com milhares de anjos. Os mortos ressuscitarão e reinarão com Cristo por mil anos.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 5,
+          "pergunta": "Qual é a quarta coluna? (João 14:15; Apocalipse 12:17)",
+          "resposta": "Ensinar e pregar a validade da Lei dos dez mandamentos.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 6,
+          "pergunta": "Qual é a quinta coluna? (Apocalipse 12:17; 19:10)",
+          "resposta": "O testemunho de Jesus é o Espírito de Profecia, ou dom de profecia, característico da Igreja de Deus nos últimos dias.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 7,
+          "pergunta": "Qual é a sexta coluna? (Isaías 58:13; Ezequiel 20:12,20)",
+          "resposta": "A Igreja do Deus vivo ensina a vigência do sábado como verdadeiro dia de adoração.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 8,
+          "pergunta": "Qual é a sétima coluna? (Mateus 24:14; Apocalipse 14:6)",
+          "resposta": "A Igreja de Deus é um movimento mundial de pregação do evangelho eterno a toda nação, tribo, língua e povo.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 9,
+          "pergunta": "Qual é a oitava coluna? (1Coríntios 3:16,17; 6:19,20)",
+          "resposta": "A Igreja verdadeira segue os princípios bíblicos de saúde.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 10,
+          "pergunta": "Qual é o apelo que Deus faz a Seus filhos sinceros que ainda participam de grupos religiosos que não ensinam toda a verdade bíblica? (Mateus 7:21-23; João 10:16; Apocalipse 18:4)",
+          "resposta": "Deus chama Seus filhos a saírem desses grupos para não participarem de seus pecados e não receberem suas pragas.",
+          "tipo": "dissertativa"
+        }
+      ]
+    },
+    {
+      "estudo": 23,
+      "tema": "Por que Devo Ser Batizado",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Quantas espécies de batismo são reconhecidas na Bíblia? (Efésios 4:5)",
+          "resposta": "Há um só Senhor, uma só fé, um só batismo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Qual o significado do batismo na Bíblia? (Romanos 6:3-4; Colossenses 2:12)",
+          "resposta": "a) Morte para o pecado. b) Sepultamento do homem velho. c) Ressurreição para nova vida em Cristo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "De que forma Cristo foi batizado por João? (Marcos 1:9-10)",
+          "opcoes": ["Aspersão", "Imersão"],
+          "resposta": "Imersão.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Que razão Jesus apresentou para ser batizado? (Mateus 3:13-15)",
+          "opcoes": [
+            "Porque era pecador.",
+            "Para dar o exemplo.",
+            "Para cumprir a justiça."
+          ],
+          "resposta": "Para cumprir a justiça.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "De acordo com Pedro, no dia de Pentecostes, de que maneira o povo deveria mostrar seu arrependimento? (Atos 2:38)",
+          "resposta": "Arrependendo-se e sendo batizado cada um em nome de Jesus Cristo para remissão dos pecados, e receberiam o dom do Espírito Santo.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 6,
+          "pergunta": "Quão essencial é que a pessoa seja batizada nas águas? (João 3:5; Marcos 16:16)",
+          "resposta": "Quem não nascer da água e do Espírito não pode entrar no reino de Deus. Quem crer e for batizado será salvo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 7,
+          "pergunta": "Quando devo tomar a decisão de entregar-me a Deus através do batismo? (Hebreus 3:15; 2Coríntios 6:2)",
+          "opcoes": ["Hoje", "Amanhã", "Algum dia"],
+          "resposta": "Hoje.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 8,
+          "pergunta": "O que acontecerá se atendermos a ordem de Jesus? (Apocalipse 22:14)",
+          "resposta": "Teremos direito à árvore da vida e entraremos na cidade pelas portas.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 24,
+      "tema": "Princípios de Vida Cristã",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que práticas frequentes contribuem para a manutenção e fortalecimento da fé?",
+          "resposta": {
+            "a": "Estudo da Bíblia (João 5:39).",
+            "b": "Oração (Colossenses 4:2).",
+            "c": "Frequência à Igreja (Hebreus 10:25).",
+            "d": "Testemunhar de Jesus (Marcos 5:18-20)."
+          },
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 2,
+          "pergunta": "Como devemos viver as horas do sábado? (Isaías 58:13,14; Lucas 4:16,31)",
+          "resposta": "O sábado é um dia de adoração, comunhão e serviço desinteressado ao semelhante. Os limites vão do pôr-do-sol de sexta-feira ao pôr-do-sol do sábado.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 3,
+          "pergunta": "Como devem os membros da Igreja se comportar em relação a seus irmãos? (Efésios 4:25; Gálatas 5:13; 6:1,10)",
+          "opcoes": [
+            "Falar a verdade.",
+            "Servir uns aos outros.",
+            "Fazer o bem."
+          ],
+          "resposta": ["Falar a verdade.", "Servir uns aos outros.", "Fazer o bem."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Que princípios a Bíblia estabelece para o vestuário feminino? (1Pedro 3:3,4; 1Timóteo 2:9)",
+          "resposta": "As mulheres devem se vestir com modéstia e bom senso/discrição.",
+          "tipo": "completar"
+        },
+        {
+          "id": 5,
+          "pergunta": "Qual é a atitude do cristão para com o casamento? (1Coríntios 7:10-14; Mateus 19:8,9; Hebreus 13:4)",
+          "resposta": "O casamento é para a vida toda. O divórcio não foi ordenado por Deus. O leito conjugal é honroso.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 6,
+          "pergunta": "O que diz a Bíblia sobre costumes e diversões mundanos? (1João 2:15-17; Tiago 4:4)",
+          "resposta": "Não amemos o mundo nem as coisas que nele há. A amizade com o mundo é inimizade contra Deus.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 7,
+          "pergunta": "Que princípios a Bíblia estabelece para orientar o comportamento sexual? (Êxodo 20:14; 1Coríntios 6:9,18)",
+          "resposta": "Não adulterarás. Os fornicários não herdarão o reino de Deus. Fujamos da fornicação.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 8,
+          "pergunta": "Que cerimônias foram instituídas por Jesus para os cristãos? (João 13:4,5,15; 1Coríntios 11:23-28)",
+          "resposta": "Santa Ceia: comemora a morte de Jesus e nossa morte para o pecado. Lava-pés: cerimônia da humildade. Pão: representa o corpo de Jesus. Suco da uva: simboliza o sangue de Cristo.",
+          "tipo": "dissertativa"
+        }
+      ]
+    },
+    {
+      "estudo": 25,
+      "tema": "Educação Cristã",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Por que é importante seguir os conselhos de Deus a respeito da educação de nossos filhos? (Jó 36:22)",
+          "resposta": "Porque Deus é o grande Mestre/educador. Seus métodos são os mais eficazes.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 2,
+          "pergunta": "Qual foi o método original de ensino utilizado por Deus? (Gênesis 2:15-17; 3:8-10)",
+          "opcoes": [
+            "Deus transmitia Seus ensinos face a face.",
+            "Deus ensinava através da natureza."
+          ],
+          "resposta": "Deus transmitia Seus ensinos face a face.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Que diferença existe entre a educação cristã e a educação secular? (1Coríntios 2:12; 3:19)",
+          "resposta": "A sabedoria deste mundo é loucura diante de Deus.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Qual é o conselho que a Bíblia dá aos pais com respeito à educação dos filhos? (Deuteronômio 6:5-9; Efésios 6:4)",
+          "resposta": "Ensinar os filhos a amar a Deus de todo o coração, alma e força. Instruí-los nos caminhos do Senhor, sem provocá-los à ira.",
+          "tipo": "dissertativa"
+        },
+        {
+          "id": 5,
+          "pergunta": "Qual é o resultado da educação ministrada aos filhos segundo os caminhos do Senhor? (Provérbios 22:6)",
+          "resposta": "Ensina a criança no caminho em que deve andar e, ainda quando for velho, não se desviará dele.",
+          "tipo": "completar"
+        }
+      ]
+    },
+    {
+      "estudo": 26,
+      "tema": "A Vida no Espírito",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "Que promessa Jesus fez aos discípulos antes de Sua ascensão? (João 14:16; Lucas 24:49)",
+          "resposta": "Jesus pediu ao Pai, e Ele daria outro Consolador/Espírito Santo para estar com eles para sempre.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "O que os discípulos fizeram após a ascensão de Cristo? (Atos 1:4; 12-14)",
+          "opcoes": [
+            "Testemunharam.",
+            "Oraram e esperaram.",
+            "Se separaram."
+          ],
+          "resposta": "Oraram e esperaram.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 3,
+          "pergunta": "Como o Espírito Santo é apresentado na Bíblia? (Atos 5:3,4; Mateus 28:19)",
+          "opcoes": [
+            "Ente divino.",
+            "É uma força impessoal.",
+            "Não existe."
+          ],
+          "resposta": "Ente divino.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 4,
+          "pergunta": "Quais são as funções desempenhadas pelo Espírito Santo? (João 14:26; 16:8-13; 1Samuel 10:6)",
+          "opcoes": [
+            "Ensinar algumas coisas.",
+            "Guiar em toda a verdade.",
+            "Convencer do pecado, da justiça e do juízo.",
+            "Mudar a natureza humana."
+          ],
+          "resposta": ["Guiar em toda a verdade.", "Convencer do pecado, da justiça e do juízo.", "Mudar a natureza humana."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "Quando uma pessoa é batizada com o Espírito Santo? (João 3:5; Mateus 3:16)",
+          "resposta": "Quando é batizada nas águas. A Bíblia associa o batismo do Espírito Santo ao batismo nas águas.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "Como podemos saber se o crente possui ou não o Espírito Santo? (Atos 5:32; Gálatas 5:22-23)",
+          "opcoes": [
+            "Ama a Deus, obedece aos Seus mandamentos e à Sua Palavra.",
+            "Sua vida apresenta o fruto, ou as virtudes do Espírito.",
+            "Fala em línguas estranhas."
+          ],
+          "resposta": ["Ama a Deus, obedece aos Seus mandamentos e à Sua Palavra.", "Sua vida apresenta o fruto, ou as virtudes do Espírito."],
+          "tipo": "multipla_escolha"
+        },
+        {
+          "id": 7,
+          "pergunta": "O que devemos pedir hoje a Jesus? (Lucas 11:13)",
+          "opcoes": ["Espírito Santo", "Alegria", "Nada"],
+          "resposta": "Espírito Santo.",
+          "tipo": "unica_escolha"
+        }
+      ]
+    },
+    {
+      "estudo": 27,
+      "tema": "Um Ministério para Todos",
+      "perguntas": [
+        {
+          "id": 1,
+          "pergunta": "O que, de acordo com a afirmação de Jesus, devemos ser? (Mateus 5:13,14)",
+          "resposta": "Sal da terra e luz do mundo.",
+          "tipo": "completar"
+        },
+        {
+          "id": 2,
+          "pergunta": "Quando é que o crente se torna luz no mundo? (Atos 1:8)",
+          "resposta": "Mas, recebereis poder ao descer sobre vós o Espírito Santo, e sereis Minhas testemunhas.",
+          "tipo": "completar"
+        },
+        {
+          "id": 3,
+          "pergunta": "Qual é a dádiva do Espírito Santo àqueles que O aceitam? (Gálatas 5:22-23; 1Coríntios 12:7-11)",
+          "resposta": "Fruto e dons/ministérios espirituais.",
+          "tipo": "completar"
+        },
+        {
+          "id": 4,
+          "pergunta": "Qual é o dom que Deus considera mais importante de acordo com 1Coríntios 13:1-3,13?",
+          "opcoes": [
+            "Dom de curar.",
+            "Dom de Línguas.",
+            "Dom do amor."
+          ],
+          "resposta": "Dom do amor.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 5,
+          "pergunta": "O que Deus espera de mim quando descubro meus dons? (1Timóteo 4:14)",
+          "resposta": "Não te faças negligente para com o dom que há em ti.",
+          "tipo": "completar"
+        },
+        {
+          "id": 6,
+          "pergunta": "O que a Bíblia diz que somos após o batismo? (1Pedro 2:9)",
+          "opcoes": [
+            "Membros passivos da Igreja.",
+            "Tornamo-nos ministros ou sacerdotes de Deus."
+          ],
+          "resposta": "Tornamo-nos ministros ou sacerdotes de Deus.",
+          "tipo": "unica_escolha"
+        },
+        {
+          "id": 7,
+          "pergunta": "Qual é a missão que recebemos de Jesus hoje? (Mateus 28:19-20)",
+          "resposta": "Portanto, ide e fazei discípulos de todas as nações, batizando-os e ensinando-os a guardar os mandamentos.",
+          "tipo": "completar"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { apiFetch } from '../../lib/api'
 import { BIBLICAL_LESSONS } from '../../lib/biblicalLessons'
@@ -65,6 +65,8 @@ export default function BiblicalStudyPanel({
   participants,
   loadingList,
   onUpdated,
+  onLessonSelected,
+  onParticipantSelected,
   readOnly = false,
   initialParticipantId = '',
 }) {
@@ -84,6 +86,18 @@ export default function BiblicalStudyPanel({
     () => participants.find((p) => participantIdString(p) === participantId),
     [participants, participantId]
   )
+
+  useEffect(() => {
+    if (typeof onLessonSelected === 'function') {
+      onLessonSelected(currentLesson)
+    }
+  }, [currentLesson, onLessonSelected])
+
+  useEffect(() => {
+    if (typeof onParticipantSelected === 'function') {
+      onParticipantSelected(participantId)
+    }
+  }, [participantId, onParticipantSelected])
 
   const rankingParticipants = useMemo(() => {
     const ranked = [...participants].sort((a, b) => {

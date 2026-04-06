@@ -6,6 +6,7 @@ import { getGroupId, getToken, getUserRole } from './lib/api'
 import GroupSelect from './pages/GroupSelect'
 import Login from './pages/Login'
 import Participantes from './pages/Participantes'
+import Quiz from './pages/Quiz'
 import Register from './pages/Register'
 
 function HomeRedirect() {
@@ -38,6 +39,7 @@ function App() {
         <Route path="/cadastro" element={<Register />} />
         <Route path="/group-select" element={<GroupSelect />} />
         <Route path="/participantes" element={<Participantes />} />
+        <Route path="/quiz" element={<Quiz />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AppFooter />
