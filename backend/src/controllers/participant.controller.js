@@ -265,12 +265,12 @@ export const patchExtraScore = async (req, res) => {
     const parsedPoints = Number(req.body?.points);
     const reason = String(req.body?.reason || "").trim();
 
-    if (!Number.isFinite(parsedPoints) || parsedPoints <= 0) {
-      return res.status(400).json({ message: "Informe uma pontuacao extra maior que zero." });
+    if (!Number.isFinite(parsedPoints) || parsedPoints === 0) {
+      return res.status(400).json({ message: "Informe uma pontuacao diferente de zero." });
     }
 
     if (!reason) {
-      return res.status(400).json({ message: "Informe o motivo da pontuacao extra." });
+      return res.status(400).json({ message: "Informe o motivo da pontuacao." });
     }
 
     const filter = req.userRole === "admin" ? { _id: id, groupId: req.groupId } : { _id: id, groupId: req.groupId };

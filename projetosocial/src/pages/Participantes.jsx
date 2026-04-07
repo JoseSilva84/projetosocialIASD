@@ -227,6 +227,7 @@ export default function Participantes() {
   const [updatingIds, setUpdatingIds] = useState(new Set())
   const [extraDrafts, setExtraDrafts] = useState({})
   const [extraSavingIds, setExtraSavingIds] = useState(new Set())
+  const [bulkExtraMode, setBulkExtraMode] = useState('add')
   const [rankingExtraSearch, setRankingExtraSearch] = useState('')
   const [selectedExtraParticipantIds, setSelectedExtraParticipantIds] = useState([])
   const [drawMode, setDrawMode] = useState('nome')
@@ -1540,18 +1541,19 @@ export default function Participantes() {
     const draft = extraDrafts['bulk'] || { points: '', reason: '' }
     const points = Number(draft.points)
     const reason = (draft.reason || '').trim()
+    const isRemoving = bulkExtraMode === 'remove'
 
     if (!Number.isFinite(points) || points <= 0) {
-      toast.error('Informe uma pontuação extra maior que zero.')
+      toast.error(`Informe uma quantidade de pontos ${isRemoving ? 'a remover' : 'maior que zero'}.`)
       return
     }
 
     if (!reason) {
-      toast.error('Informe o motivo da pontuação extra.')
+      toast.error(`Informe o motivo da ${isRemoving ? 'remoção' : 'pontuação extra'}.`)
       return
     }
 
-    const ids = selectedExtraParticipants.map(p => p._id)
+    const ids = selectedExtraParticipants.map((p) => p._id)
     if (ids.length === 0) {
       toast.error('Selecione pelo menos um participante.')
       return
@@ -1559,7 +1561,7 @@ export default function Participantes() {
 
     setExtraSavingIds((prev) => {
       const next = new Set(prev)
-      ids.forEach(id => next.add(id))
+      ids.forEach((id) => next.add(id))
       return next
     })
 
@@ -1568,7 +1570,7 @@ export default function Participantes() {
         ids.map((id) =>
           apiFetch(`/participants/${id}/extra-score`, {
             method: 'PATCH',
-            body: JSON.stringify({ points, reason }),
+            body: JSON.stringify({ points: isRemoving ? -points : points, reason }),
           })
         )
       )
@@ -1579,14 +1581,14 @@ export default function Participantes() {
       }))
       setRankingExtraSearch('')
       setSelectedExtraParticipantIds([])
-      toast.success('Pontuação extra adicionada com sucesso aos participantes.')
+      toast.success(`Pontuação ${isRemoving ? 'removida' : 'extra adicionada'} com sucesso aos participantes.`)
       await loadList()
     } catch (err) {
       toast.error(err.message)
     } finally {
       setExtraSavingIds((prev) => {
         const next = new Set(prev)
-        ids.forEach(id => next.delete(id))
+        ids.forEach((id) => next.delete(id))
         return next
       })
     }
@@ -2550,6 +2552,23 @@ export default function Participantes() {
                         placeholder="Buscar participante por nome"
                       />
 
+                      <div className="flex flex-wrap gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setBulkExtraMode('add')}
+                          className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition ${bulkExtraMode === 'add' ? 'bg-emerald-500 text-white' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
+                        >
+                          Adicionar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBulkExtraMode('remove')}
+                          className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition ${bulkExtraMode === 'remove' ? 'bg-rose-500 text-white' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
+                        >
+                          Remover
+                        </button>
+                      </div>
+
                       <div className="grid gap-2 sm:grid-cols-2">
                         {rankingExtraCandidates.length > 0 ? (
                           rankingExtraCandidates.map((participant) => (
@@ -2599,7 +2618,7 @@ export default function Participantes() {
                           value={extraDrafts['bulk']?.points || ''}
                           onChange={(e) => updateExtraDraft('bulk', 'points', e.target.value)}
                           className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/30"
-                          placeholder="Valor da pontuação extra (para todos)"
+                          placeholder={bulkExtraMode === 'remove' ? 'Quantidade de pontos a remover' : 'Valor da pontuação extra (para todos)'}
                         />
                         <input
                           type="text"
@@ -2616,6 +2635,8 @@ export default function Participantes() {
                         >
                           {selectedExtraParticipants.some(p => extraSavingIds.has(p._id))
                             ? 'Salvando...'
+                            : bulkExtraMode === 'remove'
+                            ? `Remover ${rankingConfig.extraLabel}`
                             : `Adicionar ${rankingConfig.extraLabel}`}
                         </button>
                       </div>
