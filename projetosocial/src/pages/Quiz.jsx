@@ -302,14 +302,35 @@ const Quiz = () => {
 
       if (selectedScoringParticipantId) {
         try {
-          await apiFetch(`/participants/${selectedScoringParticipantId}/extra-score`, {
-            method: 'PATCH',
-            body: JSON.stringify({ points: questionPoints, reason: `Quiz: ${currentStudy.tema} - Pergunta ${questionIndex + 1}` }),
-          })
-          toast.success(`Pontos registrados no ranking!`)
+          const pointsToRegister = Math.max(1, questionPoints)
+          
+          // Registrar acerto do quiz
+          try {
+            await apiFetch(`/participants/${selectedScoringParticipantId}/quiz-correct-answer`, {
+              method: 'PATCH',
+            })
+          } catch (quizErr) {
+            console.error('Erro ao registrar acerto do quiz:', quizErr)
+            toast.error('Falha ao registrar acerto: ' + quizErr.message)
+            throw quizErr
+          }
+
+          // Registrar pontuação extra
+          try {
+            await apiFetch(`/participants/${selectedScoringParticipantId}/extra-score`, {
+              method: 'PATCH',
+              body: JSON.stringify({ points: pointsToRegister, reason: `Quiz: ${currentStudy.tema} - Pergunta ${questionIndex + 1}` }),
+            })
+          } catch (scoreErr) {
+            console.error('Erro ao registrar pontuação extra:', scoreErr)
+            toast.error('Falha ao registrar pontos: ' + scoreErr.message)
+            throw scoreErr
+          }
+
+          toast.success(`Acerto e pontuação registrados no ranking!`)
           await loadParticipants()
         } catch (err) {
-          toast.error('Falha ao registrar pontos: ' + err.message)
+          console.error('Erro geral ao registrar acerto:', err)
         }
       }
     } else {
@@ -348,11 +369,25 @@ const Quiz = () => {
     setIsTimerPaused(false)
   }
 
+  const selectedParticipant = useMemo(
+    () => participants.find((participant) => participant._id === selectedScoringParticipantId),
+    [participants, selectedScoringParticipantId]
+  )
+
   const sortedParticipants = useMemo(() => {
     return [...participants].sort((a, b) => {
       const scoreA = (a.scoreSummary?.totalScore || 0)
       const scoreB = (b.scoreSummary?.totalScore || 0)
       if (scoreB !== scoreA) return scoreB - scoreA
+      return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR', { sensitivity: 'base' })
+    })
+  }, [participants])
+
+  const sortedParticipantsByQuizCorrectAnswers = useMemo(() => {
+    return [...participants].sort((a, b) => {
+      const aCorrect = Number(a.quizCorrectAnswers || 0)
+      const bCorrect = Number(b.quizCorrectAnswers || 0)
+      if (bCorrect !== aCorrect) return bCorrect - aCorrect
       return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR', { sensitivity: 'base' })
     })
   }, [participants])
@@ -416,7 +451,10 @@ const Quiz = () => {
                 type="number"
                 min="1"
                 value={questionPoints}
-                onChange={(event) => setQuestionPoints(Number(event.target.value) || 10)}
+                onChange={(event) => {
+                  const nextValue = Number(event.target.value)
+                  setQuestionPoints(nextValue > 0 ? nextValue : 10)
+                }}
                 className="rounded-3xl bg-slate-900/90 border border-white/10 px-4 py-3 text-white outline-none transition focus:border-amber-400 cursor-pointer"
               />
             </label>
@@ -437,8 +475,13 @@ const Quiz = () => {
               </p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
-                <div className="font-semibold">Acertos: {score} / {questions.length || 1}</div>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-200">
+                <div className="font-semibold">Acertos: {score} / {questions.length || 1}</div>                {selectedParticipant && (
+                  <div className="mt-3 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-slate-200">
+                    <div className="text-xs uppercase tracking-[0.28em] text-emerald-200">Participante selecionado</div>
+                    <div className="mt-2 text-sm font-semibold text-white">{selectedParticipant.name}</div>
+                    <div className="mt-1 text-sm">Acertos no quiz: {score} / {questions.length || 1}</div>
+                  </div>
+                )}                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-200">
                   <span>Erros: {wrongQuestionIndexes.length}</span>
                   {wrongQuestionIndexes.length > 0 && (
                     <button
@@ -649,9 +692,9 @@ const Quiz = () => {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Ranking do quiz</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Top 3 acertos</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Top 3 de acertos acumulados</h2>
             <p className="mt-2 text-sm text-slate-400 max-w-2xl">
-              Veja quem está se destacando no quiz e acompanhe o desempenho dos participantes com um ranking rápido e elegante.
+              Veja quem está com mais acertos acumulados no quiz e acompanhe o desempenho do participante selecionado.
             </p>
           </div>
           <button
@@ -662,10 +705,19 @@ const Quiz = () => {
             {showQuizRankingAll ? 'Ver menos' : 'Ver todos'}
           </button>
         </div>
+        {selectedParticipant && (
+          <div className="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-5 text-slate-100">
+            <div className="flex flex-col gap-2">
+              <span className="text-xs uppercase tracking-[0.28em] text-emerald-200">Participante selecionado</span>
+              <span className="text-xl font-semibold text-white">{selectedParticipant.name}</span>
+              <span className="text-sm text-slate-200">Acertos acumulados no quiz: <span className="font-semibold text-white">{Number(selectedParticipant.quizCorrectAnswers || 0)}</span></span>
+              <span className="text-sm text-slate-300">Pontuação atual no ranking: <span className="font-semibold text-white">{selectedParticipant.scoreSummary?.totalScore || 0} pts</span></span>
+            </div>
+          </div>
+        )}
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {sortedParticipants.slice(0, 3).map((participant, index) => {
-            const scoreSummary = participant.scoreSummary || {}
-            const totalScore = scoreSummary.totalScore || 0
+          {sortedParticipantsByQuizCorrectAnswers.slice(0, 3).map((participant, index) => {
+            const correctAnswers = Number(participant.quizCorrectAnswers || 0)
             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'
             return (
               <div key={participant._id} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-black/20">
@@ -680,8 +732,8 @@ const Quiz = () => {
                 </div>
                 <div className="mt-6 flex items-end justify-between gap-4">
                   <div>
-                    <p className="text-4xl font-bold text-white">{totalScore}</p>
-                    <p className="mt-1 text-sm text-slate-400">Pontos acumulados</p>
+                    <p className="text-4xl font-bold text-white">{correctAnswers}</p>
+                    <p className="mt-1 text-sm text-slate-400">Acertos acumulados</p>
                   </div>
                   <div className="h-24 w-24 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-400/10 p-2">
                     <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-900/90 text-sm font-semibold text-amber-200">
@@ -696,9 +748,8 @@ const Quiz = () => {
         {showQuizRankingAll && (
           <div className="mt-6 space-y-3">
             <div className="grid gap-3">
-              {sortedParticipants.slice(3, 10).map((participant, index) => {
-                const scoreSummary = participant.scoreSummary || {}
-                const totalScore = scoreSummary.totalScore || 0
+              {sortedParticipantsByQuizCorrectAnswers.slice(3, 10).map((participant, index) => {
+                const correctAnswers = Number(participant.quizCorrectAnswers || 0)
                 return (
                   <div key={participant._id} className="rounded-3xl border border-white/10 bg-white/5 p-4 transition hover:border-amber-400/30 hover:bg-white/10">
                     <div className="flex items-center justify-between gap-4">
@@ -707,7 +758,7 @@ const Quiz = () => {
                         <p className="mt-1 text-sm font-semibold text-white truncate">{participant.name}</p>
                       </div>
                       <div className="rounded-2xl bg-slate-900/80 px-3 py-2 text-sm font-semibold text-white">
-                        {totalScore} pts
+                        {correctAnswers} acertos
                       </div>
                     </div>
                   </div>

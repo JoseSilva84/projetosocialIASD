@@ -265,8 +265,8 @@ export const patchExtraScore = async (req, res) => {
     const parsedPoints = Number(req.body?.points);
     const reason = String(req.body?.reason || "").trim();
 
-    if (!Number.isFinite(parsedPoints) || parsedPoints === 0) {
-      return res.status(400).json({ message: "Informe uma pontuacao diferente de zero." });
+    if (!Number.isFinite(parsedPoints) || parsedPoints <= 0) {
+      return res.status(400).json({ message: "Informe uma pontuacao maior que zero." });
     }
 
     if (!reason) {
@@ -294,6 +294,39 @@ export const patchExtraScore = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erro ao atualizar pontuacao extra." });
+  }
+};
+
+export const patchQuizCorrectAnswer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID invalido." });
+    }
+
+    const participant = await Participant.findById(id);
+
+    if (!participant) {
+      return res.status(404).json({ message: "Participante nao encontrado." });
+    }
+
+    if (req.groupId && String(participant.groupId) !== String(req.groupId)) {
+      return res.status(403).json({ message: "Acesso negado ao participante." });
+    }
+
+    const currentCount = Number(participant.quizCorrectAnswers || 0);
+    const newCount = currentCount + 1;
+    
+    await Participant.updateOne(
+      { _id: id },
+      { $set: { quizCorrectAnswers: newCount } }
+    );
+
+    const updated = await Participant.findById(id);
+    res.json(updated);
+  } catch (err) {
+    console.error("Erro em patchQuizCorrectAnswer:", err.message, err.stack);
+    res.status(500).json({ message: "Erro ao atualizar acertos do quiz: " + err.message });
   }
 };
 

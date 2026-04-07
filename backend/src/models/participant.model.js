@@ -73,6 +73,11 @@ const participantSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    quizCorrectAnswers: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     extraEntries: {
       type: [{
         points: { type: Number, required: true, min: 0 },
