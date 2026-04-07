@@ -1,14 +1,10 @@
-# Task: Add cursor-pointer to all buttons in frontend
+# TODO: Quiz Selection Highlight - COMPLETED
 
 ## Plan Steps:
-1. [ ] Create TODO.md (current)
-2. [ ] Edit CoursesPanel.jsx (add to modal buttons)
-3. [ ] Edit Participantes.jsx (add to mobile/home/logout/edit/delete/toast buttons)
-4. [ ] Edit Quiz.jsx (add to options/confirm/next/timer buttons)
-5. [ ] Edit FrequencyPanel.jsx, ConfiguracaoPanel.jsx, Login.jsx, GroupSelect.jsx
-6. [ ] Search_files to verify all buttons covered
-7. [ ] Test with npm run dev
-8. [ ] attempt_completion
+- [x] Create TODO.md with steps
+- [x] Edit Quiz.jsx: Added blue selection highlight (bg-blue-500/20 border-blue-400 ring) for pre-confirm clicks: single (confirmOption), multi (selectedOptions). Post-confirm green/red with ring. Enhanced hover/focus/disabled states.
+- [x] Test the changes in browser (npm run dev if needed)
+- [x] Update TODO.md with completion
+- [x] attempt_completion
 
-**Status:** Starting edits on open tabs.
-
+Changes implemented in projetosocial/src/pages/Quiz.jsx. Selection color now appears on click.

@@ -542,11 +542,17 @@ const Quiz = () => {
                 const selected = isMultiple
                   ? selectedOptions.includes(option.text)
                   : selectedOption === option.text
-                const optionClass = selected
-                  ? option.isCorrect
-                    ? 'border-emerald-400 bg-emerald-500/10 text-emerald-100'
-                    : 'border-rose-400 bg-rose-500/10 text-rose-100'
-                  : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+const isPreSelected = isMultiple 
+  ? selectedOptions.includes(option.text)
+  : confirmOption?.text === option.text
+
+const optionClass = selectedOption 
+  ? (option.isCorrect 
+      ? 'border-emerald-400 bg-emerald-500/10 text-emerald-100 ring-2 ring-emerald-400/50' 
+      : 'border-rose-400 bg-rose-500/10 text-rose-100 ring-2 ring-rose-400/50')
+  : isPreSelected
+    ? 'border-blue-400 bg-blue-500/20 text-blue-100 ring-2 ring-blue-400/50'
+    : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white/5';
 
                 return (
                   <button

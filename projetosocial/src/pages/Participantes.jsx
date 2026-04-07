@@ -3333,7 +3333,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={cancelDelete}
-                  className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/10 transition"
+                  className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/10 transition cursor-pointer"
                   disabled={deletingIds.has(deleteConfirmId)}
                 >
                   Cancelar
@@ -3341,7 +3341,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={confirmDelete}
-                  className="rounded-full border border-red-400/40 bg-red-600/80 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-full border border-red-400/40 bg-red-600/80 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={deletingIds.has(deleteConfirmId)}
                 >
                   {deletingIds.has(deleteConfirmId) ? 'Aguarde…' : 'Excluir'}
