@@ -360,15 +360,17 @@ const Quiz = () => {
     <div className="px-4 py-8 max-w-6xl mx-auto overflow-x-hidden">
       <div className="mb-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
         <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-950/80 p-4 sm:p-6 shadow-2xl shadow-black/20">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <button
-              type="button"
-              onClick={() => navigate('/participantes')}
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 cursor-pointer"
-            >
-              Voltar
-            </button>
-            <div className="rounded-full bg-amber-500/10 px-4 py-2 text-xs uppercase tracking-[0.35em] text-amber-200">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="min-w-0 flex-1">
+              <button
+                type="button"
+                onClick={() => navigate('/participantes')}
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 cursor-pointer w-full max-w-fit"
+              >
+                Voltar
+              </button>
+            </div>
+            <div className="flex-shrink-0 rounded-full bg-amber-500/10 px-4 py-2 text-xs uppercase tracking-[0.35em] text-amber-200">
               Quiz bíblico
             </div>
           </div>
@@ -377,7 +379,7 @@ const Quiz = () => {
             <p className="max-w-3xl text-sm leading-6 text-slate-400">{currentStudy.tema || 'Selecione um estudo para iniciar o quiz bíblico.'}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-2 text-sm text-white/70">
+            <label className="flex flex-col gap-2 text-sm text-white/70 min-w-0">
               Estudo do quiz
               <select
                 value={studyIndex}
@@ -392,7 +394,7 @@ const Quiz = () => {
                 ))}
               </select>
             </label>
-            <label className="flex flex-col gap-2 text-sm text-white/70">
+            <label className="flex flex-col gap-2 text-sm text-white/70 min-w-0">
               Participante para pontuação
               <select
                 value={selectedScoringParticipantId}
@@ -407,7 +409,7 @@ const Quiz = () => {
                 ))}
               </select>
             </label>
-            <label className="flex flex-col gap-2 text-sm text-white/70">
+            <label className="flex flex-col gap-2 text-sm text-white/70 min-w-0">
               Pontos por pergunta (padrão 10)
               <input
                 type="number"
@@ -441,7 +443,7 @@ const Quiz = () => {
                     <button
                       type="button"
                       onClick={() => setQuestionIndex(wrongQuestionIndexes[0])}
-                      className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/15"
+                      className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/15 cursor-pointer"
                     >
                       Ir para primeira correção
                     </button>
