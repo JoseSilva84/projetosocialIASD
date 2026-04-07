@@ -3056,7 +3056,7 @@ export default function Participantes() {
                         type="button"
                         onClick={handleAddChallengePoints}
                         disabled={challengeSaving}
-                        className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                       >
                         {challengeSaving ? 'Registrando desafio...' : 'Pontuar desafio'}
                       </button>
