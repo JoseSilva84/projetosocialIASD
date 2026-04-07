@@ -265,8 +265,8 @@ export const patchExtraScore = async (req, res) => {
     const parsedPoints = Number(req.body?.points);
     const reason = String(req.body?.reason || "").trim();
 
-    if (!Number.isFinite(parsedPoints) || parsedPoints <= 0) {
-      return res.status(400).json({ message: "Informe uma pontuacao maior que zero." });
+    if (!Number.isFinite(parsedPoints) || parsedPoints === 0) {
+      return res.status(400).json({ message: "Informe uma pontuacao diferente de zero." });
     }
 
     if (!reason) {

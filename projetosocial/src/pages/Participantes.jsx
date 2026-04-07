@@ -9,7 +9,7 @@ import FrequencyPanel from '../components/dashboard/FrequencyPanel'
 import { apiFetch, clearSession, getGroupId, getToken, getUserName, getUserRole } from '../lib/api'
 import { FREQUENCY_DAYS } from '../lib/frequencyDays'
 
-const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'sorteio']
+const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'desafios', 'sorteio']
 
 const ALL_TABS = [
   { id: 'inscricoes', label: 'Inscrições' },
@@ -149,6 +149,12 @@ function getParticipantIdString(participantOrId) {
   return String(participantOrId)
 }
 
+function parseScoreValue(value) {
+  if (value == null) return NaN
+  const normalized = String(value).trim().replace(',', '.')
+  return Number(normalized)
+}
+
 function mapLessonToQuizStudy(lesson) {
   const studyCount = 3
   if (!Number.isFinite(Number(lesson)) || lesson < 1) return 1
@@ -230,6 +236,12 @@ export default function Participantes() {
   const [bulkExtraMode, setBulkExtraMode] = useState('add')
   const [rankingExtraSearch, setRankingExtraSearch] = useState('')
   const [selectedExtraParticipantIds, setSelectedExtraParticipantIds] = useState([])
+  const [challengeParticipantSearch, setChallengeParticipantSearch] = useState('')
+  const [selectedChallengeParticipantIds, setSelectedChallengeParticipantIds] = useState([])
+  const [challengeName, setChallengeName] = useState('')
+  const [challengePoints, setChallengePoints] = useState('')
+  const [challengeSaving, setChallengeSaving] = useState(false)
+  const [challengeHistory, setChallengeHistory] = useState([])
   const [drawMode, setDrawMode] = useState('nome')
   const [selectedDrawDay, setSelectedDrawDay] = useState('')
   const [drawNameResult, setDrawNameResult] = useState(null)
@@ -1443,9 +1455,36 @@ export default function Participantes() {
       .slice(0, 8)
   }, [list, rankingConfig, rankingExtraSearch])
 
+  const challengeCandidates = useMemo(() => {
+    const term = challengeParticipantSearch.trim().toLowerCase()
+    const baseList = [...list]
+      .map((participant) => {
+        const scoreSummary = getParticipantScoreSummary(participant, rankingConfig)
+        return {
+          id: participant._id,
+          name: participant.name || '(sem nome)',
+          score: scoreSummary.totalScore,
+        }
+      })
+      .sort((a, b) => b.score - a.score)
+
+    if (!term) {
+      return baseList.slice(0, 8)
+    }
+
+    return baseList
+      .filter((participant) => participant.name.toLowerCase().includes(term))
+      .slice(0, 8)
+  }, [list, rankingConfig, challengeParticipantSearch])
+
   const selectedExtraParticipants = useMemo(() => {
     return sortedParticipants.filter((participant) => selectedExtraParticipantIds.includes(participant._id))
   }, [selectedExtraParticipantIds, sortedParticipants])
+
+  const selectedChallengeParticipants = useMemo(
+    () => list.filter((participant) => selectedChallengeParticipantIds.includes(participant._id)),
+    [selectedChallengeParticipantIds, list]
+  )
 
   function handleToggleExtraParticipant(id) {
     setSelectedExtraParticipantIds((prev) => {
@@ -1454,6 +1493,70 @@ export default function Participantes() {
       }
       return [...prev, id]
     })
+  }
+
+  function handleToggleChallengeParticipant(id) {
+    setSelectedChallengeParticipantIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((p) => p !== id)
+      }
+      return [...prev, id]
+    })
+  }
+
+  async function handleAddChallengePoints() {
+    const points = parseScoreValue(challengePoints)
+    const challengeTitle = challengeName.trim()
+    const ids = [...selectedChallengeParticipantIds]
+
+    if (!challengeTitle) {
+      toast.error('Informe o nome do desafio.')
+      return
+    }
+
+    if (!Number.isFinite(points) || points <= 0) {
+      toast.error('Informe uma pontuação maior que zero.')
+      return
+    }
+
+    if (ids.length === 0) {
+      toast.error('Selecione pelo menos um participante para pontuar.')
+      return
+    }
+
+    setChallengeSaving(true)
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          apiFetch(`/participants/${id}/extra-score`, {
+            method: 'PATCH',
+            body: JSON.stringify({ points, reason: challengeTitle }),
+          })
+        )
+      )
+
+      setChallengeHistory((prev) => [
+        {
+          id: Date.now(),
+          title: challengeTitle,
+          points,
+          participants: selectedChallengeParticipants.map((p) => p.name || '(sem nome)'),
+          createdAt: new Date(),
+        },
+        ...prev,
+      ].slice(0, 10))
+
+      setChallengeName('')
+      setChallengePoints('')
+      setChallengeParticipantSearch('')
+      setSelectedChallengeParticipantIds([])
+      toast.success('Desafio pontuado com sucesso!')
+      await loadList()
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setChallengeSaving(false)
+    }
   }
 
   const frequencyDayOptions = useMemo(
@@ -1539,7 +1642,7 @@ export default function Participantes() {
 
   async function handleAddExtraScoreBulk() {
     const draft = extraDrafts['bulk'] || { points: '', reason: '' }
-    const points = Number(draft.points)
+    const points = parseScoreValue(draft.points)
     const reason = (draft.reason || '').trim()
     const isRemoving = bulkExtraMode === 'remove'
 
@@ -1650,7 +1753,10 @@ export default function Participantes() {
     return false
   })
 
-  const visibleTabs = ALL_TABS.filter((t) => t.id !== 'configuracao' || userRole === 'admin')
+  const visibleTabs = ALL_TABS.filter((t) => {
+    if (t.id === 'configuracao') return userRole === 'admin'
+    return true
+  })
 
   return (
     <ScreenShell maxWidthClass="max-w-7xl" alignClass="items-start sm:items-center">
@@ -2443,12 +2549,27 @@ export default function Participantes() {
           >
             <div className="absolute inset-0 bg-linear-to-br from-indigo-950/15 via-transparent to-slate-900/25 pointer-events-none" />
             <div className="relative">
-              <h2 id="ranking-heading" className="text-lg font-bold text-white text-center sm:text-left">
-                Ranking de pontuação
-              </h2>
-              <p className="text-sm text-white/55 mt-1 mb-8 text-center sm:text-left max-w-3xl">
-                Configure os pesos dos critérios e visualize o ranking calculado dos participantes
-              </p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 id="ranking-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                    Ranking de pontuação
+                  </h2>
+                  <p className="text-sm text-white/55 mt-1 text-center sm:text-left max-w-3xl">
+                    Configure os pesos dos critérios e visualize o ranking calculado dos participantes
+                  </p>
+                </div>
+                {(userRole === 'admin' || userRole === 'secretario') && (
+                  <button
+                    type="button"
+                    onClick={() => setTab('desafios')}
+                    className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition"
+                  >
+                    Desafios
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-8" />
 
               {userRole === 'admin' && (
                 <div className="mb-8 rounded-2xl border border-indigo-500/20 bg-indigo-950/30 p-6">
@@ -2734,6 +2855,133 @@ export default function Participantes() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </section>
+        )}
+
+        {tab === 'desafios' && (
+          <section
+            className="relative rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden px-5 py-6 sm:px-8 sm:py-8"
+            aria-labelledby="desafios-heading"
+          >
+            <div className="absolute inset-0 bg-linear-to-br from-purple-950/15 via-transparent to-slate-900/25 pointer-events-none" />
+            <div className="relative">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 id="desafios-heading" className="text-lg font-bold text-white text-center sm:text-left">
+                    Desafios
+                  </h2>
+                  <p className="text-sm text-white/55 mt-1 text-center sm:text-left max-w-3xl">
+                    Cadastre o nome do desafio, defina a pontuação e selecione as pessoas que o realizaram.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <h3 className="text-base font-semibold text-white mb-4">Configurar desafio</h3>
+                  <div className="space-y-4">
+                    <label className="block">
+                      <span className="block text-xs text-white/70 font-semibold mb-2">Nome do desafio</span>
+                      <input
+                        type="text"
+                        value={challengeName}
+                        onChange={(e) => setChallengeName(e.target.value)}
+                        className="w-full rounded-xl border border-white/15 bg-black/20 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                        placeholder="Ex: Corrida solidária, Quiz bíblico"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="block text-xs text-white/70 font-semibold mb-2">Pontuação do desafio</span>
+                      <input
+                        type="text"
+                        value={challengePoints}
+                        onChange={(e) => setChallengePoints(e.target.value)}
+                        className="w-full rounded-xl border border-white/15 bg-black/20 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                        placeholder="20"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="block text-xs text-white/70 font-semibold mb-2">Buscar participante</span>
+                      <input
+                        type="text"
+                        value={challengeParticipantSearch}
+                        onChange={(e) => setChallengeParticipantSearch(e.target.value)}
+                        className="w-full rounded-xl border border-white/15 bg-black/20 px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                        placeholder="Pesquisar por nome"
+                      />
+                    </label>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {challengeCandidates.length > 0 ? (
+                        challengeCandidates.map((participant) => (
+                          <button
+                            key={participant.id}
+                            type="button"
+                            onClick={() => handleToggleChallengeParticipant(participant.id)}
+                            className={`rounded-xl border px-3 py-2 text-left text-sm transition cursor-pointer ${
+                              selectedChallengeParticipantIds.includes(participant.id)
+                                ? 'border-indigo-400/50 bg-indigo-500/15 text-white'
+                                : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/10'
+                            }`}
+                          >
+                            <span className="block font-medium">{participant.name}</span>
+                            <span className="mt-1 block text-xs text-white/50">Total atual: {participant.score.toFixed(1)}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <p className="rounded-xl border border-dashed border-white/10 px-4 py-4 text-sm text-white/45">
+                          Nenhum participante encontrado para essa busca.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5">
+                  <h3 className="text-base font-semibold text-white mb-4">Participantes selecionados</h3>
+                  {selectedChallengeParticipants.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="rounded-xl border border-white/10 bg-black/20 p-4 max-h-72 overflow-y-auto">
+                        <p className="text-sm font-semibold text-white mb-3">
+                          {selectedChallengeParticipants.length} participante(s) selecionado(s)
+                        </p>
+                        <ul className="text-xs text-white/70 space-y-1 list-disc pl-4">
+                          {selectedChallengeParticipants.map((participant) => (
+                            <li key={participant._id}>{participant.name || '(sem nome)'}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddChallengePoints}
+                        disabled={challengeSaving}
+                        className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {challengeSaving ? 'Registrando desafio...' : 'Pontuar desafio'}
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-white/55">
+                      Selecione participantes à esquerda para atribuir a pontuação do desafio.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {challengeHistory.length > 0 ? (
+                <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <h3 className="text-base font-semibold text-white mb-4">Últimos desafios registrados</h3>
+                  <div className="space-y-3">
+                    {challengeHistory.map((entry) => (
+                      <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <p className="text-sm font-semibold text-white">{entry.title}</p>
+                        <p className="text-xs text-white/50">{entry.points} pontos • {entry.participants.length} participante(s)</p>
+                        <p className="mt-2 text-xs text-white/60">{entry.participants.join(', ')}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </section>
         )}

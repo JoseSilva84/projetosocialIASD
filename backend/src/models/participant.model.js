@@ -71,7 +71,6 @@ const participantSchema = new mongoose.Schema(
     extraScore: {
       type: Number,
       default: 0,
-      min: 0,
     },
     quizCorrectAnswers: {
       type: Number,
@@ -80,7 +79,7 @@ const participantSchema = new mongoose.Schema(
     },
     extraEntries: {
       type: [{
-        points: { type: Number, required: true, min: 0 },
+        points: { type: Number, required: true },
         reason: { type: String, required: true, trim: true },
         createdAt: { type: Date, default: Date.now },
       }],
@@ -91,9 +90,9 @@ const participantSchema = new mongoose.Schema(
       frequencyScore: { type: Number, default: 0, min: 0 },
       biblicalCount: { type: Number, default: 0, min: 0 },
       biblicalScore: { type: Number, default: 0, min: 0 },
-      extraCount: { type: Number, default: 0, min: 0 },
-      extraScore: { type: Number, default: 0, min: 0 },
-      totalScore: { type: Number, default: 0, min: 0 },
+      extraCount: { type: Number, default: 0 },
+      extraScore: { type: Number, default: 0 },
+      totalScore: { type: Number, default: 0 },
       rankingConfigId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RankingConfig",
