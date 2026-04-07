@@ -1783,8 +1783,7 @@ export default function Participantes() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-black/30 text-white transition hover:bg-white/10"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-black/30 text-white transition hover:bg-white/10 cursor-pointer"
                 aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-panel-menu"
@@ -1816,8 +1815,7 @@ export default function Participantes() {
                     <button
                       key={t.id}
                       type="button"
-                      onClick={() => setTab(t.id)}
-                      className={`rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
+                      onClick={() => setTab(t.id)} className={`rounded-xl px-4 py-3 text-left text-sm font-medium transition cursor-pointer ${
                         tab === t.id
                           ? 'bg-white/15 text-white shadow-inner'
                           : 'text-white/55 hover:text-white/85 hover:bg-white/5'
@@ -1840,7 +1838,7 @@ export default function Participantes() {
           <div className="hidden lg:flex flex-col gap-3">
             {/* Menu + Sair na mesma linha */}
             <div className="flex items-center justify-center gap-3">
-<nav
+            <nav
                 className="flex flex-wrap items-center gap-2 flex-1 rounded-2xl border border-white/10 bg-black/30 p-1.5 max-w-4xl"
                 aria-label="Seções do painel"
               >
@@ -1848,8 +1846,7 @@ export default function Participantes() {
                   <button
                     key={t.id}
                     type="button"
-                    onClick={() => setTab(t.id)}
-                    className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition cursor-pointer flex-0 ${
+                    onClick={() => setTab(t.id)} className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition cursor-pointer flex-0 ${
                       tab === t.id
                         ? 'bg-white/15 text-white shadow-inner'
                         : 'text-white/55 hover:text-white/85 hover:bg-white/5'
@@ -1858,15 +1855,6 @@ export default function Participantes() {
                     {t.label}
                   </button>
                 ))}
-                <div className="ml-auto max-w-xs">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="🔍 Pesquisar..."
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-30 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30 hidden lg:flex"
-                  />
-                </div>
               </nav>
               <button
                 type="button"
@@ -1875,6 +1863,16 @@ export default function Participantes() {
               >
                 Sair
               </button>
+            </div>
+            
+            <div className="ml-auto max-w-xs">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="🔍 Pesquisar..."
+                className="w-full rounded-xl border border-white/15 bg-white/5 px-30 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30 hidden lg:flex"
+              />
             </div>
 
           </div>
@@ -1902,7 +1900,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={() => setTab('inscricoes')}
-                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Inscrições</p>
                   <p className="mt-2 text-xs text-white/60">Cadastre novos participantes.</p>
@@ -1910,7 +1908,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={() => setTab('biblico')}
-                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Estudo Bíblico</p>
                   <p className="mt-2 text-xs text-white/60">Registre o estudo bíblico dos participantes.</p>
@@ -1918,7 +1916,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={() => navigate('/quiz')}
-                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Quiz</p>
                   <p className="mt-2 text-xs text-white/60">Acesse o quiz do projeto.</p>
@@ -1926,7 +1924,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={() => setTab('frequencia')}
-                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Frequência</p>
                   <p className="mt-2 text-xs text-white/60">Lance e visualize as presenças.</p>
@@ -1934,7 +1932,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={() => setTab('dados')}
-                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Dados</p>
                   <p className="mt-2 text-xs text-white/60">Veja relatórios e gráficos do grupo.</p>
@@ -1942,7 +1940,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={() => setTab('ranking')}
-                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Ranking de pontuação</p>
                   <p className="mt-2 text-xs text-white/60">Ver o ranking dos participantes.</p>
@@ -1950,7 +1948,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={() => setTab('sorteio')}
-                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Sorteio</p>
                   <p className="mt-2 text-xs text-white/60">Realize sorteios de participantes.</p>
@@ -1959,7 +1957,7 @@ export default function Participantes() {
                   <button
                     type="button"
                     onClick={() => setTab('configuracao')}
-                    className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                    className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10 cursor-pointer"
                   >
                     <p className="text-sm font-semibold text-white">Configuração</p>
                     <p className="mt-2 text-xs text-white/60">Ajuste as configurações do ranking.</p>
@@ -1968,7 +1966,7 @@ export default function Participantes() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-3xl border border-white/10 bg-rose-500/10 px-5 py-5 text-left transition hover:border-rose-400/30 hover:bg-rose-500/15"
+                  className="rounded-3xl border border-white/10 bg-rose-500/10 px-5 py-5 text-left transition hover:border-rose-400/30 hover:bg-rose-500/15 cursor-pointer"
                 >
                   <p className="text-sm font-semibold text-white">Sair</p>
                   <p className="mt-2 text-xs text-white/60">Voltar para a tela de login.</p>

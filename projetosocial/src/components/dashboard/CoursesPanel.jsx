@@ -62,7 +62,7 @@ export default function CoursesPanel() {
               <button
                 type="button"
                 onClick={() => setOpenId(null)}
-                className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/85 hover:bg-white/10 cursor-pointer"
+className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/85 hover:bg-white/10 cursor-pointer cursor-pointer"
               >
                 Fechar
               </button>
@@ -70,7 +70,7 @@ export default function CoursesPanel() {
             <button
               type="button"
               onClick={() => setOpenId(null)}
-              className="absolute top-4 right-4 rounded-lg p-1.5 text-white/50 hover:text-white hover:bg-white/10 cursor-pointer"
+className="absolute top-4 right-4 rounded-lg p-1.5 text-white/50 hover:text-white hover:bg-white/10 cursor-pointer cursor-pointer"
               aria-label="Fechar"
             >
               ✕
