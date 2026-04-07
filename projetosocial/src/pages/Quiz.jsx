@@ -122,6 +122,7 @@ const Quiz = () => {
   const [selectedOptions, setSelectedOptions] = useState([])
   const [isCorrect, setIsCorrect] = useState(null)
   const [score, setScore] = useState(0)
+  const [showQuizRankingAll, setShowQuizRankingAll] = useState(false)
   const [questionPoints, setQuestionPoints] = useState(10)
   const [confirmOption, setConfirmOption] = useState(null)
   const [wrongQuestionIndexes, setWrongQuestionIndexes] = useState([])
@@ -644,6 +645,78 @@ const Quiz = () => {
         </>
       )}
 
+      <section className="mt-8 rounded-3xl border border-white/10 bg-slate-900/80 p-4 sm:p-6 shadow-2xl shadow-black/10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Ranking do quiz</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Top 3 acertos</h2>
+            <p className="mt-2 text-sm text-slate-400 max-w-2xl">
+              Veja quem está se destacando no quiz e acompanhe o desempenho dos participantes com um ranking rápido e elegante.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowQuizRankingAll((prev) => !prev)}
+            className="self-start rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 cursor-pointer"
+          >
+            {showQuizRankingAll ? 'Ver menos' : 'Ver todos'}
+          </button>
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          {sortedParticipants.slice(0, 3).map((participant, index) => {
+            const scoreSummary = participant.scoreSummary || {}
+            const totalScore = scoreSummary.totalScore || 0
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'
+            return (
+              <div key={participant._id} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-black/20">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.32em] text-slate-500">{medal} #{index + 1}</p>
+                    <h3 className="mt-3 text-lg font-semibold text-white truncate">{participant.name}</h3>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+                    Acertos
+                  </div>
+                </div>
+                <div className="mt-6 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-4xl font-bold text-white">{totalScore}</p>
+                    <p className="mt-1 text-sm text-slate-400">Pontos acumulados</p>
+                  </div>
+                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-400/10 p-2">
+                    <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-900/90 text-sm font-semibold text-amber-200">
+                      {index + 1}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        {showQuizRankingAll && (
+          <div className="mt-6 space-y-3">
+            <div className="grid gap-3">
+              {sortedParticipants.slice(3, 10).map((participant, index) => {
+                const scoreSummary = participant.scoreSummary || {}
+                const totalScore = scoreSummary.totalScore || 0
+                return (
+                  <div key={participant._id} className="rounded-3xl border border-white/10 bg-white/5 p-4 transition hover:border-amber-400/30 hover:bg-white/10">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-xs uppercase tracking-[0.32em] text-slate-400">#{index + 4}</p>
+                        <p className="mt-1 text-sm font-semibold text-white truncate">{participant.name}</p>
+                      </div>
+                      <div className="rounded-2xl bg-slate-900/80 px-3 py-2 text-sm font-semibold text-white">
+                        {totalScore} pts
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </section>
       <section className="mt-8 rounded-3xl border border-white/10 bg-slate-900/80 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-white">Ranking dos Participantes</h3>
         <p className="mt-2 text-sm text-slate-400">Pontuações atualizadas em tempo real.</p>
