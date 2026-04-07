@@ -1183,14 +1183,14 @@
         {
           "id": 2,
           "pergunta": "Que profecia revela a data do início do Juízo? (Daniel 9:24-27)",
+          "resposta": "2300 tardes e manhãs/anos",
+          "tipo": "unica_escolha",
           "opcoes": [
             "1260 anos",
             "1290 anos",
             "1335 anos",
             "2300 tardes e manhãs/anos"
-          ],
-          "resposta": "2300 tardes e manhãs/anos.",
-          "tipo": "unica_escolha"
+          ]
         },
         {
           "id": 3,
