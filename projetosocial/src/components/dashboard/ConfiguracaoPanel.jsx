@@ -169,7 +169,7 @@ export default function ConfiguracaoPanel() {
           <button
             type="submit"
             disabled={loadingAction}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500 transition disabled:opacity-50"
+            className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500 transition disabled:opacity-50 cursor-pointer"
           >
             Criar Grupo
           </button>
@@ -220,7 +220,7 @@ export default function ConfiguracaoPanel() {
           <button
             type="submit"
             disabled={loadingAction}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500 transition disabled:opacity-50"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500 transition disabled:opacity-50 cursor-pointer"
           >
             Criar Usuário
           </button>
@@ -249,7 +249,7 @@ export default function ConfiguracaoPanel() {
                   <button
                     onClick={() => handleDeleteUser(u._id)}
                     disabled={loadingAction}
-                    className="text-xs bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-full hover:bg-red-500/20 transition disabled:opacity-50"
+                    className="text-xs bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-full hover:bg-red-500/20 transition disabled:opacity-50 cursor-pointer"
                   >
                     Excluir
                   </button>
