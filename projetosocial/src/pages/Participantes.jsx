@@ -12,11 +12,12 @@ import { FREQUENCY_DAYS } from '../lib/frequencyDays'
 const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'desafios', 'sorteio']
 
 const ALL_TABS = [
+  { id: 'home', label: 'Home' },
   { id: 'inscricoes', label: 'Inscrições' },
-  { id: 'biblico', label: 'Estudo bíblico' },
+  { id: 'biblico', label: 'Estudo' },
   { id: 'frequencia', label: 'Frequência' },
   { id: 'dados', label: 'Dados' },
-  { id: 'ranking', label: 'Ranking de pontuação' },
+  { id: 'ranking', label: 'Ranking' },
   { id: 'sorteio', label: 'Sorteio' },
   { id: 'configuracao', label: 'Configuração' },
 ]
@@ -204,7 +205,7 @@ function getRankingHighlight(idx) {
 
 export default function Participantes() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('inscricoes')
+  const [tab, setTab] = useState('home')
   const [selectedBiblicalParticipantId, setSelectedBiblicalParticipantId] = useState('')
   const [selectedBiblicalLesson, setSelectedBiblicalLesson] = useState(null)
   const [selectedFrequencyParticipantId, setSelectedFrequencyParticipantId] = useState('')
@@ -1776,7 +1777,7 @@ export default function Participantes() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Pesquisar por nome, rua, número, referência, idade, WhatsApp, dia..."
+                  placeholder="Pesquisar por nome, WhatsApp, endereço..."
                   className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
                 />
               </div>
@@ -1836,44 +1837,146 @@ export default function Participantes() {
               </div>
             ) : null}
           </div>
-          <div className="hidden lg:flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="flex-1 max-w-xs">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Pesquisar por nome, rua, número, referência, idade, WhatsApp, dia..."
-                className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30"
-              />
+          <div className="hidden lg:flex flex-col gap-3">
+            {/* Menu + Sair na mesma linha */}
+            <div className="flex items-center justify-center gap-3">
+<nav
+                className="flex flex-wrap items-center gap-2 flex-1 rounded-2xl border border-white/10 bg-black/30 p-1.5 max-w-4xl"
+                aria-label="Seções do painel"
+              >
+                {visibleTabs.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTab(t.id)}
+                    className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition cursor-pointer flex-0 ${
+                      tab === t.id
+                        ? 'bg-white/15 text-white shadow-inner'
+                        : 'text-white/55 hover:text-white/85 hover:bg-white/5'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+                <div className="ml-auto max-w-xs">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="🔍 Pesquisar..."
+                    className="w-full rounded-xl border border-white/15 bg-white/5 px-30 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30 hidden lg:flex"
+                  />
+                </div>
+              </nav>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white/80 hover:bg-white/10 transition whitespace-nowrap cursor-pointer"
+              >
+                Sair
+              </button>
             </div>
-            <nav
-              className="flex flex-wrap justify-center gap-2 rounded-2xl border border-white/10 bg-black/30 p-1.5"
-              aria-label="Seções do painel"
-            >
-              {visibleTabs.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTab(t.id)}
-                  className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition cursor-pointer ${
-                    tab === t.id
-                      ? 'bg-white/15 text-white shadow-inner'
-                      : 'text-white/55 hover:text-white/85 hover:bg-white/5'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </nav>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white/80 hover:bg-white/10 transition self-center cursor-pointer"
-            >
-              Sair
-            </button>
+
           </div>
         </header>
+
+        {tab === 'home' && (
+          <section
+            className="relative rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden px-5 py-6 sm:px-8 sm:py-8"
+            aria-labelledby="home-heading"
+          >
+            <div className="absolute inset-0 bg-linear-to-br from-slate-900/10 via-transparent to-slate-900/25 pointer-events-none" />
+            <div className="relative">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 id="home-heading" className="text-lg font-bold text-white">
+                    Tela inicial
+                  </h2>
+                  <p className="text-sm text-white/55 mt-1 max-w-3xl">
+                    Selecione a área desejada para começar a gerenciar o grupo.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => setTab('inscricoes')}
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                >
+                  <p className="text-sm font-semibold text-white">Inscrições</p>
+                  <p className="mt-2 text-xs text-white/60">Cadastre novos participantes.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('biblico')}
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                >
+                  <p className="text-sm font-semibold text-white">Estudo Bíblico</p>
+                  <p className="mt-2 text-xs text-white/60">Registre o estudo bíblico dos participantes.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/quiz')}
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                >
+                  <p className="text-sm font-semibold text-white">Quiz</p>
+                  <p className="mt-2 text-xs text-white/60">Acesse o quiz do projeto.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('frequencia')}
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                >
+                  <p className="text-sm font-semibold text-white">Frequência</p>
+                  <p className="mt-2 text-xs text-white/60">Lance e visualize as presenças.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('dados')}
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                >
+                  <p className="text-sm font-semibold text-white">Dados</p>
+                  <p className="mt-2 text-xs text-white/60">Veja relatórios e gráficos do grupo.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('ranking')}
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                >
+                  <p className="text-sm font-semibold text-white">Ranking de pontuação</p>
+                  <p className="mt-2 text-xs text-white/60">Ver o ranking dos participantes.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab('sorteio')}
+                  className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                >
+                  <p className="text-sm font-semibold text-white">Sorteio</p>
+                  <p className="mt-2 text-xs text-white/60">Realize sorteios de participantes.</p>
+                </button>
+                {userRole === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={() => setTab('configuracao')}
+                    className="rounded-3xl border border-white/10 bg-white/5 px-5 py-5 text-left transition hover:border-indigo-400/30 hover:bg-indigo-500/10"
+                  >
+                    <p className="text-sm font-semibold text-white">Configuração</p>
+                    <p className="mt-2 text-xs text-white/60">Ajuste as configurações do ranking.</p>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-3xl border border-white/10 bg-rose-500/10 px-5 py-5 text-left transition hover:border-rose-400/30 hover:bg-rose-500/15"
+                >
+                  <p className="text-sm font-semibold text-white">Sair</p>
+                  <p className="mt-2 text-xs text-white/60">Voltar para a tela de login.</p>
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {tab === 'inscricoes' && (
           <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8">
@@ -2562,7 +2665,7 @@ export default function Participantes() {
                   <button
                     type="button"
                     onClick={() => setTab('desafios')}
-                    className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition"
+                    className="cursor-pointer rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition"
                   >
                     Desafios
                   </button>
