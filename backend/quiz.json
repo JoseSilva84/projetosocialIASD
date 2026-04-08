@@ -1117,7 +1117,7 @@
           "id": 2,
           "pergunta": "Em que consistia o serviço diário do santuário? (Êxodo 29:38-42)",
           "opcoes": [
-            "Oferecer dois cordeiros.",
+            "Oferecer dois cordeiros (um de manhã e um à tarde).",
             "Oferecer dois cavalos.",
             "Oferecer duas aves."
           ],
@@ -1132,7 +1132,7 @@
             "Pentecostes",
             "Expiação"
           ],
-          "resposta": "Expiação (Dia da Expiação).",
+          "resposta": "Expiação",
           "tipo": "unica_escolha"
         },
         {
