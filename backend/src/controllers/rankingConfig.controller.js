@@ -16,7 +16,7 @@ export const getRankingConfig = async (req, res) => {
 
 export const updateRankingConfig = async (req, res) => {
   try {
-    const { presenceWeight, biblicalWeight, extraLabel, extraWeight } = req.body;
+    const { presenceWeight, biblicalWeight, extraLabel, extraWeight, quizEnabled, quizQuestionPoints } = req.body;
     if (req.userRole !== "admin") {
       return res.status(403).json({ message: "Acesso negado." });
     }
@@ -30,6 +30,8 @@ export const updateRankingConfig = async (req, res) => {
     if (biblicalWeight !== undefined) config.biblicalWeight = Number(biblicalWeight);
     if (extraLabel !== undefined) config.extraLabel = String(extraLabel || "Extra");
     if (extraWeight !== undefined) config.extraWeight = Number(extraWeight);
+    if (quizEnabled !== undefined) config.quizEnabled = Boolean(quizEnabled);
+    if (quizQuestionPoints !== undefined) config.quizQuestionPoints = Number(quizQuestionPoints);
 
     await config.save();
     await syncAllParticipantScores(config);

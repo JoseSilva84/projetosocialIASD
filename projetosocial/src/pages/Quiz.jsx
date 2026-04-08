@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import jogo from '../../../backend/quiz.json'
-import { apiFetch } from '../lib/api'
+import { apiFetch, getUserRole } from '../lib/api'
+
 
 function normalizeText(value) {
   if (Array.isArray(value)) {
@@ -129,6 +130,17 @@ const Quiz = () => {
   const [wrongQuestionIndexes, setWrongQuestionIndexes] = useState([])
   const [timeLeft, setTimeLeft] = useState(60)
   const [isTimerPaused, setIsTimerPaused] = useState(false)
+  const [quizConfig, setQuizConfig] = useState({ quizEnabled: false, quizQuestionPoints: 10 })
+  const [quizStarted, setQuizStarted] = useState(false)
+  const userRole = getUserRole()
+  
+  // Inicializar pontos com config do servidor
+  useEffect(() => {
+    if (quizConfig.quizQuestionPoints) {
+      setQuestionPoints(quizConfig.quizQuestionPoints)
+      setInputPointsValue(quizConfig.quizQuestionPoints.toString())
+    }
+  }, [quizConfig.quizQuestionPoints])
 
   const loadParticipants = async () => {
     try {
@@ -143,13 +155,23 @@ const Quiz = () => {
     let active = true
 
     async function load() {
-      setLoadingParticipants(true)
       try {
-        await loadParticipants()
-      } catch (err) {
+        const [participantsData, configData] = await Promise.all([
+          apiFetch('/participants').catch(() => []),
+          apiFetch('/ranking-config').catch(() => ({ quizEnabled: false, quizQuestionPoints: 10 }))
+        ])
         if (active) {
-          toast.error('Não foi possível carregar os participantes: ' + err.message)
+          setParticipants(participantsData)
+          setQuizConfig(configData)
+          // Se quiz desabilitado para convidado e usuário é convidado, redirecionar ou mostrar aviso
+          if (!configData.quizEnabled && userRole === 'convidado') {
+            toast.warning('Quiz desabilitado para usuários convidados pelo administrador.')
+            navigate('/participantes')
+            return
+          }
         }
+      } catch (err) {
+        console.error('Erro ao carregar dados do quiz:', err)
       } finally {
         if (active) {
           setLoadingParticipants(false)
@@ -161,7 +183,7 @@ const Quiz = () => {
     return () => {
       active = false
     }
-  }, [])
+  }, [userRole])
 
   useEffect(() => {
     setTimeLeft(60)
@@ -470,6 +492,22 @@ const Quiz = () => {
               Carregando participantes para pontuação...
             </div>
           )}
+          {!quizStarted && (
+            <div className="pt-8 border-t border-white/10 flex flex-col items-center gap-4">
+              <button
+                onClick={() => {
+                  setQuizStarted(true)
+                  setTimeLeft(60)
+                }}
+                className="w-full max-w-sm rounded-3xl bg-gradient-to-r from-amber-500/90 to-amber-600/90 p-6 text-xl font-bold text-white shadow-2xl shadow-amber-500/25 transition hover:from-amber-400 hover:to-amber-500 hover:shadow-amber-500/40 active:scale-[0.98] cursor-pointer"
+              >
+                🚀 Começar Quiz Bíblico
+              </button>
+              <p className="max-w-md text-center text-sm text-white/60">
+                Estudo: <span className="font-semibold text-white">{currentStudy.tema || 'Nenhum selecionado'}</span> | Participante: <span className="font-semibold text-white">{selectedParticipant?.name || 'Nenhum'}</span> | Pontos por pergunta: <span className="font-semibold text-white">{questionPoints}</span>
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/80 p-4 sm:p-6 shadow-inner shadow-black/20">
@@ -504,9 +542,13 @@ const Quiz = () => {
         </div>
       </div>
 
-      {questions.length === 0 ? (
+      {(!quizStarted || questions.length === 0) ? (
         <div className="rounded-3xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-sm text-white/70">
-          Nenhuma pergunta encontrada para este estudo.
+          {!quizStarted ? (
+            <p>Selecione estudo, participante e pontos, depois clique em "Começar Quiz".</p>
+          ) : (
+            <p>Nenhuma pergunta encontrada para este estudo.</p>
+          )}
         </div>
       ) : (
         <>

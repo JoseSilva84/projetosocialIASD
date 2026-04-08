@@ -12,30 +12,65 @@ export default function ConfiguracaoPanel() {
   const [newUserPassword, setNewUserPassword] = useState('')
   const [newUserRole, setNewUserRole] = useState('user')
   const [groups, setGroups] = useState([])
-  const [selectedGroupId, setSelectedGroupId] = useState(getGroupId() || '')
+const [selectedGroupId, setSelectedGroupId] = useState(getGroupId() || '')
+  const [quizConfig, setQuizConfig] = useState({ quizEnabled: false, quizQuestionPoints: 10 })
+  const [quizSaving, setQuizSaving] = useState(false)
+  const [quizConfigStatus, setQuizConfigStatus] = useState('')
   
   const role = getUserRole()
 
-  const fetchUsers = useCallback(async () => {
+const fetchUsers = useCallback(async () => {
     if (role !== 'admin') return
     setLoading(true)
     try {
-      const [usersData, groupsData] = await Promise.all([
+      const [usersData, groupsData, rankingData] = await Promise.all([
         apiFetch('/auth'),
         apiFetch('/groups'),
+        apiFetch('/ranking-config')
       ])
       setUsers(Array.isArray(usersData) ? usersData : [])
       setGroups(Array.isArray(groupsData) ? groupsData : [])
+      setQuizConfig(rankingData || { quizEnabled: false, quizQuestionPoints: 10 })
       if (!selectedGroupId && Array.isArray(groupsData) && groupsData.length > 0) {
         setSelectedGroupId(groupsData[0]._id)
         setGroupId(groupsData[0]._id)
       }
     } catch (err) {
-      toast.error('Erro ao listar usuários ou grupos: ' + err.message)
+      toast.error('Erro ao listar dados: ' + err.message)
     } finally {
       setLoading(false)
     }
   }, [role, selectedGroupId])
+
+  const handleQuizEnabledChange = useCallback((e) => {
+    setQuizConfig(prev => ({ ...prev, quizEnabled: e.target.checked }))
+  }, [])
+
+  const handleQuizPointsChange = useCallback((e) => {
+    const value = Number(e.target.value)
+    setQuizConfig(prev => ({ ...prev, quizQuestionPoints: isNaN(value) || value < 1 ? 10 : value }))
+  }, [])
+
+  const handleSaveQuizConfig = useCallback(async () => {
+    setQuizSaving(true)
+    setQuizConfigStatus('')
+    try {
+      await apiFetch('/ranking-config', {
+        method: 'PUT',
+        body: JSON.stringify({
+          quizEnabled: quizConfig.quizEnabled,
+          quizQuestionPoints: quizConfig.quizQuestionPoints
+        })
+      })
+      setQuizConfigStatus('saved')
+      toast.success('Configurações do quiz salvas!')
+    } catch (err) {
+      setQuizConfigStatus('Erro ao salvar configurações.')
+      toast.error('Falha ao salvar: ' + err.message)
+    } finally {
+      setQuizSaving(false)
+    }
+  }, [quizConfig.quizEnabled, quizConfig.quizQuestionPoints])
 
   useEffect(() => {
     fetchUsers()
@@ -138,6 +173,52 @@ export default function ConfiguracaoPanel() {
 
   return (
     <div className="space-y-8">
+      <div className="bg-indigo-500/10 border border-indigo-400/30 rounded-2xl p-5">
+        <h3 className="text-lg font-bold text-indigo-300 mb-2">⚙️ Configurações do Quiz</h3>
+        <p className="text-sm text-white/60 mb-5">
+          Configure se o quiz estará disponível para usuários convidados e defina a pontuação por acerto.
+        </p>
+        <div className="space-y-4">
+          <div>
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={quizConfig.quizEnabled || false}
+                onChange={handleQuizEnabledChange}
+                className="w-5 h-5 text-indigo-600 bg-slate-900/50 border-white/20 rounded focus:ring-indigo-500 focus:ring-2"
+              />
+              <span className="text-sm font-medium text-white">Ativar Quiz para Usuários Convidado</span>
+            </label>
+            <p className="mt-1 text-xs text-white/50">Quando desativado, apenas admins/secretários podem acessar o quiz.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-white/80 mb-2">Pontos por acerto no Quiz</label>
+            <input
+              type="number"
+              min="1"
+              value={quizConfig.quizQuestionPoints || 10}
+              onChange={handleQuizPointsChange}
+              className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-indigo-400"
+              placeholder="10"
+            />
+            <p className="mt-1 text-xs text-white/50">Pontuação padrão atribuída por cada resposta correta (pode ser alterada individualmente no quiz).</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleSaveQuizConfig}
+            disabled={quizSaving}
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-500 transition disabled:opacity-50 cursor-pointer font-medium"
+          >
+            {quizSaving ? 'Salvando...' : 'Salvar Configurações do Quiz'}
+          </button>
+        </div>
+        {quizConfigStatus && (
+          <p className={`mt-2 p-2 rounded text-xs ${quizConfigStatus === 'saved' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-400/30' : 'bg-amber-500/10 text-amber-300 border border-amber-400/30'}`}>
+            {quizConfigStatus === 'saved' ? '✅ Configurações salvas com sucesso!' : quizConfigStatus}
+          </p>
+        )}
+      </div>
+
       <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
         <h3 className="text-lg font-bold text-white mb-2">Criar Novo Grupo</h3>
         <p className="text-sm text-white/60 mb-5">
