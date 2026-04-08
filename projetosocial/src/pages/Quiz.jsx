@@ -124,6 +124,7 @@ const Quiz = () => {
   const [score, setScore] = useState(0)
   const [showQuizRankingAll, setShowQuizRankingAll] = useState(false)
   const [questionPoints, setQuestionPoints] = useState(10)
+  const [inputPointsValue, setInputPointsValue] = useState("10")
   const [confirmOption, setConfirmOption] = useState(null)
   const [wrongQuestionIndexes, setWrongQuestionIndexes] = useState([])
   const [timeLeft, setTimeLeft] = useState(60)
@@ -200,6 +201,7 @@ const Quiz = () => {
     setIsCorrect(null)
     setScore(0)
     setQuestionPoints(10)
+    setInputPointsValue("10")
     setConfirmOption(null)
     setWrongQuestionIndexes([])
     setTimeLeft(60)
@@ -363,6 +365,7 @@ const Quiz = () => {
     setIsCorrect(null)
     setScore(0)
     setQuestionPoints(10)
+    setInputPointsValue("10")
     setConfirmOption(null)
     setWrongQuestionIndexes([])
     setTimeLeft(60)
@@ -450,10 +453,13 @@ const Quiz = () => {
               <input
                 type="number"
                 min="1"
-                value={questionPoints}
-                onChange={(event) => {
-                  const nextValue = Number(event.target.value)
-                  setQuestionPoints(nextValue > 0 ? nextValue : 10)
+                value={inputPointsValue}
+                onChange={(event) => setInputPointsValue(event.target.value)}
+                onBlur={(event) => {
+                  const val = Number(event.target.value)
+                  const nextValue = isNaN(val) || val <= 0 ? 10 : val
+                  setQuestionPoints(nextValue)
+                  setInputPointsValue(nextValue.toString())
                 }}
                 className="rounded-3xl bg-slate-900/90 border border-white/10 px-4 py-3 text-white outline-none transition focus:border-amber-400 cursor-pointer"
               />
