@@ -61,6 +61,13 @@ export async function apiFetch(path, options = {}) {
   if (groupId) headers['x-group-id'] = groupId
   const res = await fetch(`${API_PREFIX}${path}`, { ...options, headers })
   const data = await res.json().catch(() => ({}))
+
+  if (res.status === 401) {
+    clearSession()
+    window.location.href = '/login'
+    return
+  }
+
   if (!res.ok) {
     const msg = data.message || res.statusText || 'Erro na requisição'
     throw new Error(msg)
