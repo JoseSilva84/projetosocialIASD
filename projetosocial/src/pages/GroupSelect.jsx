@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import ScreenShell from '../components/ScreenShell'
-import { apiFetch, getToken, saveGroup } from '../lib/api'
+import { apiFetch, clearSession, getToken, saveGroup } from '../lib/api'
 
 export default function GroupSelect() {
   const [groups, setGroups] = useState([])
@@ -42,7 +42,7 @@ export default function GroupSelect() {
     try {
       const data = await apiFetch('/auth/select-group', {
         method: 'POST',
-        body: JSON.stringify({ groupId: selectedGroup._id, password })
+        body: JSON.stringify({ groupId: selectedGroup._id, password: password.trim() })
       })
       // Salvar novo token e grupo
       localStorage.setItem('token', data.token)
@@ -118,6 +118,18 @@ export default function GroupSelect() {
           >
             {loadingVerify ? 'Verificando...' : 'Entrar no Grupo'}
           </button>
+
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <button
+              onClick={() => {
+                clearSession()
+                navigate('/login', { replace: true })
+              }}
+              className="w-full text-sm text-white/60 py-3 rounded-xl border border-white/20 hover:bg-white/10 hover:text-white transition-all duration-200 cursor-pointer"
+            >
+              Sair do Login
+            </button>
+          </div>
         </div>
       </div>
     </ScreenShell>

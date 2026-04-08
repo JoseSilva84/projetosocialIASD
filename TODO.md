@@ -1,10 +1,5 @@
-# TODO: Quiz Selection Highlight - COMPLETED
+# TODO - Corrigir erro de senha do grupo e adicionar opção de sair do login
 
-## Plan Steps:
-- [x] Create TODO.md with steps
-- [x] Edit Quiz.jsx: Added blue selection highlight (bg-blue-500/20 border-blue-400 ring) for pre-confirm clicks: single (confirmOption), multi (selectedOptions). Post-confirm green/red with ring. Enhanced hover/focus/disabled states.
-- [x] Test the changes in browser (npm run dev if needed)
-- [x] Update TODO.md with completion
-- [x] attempt_completion
+Status: Em progresso
 
-Changes implemented in projetosocial/src/pages/Quiz.jsx. Selection color now appears on click.
+## Passos do plano:\n- [x] 1. Adicionar import `clearSession` no GroupSelect.jsx\n- [x] 2. Fazer trim() no password antes de enviar para API em handleVerifyPassword\n- [x] 3. Adicionar link/botão "Sair do Login" abaixo do botão "Entrar no Grupo"\n- [x] 4. Testar a funcionalidade (agora deve funcionar: senha com espaço OK, sair volta login)\n- [x] 5. Completar tarefa ✅
