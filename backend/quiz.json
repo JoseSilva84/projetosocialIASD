@@ -1325,7 +1325,7 @@
           "pergunta": "A fé em Cristo anula nossa obrigação de seguir os dez mandamentos? (Romanos 3:31)",
           "opcoes": [
             "Sim",
-            "Não"
+            "Não. Antes, a confirma."
           ],
           "resposta": "Não. Antes, a confirma.",
           "tipo": "unica_escolha"
@@ -1367,7 +1367,7 @@
             "Salomão",
             "Deus"
           ],
-          "resposta": "Deus.",
+          "resposta": "Deus",
           "tipo": "unica_escolha"
         },
         {
@@ -1389,7 +1389,7 @@
             "Alterou, em parte",
             "Aboliu"
           ],
-          "resposta": "Confirmou.",
+          "resposta": "Confirmou",
           "tipo": "unica_escolha"
         },
         {
@@ -1399,7 +1399,7 @@
             "Sim",
             "Não"
           ],
-          "resposta": "Não.",
+          "resposta": "Não",
           "tipo": "unica_escolha"
         },
         {
@@ -1510,7 +1510,7 @@
             "Domingo",
             "Sexta-feira"
           ],
-          "resposta": "Sábado.",
+          "resposta": "Sábado",
           "tipo": "unica_escolha"
         },
         {
@@ -1521,7 +1521,7 @@
             "Domingo",
             "Sexta-feira"
           ],
-          "resposta": "Sábado.",
+          "resposta": "Sábado",
           "tipo": "unica_escolha"
         },
         {
@@ -1532,7 +1532,7 @@
             "Domingo",
             "Sexta-feira"
           ],
-          "resposta": "Sábado.",
+          "resposta": "Sábado",
           "tipo": "unica_escolha"
         },
         {
@@ -1540,7 +1540,7 @@
           "pergunta": "Podemos ignorar esse mandamento? (Tiago 2:10-12; 1João 2:4)",
           "opcoes": [
             "Sim",
-            "Não"
+            "Não. A guarda do sábado é uma demonstração de amor a Deus."
           ],
           "resposta": "Não. A guarda do sábado é uma demonstração de amor a Deus.",
           "tipo": "unica_escolha"
@@ -1572,7 +1572,7 @@
           "id": 3,
           "pergunta": "Que prática era observada entre os pagãos nos tempos de Moisés? (Deuteronômio 4:19; 17:2,3)",
           "opcoes": [
-            "Adoração dos astros.",
+            "Adoração dos astros (Sol, Lua, estrelas).",
             "Adoração a Deus.",
             "Adoração de animais."
           ],
@@ -1833,7 +1833,7 @@
           "id": 1,
           "pergunta": "Como Deus manifestou Seu amor por nós? (1João 4:9)",
           "opcoes": [
-            "Entregando-Se",
+            "Entregando-Se (dando Seu Filho).",
             "Negando-Se",
             "Castigando"
           ],
@@ -1865,7 +1865,7 @@
             "10%",
             "0%"
           ],
-          "resposta": "10%.",
+          "resposta": "10%",
           "tipo": "unica_escolha"
         },
         {
@@ -1947,7 +1947,12 @@
           "id": 3,
           "pergunta": "Quais são os critérios bíblicos para a separação das ofertas? (Deuteronômio 16:17; 1Coríntios 16:2; 2Coríntios 9:5)",
           "resposta": "A oferta deve ser: individual e voluntária; planejada; regular e sistemática; proporcional às bênçãos recebidas.",
-          "tipo": "multipla_escolha"
+          "tipo": "unica_escolha",
+          "opcoes": [
+            "A oferta deve ser: coletiva e voluntária; desplanejada; irregular e sistemática; proporcional às bênçãos recebidas.",
+            "A oferta deve ser: do que achar melhor; proporcional às bênçãos recebidas.",
+            "A oferta deve ser: individual e voluntária; planejada; regular e sistemática; proporcional às bênçãos recebidas."
+          ]
         },
         {
           "id": 4,
@@ -2119,10 +2124,10 @@
           "id": 3,
           "pergunta": "De que forma Cristo foi batizado por João? (Marcos 1:9-10)",
           "opcoes": [
-            "Aspersão",
-            "Imersão"
+            "Aspersão (água na cabeça)",
+            "Imersão (mergulhado)"
           ],
-          "resposta": "Imersão.",
+          "resposta": "Imersão (mergulhado)",
           "tipo": "unica_escolha"
         },
         {
@@ -2166,7 +2171,7 @@
             "Amanhã",
             "Algum dia"
           ],
-          "resposta": "Hoje.",
+          "resposta": "Hoje",
           "tipo": "unica_escolha"
         },
         {
@@ -2421,7 +2426,7 @@
             "Alegria",
             "Nada"
           ],
-          "resposta": "Espírito Santo.",
+          "resposta": "Espírito Santo",
           "tipo": "unica_escolha"
         }
       ]
