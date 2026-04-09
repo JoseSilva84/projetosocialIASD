@@ -3,6 +3,7 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import authRoutes from "./routes/auth.routes.js";
+import challengeRoutes from "./routes/challenge.routes.js";
 import groupRoutes from "./routes/group.routes.js";
 import participantRoutes from "./routes/participant.routes.js";
 import rankingConfigRoutes from "./routes/rankingConfig.routes.js";
@@ -55,6 +56,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/participants", participantRoutes);
 app.use("/api/ranking-config", rankingConfigRoutes);
 app.use("/api/groups", groupRoutes);
+app.use("/api/challenges", challengeRoutes);
 
 export { app };
 

@@ -74,3 +74,39 @@ export async function apiFetch(path, options = {}) {
   }
   return data
 }
+
+export async function apiQuizQuestionComplete(id, { studyIndex, questionId, action }) {
+  return apiFetch(`/participants/${id}/quiz-question-complete`, {
+    method: 'PATCH',
+    body: JSON.stringify({ studyIndex, questionId, action })
+  });
+}
+
+export async function apiGetQuizChallengesStats() {
+  return apiFetch('participants/quiz-challenges-stats');
+}
+
+// Challenge API methods
+export async function apiGetChallenges() {
+  return apiFetch('/challenges');
+}
+
+export async function apiPostChallenge(challengeData) {
+  return apiFetch('/challenges', {
+    method: 'POST',
+    body: JSON.stringify(challengeData)
+  });
+}
+
+export async function apiPutChallenge(id, challengeData) {
+  return apiFetch(`/challenges/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(challengeData)
+  });
+}
+
+export async function apiDeleteChallenge(id) {
+  return apiFetch(`/challenges/${id}`, {
+    method: 'DELETE'
+  });
+}

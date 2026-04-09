@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import jogo from '../../../backend/quiz.json'
-import { apiFetch, getUserRole } from '../lib/api'
+import { apiFetch, apiQuizQuestionComplete, getUserRole } from '../lib/api'
 
 
 function normalizeText(value) {
@@ -132,6 +132,11 @@ const Quiz = () => {
   const [isTimerPaused, setIsTimerPaused] = useState(false)
   const [quizConfig, setQuizConfig] = useState({ quizEnabled: false, quizQuestionPoints: 10 })
   const [quizStarted, setQuizStarted] = useState(false)
+  const [showChallengesStats, setShowChallengesStats] = useState(false)
+  const [challengesStats, setChallengesStats] = useState([])
+  const [loadingStats, setLoadingStats] = useState(false)
+  const [editingChallengeId, setEditingChallengeId] = useState(null)
+  const [editingParticipantId, setEditingParticipantId] = useState('')
   const userRole = getUserRole()
   
   // Inicializar pontos com config do servidor
@@ -150,6 +155,23 @@ const Quiz = () => {
       toast.error('Erro ao recarregar participantes: ' + err.message)
     }
   }
+
+  const loadChallengesStats = async () => {
+    if (!getGroupId()) return
+    setLoadingStats(true)
+    try {
+      const stats = await apiGetQuizChallengesStats()
+      setChallengesStats(stats || [])
+    } catch (err) {
+      console.error('Erro ao carregar stats:', err)
+    } finally {
+      setLoadingStats(false)
+    }
+  }
+
+  useEffect(() => {
+    loadChallengesStats()
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -318,46 +340,48 @@ const Quiz = () => {
     setSelectedOption(answerText)
     setIsCorrect(correct)
 
-    if (correct) {
-      setWrongQuestionIndexes((prev) => prev.filter((index) => index !== questionIndex))
-      setScore((prevScore) => prevScore + 1)
-      await playSuccessSound()
-      toast.success('Resposta correta!')
+      if (correct) {
+        setWrongQuestionIndexes((prev) => prev.filter((index) => index !== questionIndex))
+        setScore((prevScore) => prevScore + 1)
+        await playSuccessSound()
+        toast.success('Resposta correta!')
 
-      if (selectedScoringParticipantId) {
-        try {
-          const pointsToRegister = Math.max(1, questionPoints)
-          
-          // Registrar acerto do quiz
+        if (selectedScoringParticipantId && question?.id) {
+          try {
+            // Registrar completude da pergunta específica
+            await apiQuizQuestionComplete(selectedScoringParticipantId, {
+              studyIndex,
+              questionId: question.id,
+              action: 'add'
+            });
+
+            const pointsToRegister = Math.max(1, questionPoints)
+            
+            // Registrar pontuação extra (mantém compatibilidade)
+            await apiFetch(`/participants/${selectedScoringParticipantId}/extra-score`, {
+              method: 'PATCH',
+              body: JSON.stringify({ points: pointsToRegister, reason: `Quiz S${studyIndex + 1} Q${question.id}` }),
+            });
+
+            toast.success(`Desafio completado e pontos registrados!`)
+            await loadParticipants()
+          } catch (err) {
+            console.error('Erro ao registrar desafio:', err)
+            toast.error('Falha ao registrar: ' + err.message)
+          }
+        } else if (selectedScoringParticipantId) {
+          // Fallback para backward compat
           try {
             await apiFetch(`/participants/${selectedScoringParticipantId}/quiz-correct-answer`, {
               method: 'PATCH',
             })
-          } catch (quizErr) {
-            console.error('Erro ao registrar acerto do quiz:', quizErr)
-            toast.error('Falha ao registrar acerto: ' + quizErr.message)
-            throw quizErr
+            toast.success(`Acerto registrado no ranking!`)
+            await loadParticipants()
+          } catch (err) {
+            console.error('Erro fallback:', err)
           }
-
-          // Registrar pontuação extra
-          try {
-            await apiFetch(`/participants/${selectedScoringParticipantId}/extra-score`, {
-              method: 'PATCH',
-              body: JSON.stringify({ points: pointsToRegister, reason: `Quiz: ${currentStudy.tema} - Pergunta ${questionIndex + 1}` }),
-            })
-          } catch (scoreErr) {
-            console.error('Erro ao registrar pontuação extra:', scoreErr)
-            toast.error('Falha ao registrar pontos: ' + scoreErr.message)
-            throw scoreErr
-          }
-
-          toast.success(`Acerto e pontuação registrados no ranking!`)
-          await loadParticipants()
-        } catch (err) {
-          console.error('Erro geral ao registrar acerto:', err)
         }
-      }
-    } else {
+      } else {
       setWrongQuestionIndexes((prev) => (prev.includes(questionIndex) ? prev : [...prev, questionIndex]))
       await playErrorSound()
       toast.error('Resposta incorreta!')
@@ -822,6 +846,113 @@ const optionClass = selectedOption
           </div>
         )}
       </section>
+      <section className="mt-12 rounded-3xl border border-white/10 bg-slate-900/80 p-6 sm:p-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-white">📊 Desafios Concluídos</h3>
+            <p className="mt-1 text-sm text-slate-400">Relação de desafios (perguntas do quiz) e pessoas que os completaram. Edite conforme necessário.</p>
+          </div>
+          <button
+            onClick={() => setShowChallengesStats(!showChallengesStats)}
+            className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
+          >
+            {showChallengesStats ? 'Fechar' : 'Abrir'}
+          </button>
+        </div>
+
+        {showChallengesStats && (
+          <div className="mt-6">
+            {loadingStats ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400"></div>
+              </div>
+            ) : challengesStats.length === 0 ? (
+              <div className="text-center py-12 text-slate-400">
+                Nenhum desafio completado ainda. Complete perguntas do quiz para popular esta lista.
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {challengesStats.map((stat) => (
+                  <div key={stat.challengeId} className="rounded-2xl border border-white/10 bg-slate-950/50 p-6 hover:border-amber-400/50 transition">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h4 className="font-semibold text-white text-lg">{stat.challengeId}</h4>
+                        <p className="text-sm text-slate-400 mt-1">Estudo {stat.studyIndex + 1}, Pergunta {stat.questionId}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-amber-400">{stat.count}</span>
+                        <span className="text-sm text-slate-400 block">participantes</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {stat.participants.map((p) => (
+                        <span key={p._id} className="px-3 py-1 bg-emerald-500/20 text-emerald-200 text-sm rounded-full border border-emerald-400/30">
+                          {p.name}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <select
+                        value={editingParticipantId}
+                        onChange={(e) => setEditingParticipantId(e.target.value)}
+                        className="flex-1 rounded-xl bg-slate-800/50 border border-white/20 px-3 py-2 text-white text-sm focus:border-amber-400 focus:outline-none"
+                      >
+                        <option value="">Adicionar participante...</option>
+                        {participants.map((p) => (
+                          <option key={p._id} value={p._id}>{p.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={async () => {
+                          if (editingParticipantId) {
+                            try {
+                              await apiQuizQuestionComplete(editingParticipantId, {
+                                studyIndex: stat.studyIndex,
+                                questionId: stat.questionId,
+                                action: 'add'
+                              })
+                              toast.success('Participante adicionado!')
+                              loadChallengesStats()
+                              setEditingParticipantId('')
+                            } catch (err) {
+                              toast.error('Erro ao adicionar')
+                            }
+                          }
+                        }}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition whitespace-nowrap"
+                      >
+                        Adicionar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          // Remove first participant as demo
+                          if (stat.participants[0]) {
+                            try {
+                              await apiQuizQuestionComplete(stat.participants[0]._id, {
+                                studyIndex: stat.studyIndex,
+                                questionId: stat.questionId,
+                                action: 'remove'
+                              })
+                              toast.success('Participante removido!')
+                              loadChallengesStats()
+                            } catch (err) {
+                              toast.error('Erro ao remover')
+                            }
+                          }
+                        }}
+                        className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium rounded-xl transition whitespace-nowrap"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
       <section className="mt-8 rounded-3xl border border-white/10 bg-slate-900/80 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-white">Ranking dos Participantes</h3>
         <p className="mt-2 text-sm text-slate-400">Pontuações atualizadas em tempo real.</p>
@@ -862,5 +993,6 @@ const optionClass = selectedOption
     </div>
   )
 }
+
 
 export default Quiz

@@ -6,10 +6,21 @@ import ScreenShell from '../components/ScreenShell'
 import BiblicalStudyPanel from '../components/dashboard/BiblicalStudyPanel'
 import ConfiguracaoPanel from '../components/dashboard/ConfiguracaoPanel'
 import FrequencyPanel from '../components/dashboard/FrequencyPanel'
-import { apiFetch, clearSession, getGroupId, getToken, getUserName, getUserRole } from '../lib/api'
+import { 
+  apiFetch, 
+  apiGetChallenges, 
+  apiPostChallenge, 
+  apiPutChallenge, 
+  apiDeleteChallenge,
+  clearSession, 
+  getGroupId, 
+  getToken, 
+  getUserName, 
+  getUserRole 
+} from '../lib/api'
 import { FREQUENCY_DAYS } from '../lib/frequencyDays'
 
-const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'desafios', 'sorteio']
+const TABS_WITH_FRESH_LIST = ['biblico', 'frequencia', 'dados', 'ranking', 'sorteio']
 
 const ALL_TABS = [
   { id: 'home', label: 'Home' },
@@ -243,6 +254,9 @@ export default function Participantes() {
   const [challengePoints, setChallengePoints] = useState('')
   const [challengeSaving, setChallengeSaving] = useState(false)
   const [challengeHistory, setChallengeHistory] = useState([])
+  const [editingChallenge, setEditingChallenge] = useState(null)
+  const [deleteChallengeConfirm, setDeleteChallengeConfirm] = useState(null)
+  const [challengeLoading, setChallengeLoading] = useState(false)
   const [drawMode, setDrawMode] = useState('nome')
   const [selectedDrawDay, setSelectedDrawDay] = useState('')
   const [drawNameResult, setDrawNameResult] = useState(null)
@@ -1066,8 +1080,31 @@ export default function Participantes() {
     }
   }, [navigate])
 
-  const loadRankingConfig = useCallback(async () => {
-    setConfigLoading(true)
+const loadChallenges = useCallback(async () => {
+  if (!getGroupId()) return;
+  setChallengeLoading(true);
+  try {
+    const challenges = await apiGetChallenges();
+    setChallengeHistory(challenges.map(c => ({
+      id: c._id,
+      title: c.title,
+      points: c.points,
+      participants: c.participantIds.map(p => p.name || '(sem nome)').slice(0, 3),
+      participantCount: c.participantIds.length,
+      createdAt: c.createdAt
+    })).slice(0, 10));
+    toast.info(`Carregado(s) ${challenges.length} desafio(s).`);
+  } catch (err) {
+    toast.error('Erro ao carregar desafios: ' + err.message);
+    console.error('Erro ao carregar desafios:', err);
+    setChallengeHistory([]);
+  } finally {
+    setChallengeLoading(false);
+  }
+}, []);
+
+const loadRankingConfig = useCallback(async () => {
+  setConfigLoading(true)
     try {
       const data = await apiFetch('/ranking-config')
       setRankingConfig({
@@ -1505,10 +1542,10 @@ export default function Participantes() {
     })
   }
 
-  async function handleAddChallengePoints() {
+async function handleAddOrUpdateChallenge() {
     const points = parseScoreValue(challengePoints)
     const challengeTitle = challengeName.trim()
-    const ids = [...selectedChallengeParticipantIds]
+    const ids = selectedChallengeParticipantIds.map(id => getParticipantIdString(id)) // Ensure string IDs
 
     if (!challengeTitle) {
       toast.error('Informe o nome do desafio.')
@@ -1525,38 +1562,66 @@ export default function Participantes() {
       return
     }
 
+    const isEditing = !!editingChallenge
     setChallengeSaving(true)
     try {
-      await Promise.all(
-        ids.map((id) =>
-          apiFetch(`/participants/${id}/extra-score`, {
-            method: 'PATCH',
-            body: JSON.stringify({ points, reason: challengeTitle }),
-          })
-        )
-      )
+      let updatedChallenge;
+      if (isEditing) {
+        updatedChallenge = await apiPutChallenge(editingChallenge.id, { title: challengeTitle, points, participantIds: ids });
+        toast.success(`Desafio "${challengeTitle}" atualizado com sucesso!`);
+      } else {
+        updatedChallenge = await apiPostChallenge({ title: challengeTitle, points, participantIds: ids });
+        toast.success(`Desafio "${challengeTitle}" criado com sucesso!`);
+      }
 
-      setChallengeHistory((prev) => [
-        {
-          id: Date.now(),
-          title: challengeTitle,
-          points,
-          participants: selectedChallengeParticipants.map((p) => p.name || '(sem nome)'),
-          createdAt: new Date(),
-        },
-        ...prev,
-      ].slice(0, 10))
+      // Reload full list from backend
+      await loadChallenges();
 
+      // Reset form
       setChallengeName('')
       setChallengePoints('')
       setChallengeParticipantSearch('')
       setSelectedChallengeParticipantIds([])
-      toast.success('Desafio pontuado com sucesso!')
-      await loadList()
+      setEditingChallenge(null)
+      await loadList(); // Refresh participant scores
     } catch (err) {
-      toast.error(err.message)
+      toast.error(`Erro ao ${isEditing ? 'atualizar' : 'criar'} desafio: ${err.message}`);
+      console.error(err);
     } finally {
       setChallengeSaving(false)
+    }
+  }
+
+function handleEditChallenge(entry) {
+    setChallengeName(entry.title)
+    setChallengePoints(entry.points.toString())
+    setEditingChallenge(entry)
+  }
+
+  function handleConfirmDeleteChallenge(entryId) {
+    setDeleteChallengeConfirm(entryId)
+  }
+
+  function cancelDeleteChallenge() {
+    setDeleteChallengeConfirm(null)
+  }
+
+async function confirmDeleteChallenge() {
+    if (!deleteChallengeConfirm) return
+
+    setChallengeSaving(true)
+    try {
+      await apiDeleteChallenge(deleteChallengeConfirm);
+      toast.success('Desafio removido com sucesso! Pontuações extras revertidas.');
+      
+      // Reload from backend
+      await loadChallenges();
+      await loadList(); // Refresh scores
+    } catch (err) {
+      toast.error('Erro ao remover desafio: ' + err.message);
+    } finally {
+      setChallengeSaving(false)
+      setDeleteChallengeConfirm(null)
     }
   }
 
@@ -1783,7 +1848,8 @@ export default function Participantes() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsMobileMenuOpen((prev) => !prev)}className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-black/30 text-white transition hover:bg-white/10 cursor-pointer"
+onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-black/30 text-white transition hover:bg-white/10 cursor-pointer"
                 aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-panel-menu"
@@ -1815,7 +1881,8 @@ export default function Participantes() {
                     <button
                       key={t.id}
                       type="button"
-                      onClick={() => setTab(t.id)} className={`rounded-xl px-4 py-3 text-left text-sm font-medium transition cursor-pointer ${
+onClick={() => setTab(t.id)}
+                      className={`rounded-xl px-4 py-3 text-left text-sm font-medium transition cursor-pointer ${
                         tab === t.id
                           ? 'bg-white/15 text-white shadow-inner'
                           : 'text-white/55 hover:text-white/85 hover:bg-white/5'
@@ -1846,7 +1913,8 @@ export default function Participantes() {
                   <button
                     key={t.id}
                     type="button"
-                    onClick={() => setTab(t.id)} className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition cursor-pointer flex-0 ${
+onClick={() => setTab(t.id)}
+                    className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition cursor-pointer flex-0 ${
                       tab === t.id
                         ? 'bg-white/15 text-white shadow-inner'
                         : 'text-white/55 hover:text-white/85 hover:bg-white/5'
@@ -1871,7 +1939,7 @@ export default function Participantes() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="🔍 Pesquisar..."
-                className="w-full rounded-xl border border-white/15 bg-white/5 px-30 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30 hidden lg:flex"
+className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/30 hidden lg:flex"
               />
             </div>
 
@@ -1978,8 +2046,7 @@ export default function Participantes() {
 
         {tab === 'inscricoes' && (
           <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8">
-            {(userRole === 'admin' || userRole === 'secretario') && (
-              <div className="relative w-full max-w-xl shrink-0 rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto">
+            <div className="relative w-full max-w-xl shrink-0 rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto">
                 <div className="absolute inset-0 bg-linear-to-br from-slate-500/15 via-transparent to-slate-700/15" />
 
                 <div className="relative px-5 py-6 sm:px-7 sm:py-8 space-y-6">
@@ -2079,7 +2146,6 @@ export default function Participantes() {
                   </form>
                 </div>
               </div>
-            )}
 
             <article
               className={`relative w-full min-w-0 ${userRole === 'admin' ? 'flex-1' : ''} rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto`}
@@ -2321,6 +2387,38 @@ export default function Participantes() {
                                     </span>
                                   </>
                                 ) : null}
+{getParticipantExtraEntries(p).length > 0 && (
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-medium text-indigo-300">Desafios/Extras:</p>
+                                    {getParticipantExtraEntries(p).map((entry, index) => (
+                                      <div key={index} className="flex items-center gap-2 text-xs bg-indigo-500/10 p-1 rounded-lg border border-indigo-400/20">
+                                        <span className="font-mono text-indigo-300">+{entry.points}</span>
+                                        <span className="text-indigo-100 truncate flex-1">{entry.reason}</span>
+                                        <button
+                                          type="button"
+                                          onClick={async () => {
+                                            if (window.confirm(`Remover desafio "${entry.reason}" (+${entry.points} pts) de ${p.name}?`)) {
+                                              try {
+await apiFetch(`/participants/${p._id}/extra/${index}`, { method: 'DELETE' });
+                                                toast.success('Desafio removido com sucesso!');
+                                                await loadList();
+                                              } catch (err) {
+                                                toast.error('Erro: ' + err.message);
+                                              }
+                                            }
+                                          }}
+                                          className="ml-1 rounded-full p-0.5 hover:bg-indigo-400/20 transition text-indigo-400 hover:text-indigo-200"
+                                          title="Remover este desafio"
+                                        >
+                                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    ))}
+                                    <p className="text-xs text-indigo-400 mt-1">Total extra: <strong>{getParticipantExtraTotal(p).toFixed(1)} pts</strong></p>
+                                  </div>
+                                )}
                               </div>
                               <p className="text-xs text-white/40 mt-2">{formatDate(p.createdAt)}</p>
                             </>
@@ -3054,11 +3152,11 @@ export default function Participantes() {
                       </div>
                       <button
                         type="button"
-                        onClick={handleAddChallengePoints}
+                        onClick={handleAddOrUpdateChallenge}
                         disabled={challengeSaving}
                         className="w-full rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                       >
-                        {challengeSaving ? 'Registrando desafio...' : 'Pontuar desafio'}
+                        {challengeSaving ? (editingChallenge ? 'Atualizando...' : 'Registrando...') : (editingChallenge ? 'Atualizar desafio' : 'Pontuar desafio')}
                       </button>
                     </div>
                   ) : (
@@ -3078,6 +3176,22 @@ export default function Participantes() {
                         <p className="text-sm font-semibold text-white">{entry.title}</p>
                         <p className="text-xs text-white/50">{entry.points} pontos • {entry.participants.length} participante(s)</p>
                         <p className="mt-2 text-xs text-white/60">{entry.participants.join(', ')}</p>
+                        <div className="flex gap-2 mt-3 pt-2 border-t border-white/10">
+                          <button
+                            type="button"
+                            onClick={() => handleEditChallenge(entry)}
+                            className="flex-1 rounded-full bg-blue-500/20 border border-blue-400/30 px-3 py-1.5 text-xs font-medium text-blue-100 hover:bg-blue-500/30 transition cursor-pointer"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleConfirmDeleteChallenge(entry.id)}
+                            className="flex-1 rounded-full bg-red-500/20 border border-red-400/30 px-3 py-1.5 text-xs font-medium text-red-100 hover:bg-red-500/30 transition cursor-pointer"
+                          >
+                            Excluir
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -3312,7 +3426,7 @@ export default function Participantes() {
           </section>
         )}
 
-        {deleteConfirmId ? (
+{deleteConfirmId ? (
           <div
             className="fixed inset-0 z-[99990] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
             role="dialog"
@@ -3345,6 +3459,43 @@ export default function Participantes() {
                   disabled={deletingIds.has(deleteConfirmId)}
                 >
                   {deletingIds.has(deleteConfirmId) ? 'Aguarde…' : 'Excluir'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {deleteChallengeConfirm ? (
+          <div
+            className="fixed inset-0 z-[99991] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-challenge-delete-title"
+          >
+            <div
+              className="relative w-full max-w-md rounded-2xl border border-white/15 bg-slate-950/95 p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 id="confirm-challenge-delete-title" className="text-lg font-bold text-white">
+                Confirmar exclusão do desafio
+              </h2>
+              <p className="text-sm text-white/70 mt-3">
+                Removerá as pontuações extras deste desafio de todos os participantes e do histórico.
+              </p>
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={cancelDeleteChallenge}
+                  className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/10 transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteChallenge}
+                  disabled={challengeSaving}
+                  className="rounded-full border border-red-400/40 bg-red-600/80 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {challengeSaving ? 'Removendo...' : 'Excluir desafio'}
                 </button>
               </div>
             </div>

@@ -100,6 +100,29 @@ const participantSchema = new mongoose.Schema(
       },
       rankingUpdatedAt: { type: Date, default: null },
     },
+    quizCompleted: {
+      type: [{
+        studyIndex: { type: Number, required: true, min: 0 },
+        questionId: { type: Number, required: true, min: 1 },
+        completedAt: { type: Date, default: Date.now }
+      }],
+      default: [],
+      validate: {
+        validator: function(arr) {
+          if (!Array.isArray(arr)) return false;
+          const seen = new Set();
+          return arr.every(item => {
+            const key = `${item.studyIndex}_${item.questionId}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return Number.isInteger(item.studyIndex) && item.studyIndex >= 0 &&
+                   Number.isInteger(item.questionId) && item.questionId >= 1 &&
+                   item.completedAt instanceof Date;
+          });
+        },
+        message: "Quiz completions must be unique per studyIndex+questionId"
+      }
+    },
   },
   { timestamps: true }
 );
