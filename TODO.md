@@ -1,14 +1,10 @@
-# TODO - Correções Desafios e Menu
+# Task: Fix desafios display + ranking removal feedback
 
-✅ 1. **Corrigir bugs desafios** em `projetosocial/src/pages/Participantes.jsx`:
-   - Remover toast hack em `handleEditChallenge`
-   - Adicionar refresh `loadChallenges()` após update/delete
-   - Reset form após operações
-   
-✅ 2. **Remover botão 'Desafios' do menu** em Participantes (já existe em Ranking)
+## Steps:
+- [ ] 1. Fix Participantes.jsx desafios tab: add useEffect(tab==='desafios'), show loading/empty state, log challengeHistory
+- [ ] 2. Add ranking feedback: extraScore modal/list with remove buttons  
+- [ ] 3. Enhance challenge ops: removal toast with points/participants count
+- [ ] 4. Test full flow
+- [ ] 5. Complete task
 
-**Próximos passos após edição:**
-- Testar create/edit/delete desafio
-- Verificar fluxo: delete → recreate → edit OK
-- Frontend dev: `cd projetosocial && npm run dev`
-
+Current: Starting step 1

@@ -1162,6 +1162,14 @@ const loadRankingConfig = useCallback(async () => {
     if (TABS_WITH_FRESH_LIST.includes(tab)) loadList()
   }, [tab, loadList])
 
+  /* Auto-load challenges on desafios tab */
+  useEffect(() => {
+    if (tab === 'desafios') {
+      console.log('Desafios tab activated, loading challenges...')
+      loadChallenges()
+    }
+  }, [tab])
+
   useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [tab])
@@ -1565,12 +1573,11 @@ async function handleAddOrUpdateChallenge() {
     const isEditing = !!editingChallenge
     setChallengeSaving(true)
     try {
-      let updatedChallenge;
       if (isEditing) {
-        updatedChallenge = await apiPutChallenge(editingChallenge.id, { title: challengeTitle, points, participantIds: ids });
+        await apiPutChallenge(editingChallenge.id, { title: challengeTitle, points, participantIds: ids });
         toast.success(`Desafio "${challengeTitle}" atualizado com sucesso!`);
       } else {
-        updatedChallenge = await apiPostChallenge({ title: challengeTitle, points, participantIds: ids });
+        await apiPostChallenge({ title: challengeTitle, points, participantIds: ids });
         toast.success(`Desafio "${challengeTitle}" criado com sucesso!`);
       }
 
@@ -3167,15 +3174,20 @@ await apiFetch(`/participants/${p._id}/extra/${index}`, { method: 'DELETE' });
                 </div>
               </div>
 
-              {challengeHistory.length > 0 ? (
+              {challengeLoading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400 mx-auto mb-4"></div>
+                  <p className="text-sm text-white/60">Carregando desafios...</p>
+                </div>
+              ) : challengeHistory.length > 0 ? (
                 <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5">
                   <h3 className="text-base font-semibold text-white mb-4">Últimos desafios registrados</h3>
                   <div className="space-y-3">
                     {challengeHistory.map((entry) => (
                       <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
                         <p className="text-sm font-semibold text-white">{entry.title}</p>
-                        <p className="text-xs text-white/50">{entry.points} pontos • {entry.participants.length} participante(s)</p>
-                        <p className="mt-2 text-xs text-white/60">{entry.participants.join(', ')}</p>
+                        <p className="text-xs text-white/50">{entry.points} pontos • {entry.participantCount} participante(s)</p>
+                        <p className="mt-2 text-xs text-white/60">Participantes: {entry.participants.join(', ')}{entry.participantCount > 3 ? '...' : ''}</p>
                         <div className="flex gap-2 mt-3 pt-2 border-t border-white/10">
                           <button
                             type="button"
@@ -3196,7 +3208,13 @@ await apiFetch(`/participants/${p._id}/extra/${index}`, { method: 'DELETE' });
                     ))}
                   </div>
                 </div>
-              ) : null}
+              ) : (
+                <div className="text-center py-12 text-slate-400">
+                  <p>Nenhum desafio registrado ainda.</p>
+                  <p className="text-sm mt-2">Crie o primeiro desafio acima!</p>
+                  {console.log('Challenge history empty:', challengeHistory)}
+                </div>
+              )}
             </div>
           </section>
         )}
