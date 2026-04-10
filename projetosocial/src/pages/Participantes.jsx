@@ -1,4 +1,4 @@
-import ApexCharts from 'apexcharts'
+﻿import ApexCharts from 'apexcharts'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -106,6 +106,17 @@ function getParticipantExtraTotal(participant) {
 
 function getParticipantFrequencyCount(participant) {
   return Array.isArray(participant?.frequencyAttended) ? participant.frequencyAttended.length : 0
+}
+
+function getPercentageLabel(value, total) {
+  const normalizedValue = Number(value)
+  const normalizedTotal = Number(total)
+
+  if (!Number.isFinite(normalizedValue) || !Number.isFinite(normalizedTotal) || normalizedTotal <= 0) {
+    return '0.0%'
+  }
+
+  return `${((normalizedValue / normalizedTotal) * 100).toFixed(1)}%`
 }
 
 function getCurrentFrequencyProgrammedDay(participants) {
@@ -369,6 +380,10 @@ export default function Participantes() {
         }
       })
       .sort((a, b) => b.score - a.score)
+      .map((item, index) => ({
+        ...item,
+        position: index + 1,
+      }))
 
     const topScoreRanking = rankingList.slice(0, 10)
     const top3 = rankingList.slice(0, 3)
@@ -2214,7 +2229,17 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
                     <p className="text-sm text-white/50 text-center py-8">Nenhuma inscrição ainda.</p>
                   ) : (
                     <ul className="space-y-3 max-w-2xl mx-auto lg:mx-0">
-                      {filteredList.map((p) => (
+                      {filteredList.map((p) => {
+                        const biblicalCompleted = Array.isArray(p.biblicalLessonsCompleted) ? p.biblicalLessonsCompleted.length : 0
+                        const frequencyCount = getParticipantFrequencyCount(p)
+                        const faltas = Math.max(currentFrequencyProgrammedDay - frequencyCount, 0)
+                        const biblicalPercentage = getPercentageLabel(biblicalCompleted, 15)
+                        const frequencyPercentage = getPercentageLabel(frequencyCount, currentFrequencyProgrammedDay)
+                        const absencePercentage = getPercentageLabel(faltas, currentFrequencyProgrammedDay)
+                        const summary = getParticipantScoreSummary(p, rankingConfig)
+                        const rankingPosition = analytics.rankingList.find((item) => item.id === p._id)?.position ?? null
+
+                        return (
                         <li
                           key={p._id}
                           className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
@@ -2406,7 +2431,7 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
                                     onClick={() => handleParticipantTabNavigation('biblico', p._id)}
                                     className="cursor-pointer rounded-full bg-emerald-500/15 text-emerald-100/85 px-2 py-0.5 border border-emerald-500/20 transition hover:bg-emerald-500/25 hover:border-emerald-400/35"
                                   >
-                                    {p.biblicalLessonsCompleted.length}/15 lições concluídas
+                                    {biblicalCompleted}/15 lições concluídas ({biblicalPercentage})
                                   </button>
                                 ) : null}
                                 {currentFrequencyProgrammedDay > 0 ? (
@@ -2423,13 +2448,12 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
                                           </svg>
                                           <span className="font-bold text-sm text-emerald-100 group-hover:text-emerald-50">
-                                            {getParticipantFrequencyCount(p)}/{currentFrequencyProgrammedDay}
+                                            {frequencyCount}/{currentFrequencyProgrammedDay} ({frequencyPercentage})
                                           </span>
                                         </div>
                                         <span className="absolute -inset-1 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></span>
                                       </button>
                                       {(() => {
-                                        const faltas = Math.max(currentFrequencyProgrammedDay - getParticipantFrequencyCount(p), 0);
                                         const isCritical = faltas >= 3;
                                         return (
                                           <div className={`relative rounded-2xl ${isCritical ? 'bg-gradient-to-r from-rose-500/25 via-red-500/15 to-rose-600/20 border border-rose-400/50 p-2 shadow-lg hover:shadow-rose-500/40 hover:scale-105 transition-all duration-300 min-w-[60px]' : 'bg-gradient-to-r from-amber-500/20 via-orange-400/10 to-red-500/20 border border-amber-400/40 p-2 shadow-md hover:shadow-amber-400/30 hover:scale-105 transition-all duration-300'}`}>
@@ -2438,7 +2462,7 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
                                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
                                               </svg>
                                               <span className={`font-bold text-xs ${isCritical ? 'text-rose-100 drop-shadow-sm' : 'text-amber-100'}`}>
-                                                {faltas}
+                                                {faltas} ({absencePercentage})
                                               </span>
                                             </div>
                                             {isCritical && (
@@ -2453,31 +2477,31 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
 
                                 {currentFrequencyProgrammedDay > 0 && (
                                   <>
-                                    {(() => {
-                                      const summary = getParticipantScoreSummary(p, rankingConfig);
-                                      return (
-                                        <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-400/15 to-amber-600/20 border border-amber-400/40 shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] transition-all duration-200">
-                                          <p className="text-xs font-semibold text-amber-300/90 mb-1 tracking-wide">Pontuação total no ranking</p>
-                                          <div className="flex items-baseline gap-2 mb-2">
-                                            <span className="text-2xl font-black bg-gradient-to-r from-amber-100 via-yellow-200 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">
-                                              {summary.totalScore.toFixed(1)}
-                                            </span>
-                                            <span className="text-sm text-amber-200/80 font-medium">pts</span>
-                                          </div>
-                                          <div className="flex flex-wrap gap-1.5">
-                                            <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-100 text-xs rounded-full border border-emerald-400/30 font-medium">
-                                              {summary.frequencyScore.toFixed(1)} frequência
-                                            </span>
-                                            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-100 text-xs rounded-full border border-amber-400/30 font-medium">
-                                              {summary.biblicalScore.toFixed(1)} bíblico
-                                            </span>
-                                            <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-100 text-xs rounded-full border border-indigo-400/30 font-medium">
-                                              {summary.extraScore.toFixed(1)} extras
-                                            </span>
-                                          </div>
-                                        </div>
-                                      );
-                                    })()}
+                                    <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-400/15 to-amber-600/20 border border-amber-400/40 shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] transition-all duration-200">
+                                      <p className="text-xs font-semibold text-amber-300/90 mb-1 tracking-wide">Pontuação total no ranking</p>
+                                      {rankingPosition ? (
+                                        <p className="text-[11px] font-medium text-amber-100/75 mb-1">
+                                          {rankingPosition}º lugar geral
+                                        </p>
+                                      ) : null}
+                                      <div className="flex items-baseline gap-2 mb-2">
+                                        <span className="text-2xl font-black bg-gradient-to-r from-amber-100 via-yellow-200 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">
+                                          {summary.totalScore.toFixed(1)}
+                                        </span>
+                                        <span className="text-sm text-amber-200/80 font-medium">pts</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-100 text-xs rounded-full border border-emerald-400/30 font-medium">
+                                          {summary.frequencyScore.toFixed(1)} frequência
+                                        </span>
+                                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-100 text-xs rounded-full border border-amber-400/30 font-medium">
+                                          {summary.biblicalScore.toFixed(1)} bíblico
+                                        </span>
+                                        <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-100 text-xs rounded-full border border-indigo-400/30 font-medium">
+                                          {summary.extraScore.toFixed(1)} extras
+                                        </span>
+                                      </div>
+                                    </div>
                                   </>
                                 )}
 
@@ -2518,7 +2542,8 @@ await apiFetch(`/participants/${p._id}/extra/${index}`, { method: 'DELETE' });
                             </>
                           )}
                         </li>
-                      ))}
+                        )
+                      })}
                     </ul>
                   )}
                 </div>
