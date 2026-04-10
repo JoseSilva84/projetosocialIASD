@@ -2382,18 +2382,76 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
                                 ) : null}
                                 {currentFrequencyProgrammedDay > 0 ? (
                                   <>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleParticipantTabNavigation('frequencia', p._id)}
-                                      className="cursor-pointer rounded-full bg-blue-500/15 text-blue-100/85 px-2 py-0.5 border border-blue-500/20 transition hover:bg-blue-500/25 hover:border-blue-400/35"
-                                    >
-                                      {getParticipantFrequencyCount(p)}/{currentFrequencyProgrammedDay} dias de frequência
-                                    </button>
-                                    <span className="rounded-full bg-rose-500/15 text-rose-100/85 px-2 py-0.5 border border-rose-500/20">
-                                      {Math.max(currentFrequencyProgrammedDay - getParticipantFrequencyCount(p), 0)} faltas
-                                    </span>
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleParticipantTabNavigation('frequencia', p._id)}
+                                        className="group relative rounded-2xl bg-gradient-to-r from-emerald-500/20 via-emerald-600/15 to-teal-500/20 border border-emerald-400/40 p-2.5 shadow-md hover:shadow-emerald-500/30 hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer min-w-[100px]"
+                                        title="Ir para frequência"
+                                      >
+                                        <div className="flex items-center gap-1.5">
+                                          <svg className="h-3.5 w-3.5 text-emerald-300 group-hover:text-emerald-100 transition" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
+                                          </svg>
+                                          <span className="font-bold text-sm text-emerald-100 group-hover:text-emerald-50">
+                                            {getParticipantFrequencyCount(p)}/{currentFrequencyProgrammedDay}
+                                          </span>
+                                        </div>
+                                        <span className="absolute -inset-1 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></span>
+                                      </button>
+                                      {(() => {
+                                        const faltas = Math.max(currentFrequencyProgrammedDay - getParticipantFrequencyCount(p), 0);
+                                        const isCritical = faltas >= 3;
+                                        return (
+                                          <div className={`relative rounded-2xl ${isCritical ? 'bg-gradient-to-r from-rose-500/25 via-red-500/15 to-rose-600/20 border border-rose-400/50 p-2 shadow-lg hover:shadow-rose-500/40 hover:scale-105 transition-all duration-300 min-w-[60px]' : 'bg-gradient-to-r from-amber-500/20 via-orange-400/10 to-red-500/20 border border-amber-400/40 p-2 shadow-md hover:shadow-amber-400/30 hover:scale-105 transition-all duration-300'}`}>
+                                            <div className={`flex items-center justify-center gap-1.5 ${isCritical ? 'text-rose-100' : 'text-amber-100'}`}>
+                                              <svg className={`h-3.5 w-3.5 ${isCritical ? 'text-rose-300' : 'text-amber-300'} flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                              </svg>
+                                              <span className={`font-bold text-xs ${isCritical ? 'text-rose-100 drop-shadow-sm' : 'text-amber-100'}`}>
+                                                {faltas}
+                                              </span>
+                                            </div>
+                                            {isCritical && (
+                                              <div className="absolute -inset-1 bg-gradient-to-r from-rose-400/30 to-red-400/30 rounded-2xl blur opacity-80 animate-pulse"></div>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
                                   </>
                                 ) : null}
+
+                                {currentFrequencyProgrammedDay > 0 && (
+                                  <>
+                                    {(() => {
+                                      const summary = getParticipantScoreSummary(p, rankingConfig);
+                                      return (
+                                        <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-400/15 to-amber-600/20 border border-amber-400/40 shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] transition-all duration-200">
+                                          <p className="text-xs font-semibold text-amber-300/90 mb-1 tracking-wide">Pontuação total no ranking</p>
+                                          <div className="flex items-baseline gap-2 mb-2">
+                                            <span className="text-2xl font-black bg-gradient-to-r from-amber-100 via-yellow-200 to-amber-300 bg-clip-text text-transparent drop-shadow-lg">
+                                              {summary.totalScore.toFixed(1)}
+                                            </span>
+                                            <span className="text-sm text-amber-200/80 font-medium">pts</span>
+                                          </div>
+                                          <div className="flex flex-wrap gap-1.5">
+                                            <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-100 text-xs rounded-full border border-emerald-400/30 font-medium">
+                                              {summary.frequencyScore.toFixed(1)} frequência
+                                            </span>
+                                            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-100 text-xs rounded-full border border-amber-400/30 font-medium">
+                                              {summary.biblicalScore.toFixed(1)} bíblico
+                                            </span>
+                                            <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-100 text-xs rounded-full border border-indigo-400/30 font-medium">
+                                              {summary.extraScore.toFixed(1)} extras
+                                            </span>
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
+                                  </>
+                                )}
+
 {getParticipantExtraEntries(p).length > 0 && (
                                   <div className="space-y-1">
                                     <p className="text-xs font-medium text-indigo-300">Desafios/Extras:</p>
