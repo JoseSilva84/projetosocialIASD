@@ -83,6 +83,16 @@ function getRandomQuestions(studies) {
   return shuffleArray(allQuestions)
 }
 
+function getValidQuestionId(questionIdRaw) {
+  const parsed = parseInt(questionIdRaw, 10)
+  return Number.isInteger(parsed) && parsed >= 1 ? parsed : 1
+}
+
+function getValidStudyIndex(rawIndex) {
+  const parsed = parseInt(rawIndex, 10)
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0
+}
+
 function getStudyIndexFromParam(raw) {
   const parsed = Number(raw)
   if (!Number.isInteger(parsed) || parsed < 1) return 0
@@ -346,12 +356,18 @@ const Quiz = () => {
         await playSuccessSound()
         toast.success('Resposta correta!')
 
-        if (selectedScoringParticipantId && question?.id) {
+        if (selectedScoringParticipantId && question) {
+          const validQuestionId = getValidQuestionId(question.id)
+          const validStudyIndex = getValidStudyIndex(studyIndex)
+          if (!selectedScoringParticipantId) {
+            toast.warning('Selecione um participante para registrar pontos')
+            return
+          }
           try {
             // Registrar completude da pergunta específica
             await apiQuizQuestionComplete(selectedScoringParticipantId, {
-              studyIndex,
-              questionId: question.id,
+              studyIndex: validStudyIndex,
+              questionId: validQuestionId,
               action: 'add'
             });
 
@@ -905,10 +921,12 @@ const optionClass = selectedOption
                       <button
                         onClick={async () => {
                           if (editingParticipantId) {
+                            const validQuestionId = getValidQuestionId(stat.questionId)
+                            const validStudyIndex = getValidStudyIndex(stat.studyIndex)
                             try {
                               await apiQuizQuestionComplete(editingParticipantId, {
-                                studyIndex: stat.studyIndex,
-                                questionId: stat.questionId,
+                                studyIndex: validStudyIndex,
+                                questionId: validQuestionId,
                                 action: 'add'
                               })
                               toast.success('Participante adicionado!')
@@ -924,13 +942,15 @@ const optionClass = selectedOption
                         Adicionar
                       </button>
                       <button
-                        onClick={async () => {
+                      onClick={async () => {
                           // Remove first participant as demo
                           if (stat.participants[0]) {
+                            const validQuestionId = getValidQuestionId(stat.questionId)
+                            const validStudyIndex = getValidStudyIndex(stat.studyIndex)
                             try {
                               await apiQuizQuestionComplete(stat.participants[0]._id, {
-                                studyIndex: stat.studyIndex,
-                                questionId: stat.questionId,
+                                studyIndex: validStudyIndex,
+                                questionId: validQuestionId,
                                 action: 'remove'
                               })
                               toast.success('Participante removido!')
