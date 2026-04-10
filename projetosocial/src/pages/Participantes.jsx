@@ -266,6 +266,7 @@ export default function Participantes() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const userRole = getUserRole()
+  const canCreateParticipant = userRole === 'admin' || userRole === 'secretario'
   const [rankingConfig, setRankingConfig] = useState({
     presenceWeight: 1,
     biblicalWeight: 1,
@@ -1206,6 +1207,10 @@ const loadRankingConfig = useCallback(async () => {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!canCreateParticipant) {
+      toast.info('Somente administrador e secretário podem cadastrar participantes.')
+      return
+    }
     const n = name.trim()
     const a = address.trim()
     const nh = neighborhood.trim()
@@ -2053,7 +2058,8 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
 
         {tab === 'inscricoes' && (
           <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8">
-            <div className="relative w-full max-w-xl shrink-0 rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto">
+            {canCreateParticipant ? (
+              <div className="relative w-full max-w-xl shrink-0 rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto">
                 <div className="absolute inset-0 bg-linear-to-br from-slate-500/15 via-transparent to-slate-700/15" />
 
                 <div className="relative px-5 py-6 sm:px-7 sm:py-8 space-y-6">
@@ -2153,9 +2159,32 @@ className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm
                   </form>
                 </div>
               </div>
+            ) : (
+              <div className="relative w-full max-w-xl shrink-0 rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto">
+                <div className="absolute inset-0 bg-linear-to-br from-slate-500/15 via-transparent to-slate-700/15" />
+
+                <div className="relative px-5 py-6 sm:px-7 sm:py-8 space-y-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-white">Inscricao de participantes</h2>
+                    <p className="text-xs sm:text-sm text-white/60 mt-1">
+                      Visualizacao liberada para convidados
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
+                    <p className="text-sm font-semibold text-amber-100">
+                      Seu perfil pode consultar os registros dos participantes.
+                    </p>
+                    <p className="mt-2 text-sm text-amber-50/80">
+                      O cadastro de novos participantes esta disponivel apenas para usuarios administrador e secretario.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <article
-              className={`relative w-full min-w-0 ${userRole === 'admin' ? 'flex-1' : ''} rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto`}
+              className={`relative w-full min-w-0 ${canCreateParticipant ? 'flex-1' : 'max-w-5xl'} rounded-3xl border border-white/10 bg-black/25 backdrop-blur-xl shadow-2xl overflow-hidden lg:mx-0 mx-auto`}
               aria-labelledby="dashboard-heading"
             >
               <div className="absolute inset-0 bg-linear-to-br from-emerald-950/20 via-transparent to-slate-800/20" />
