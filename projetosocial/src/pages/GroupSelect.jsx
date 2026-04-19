@@ -23,7 +23,7 @@ export default function GroupSelect() {
 
   const loadGroups = async () => {
     try {
-      const data = await apiFetch('/groups')
+      const data = await apiFetch('/groups', { skipAuthRedirect: true })
       setGroups(data)
     } catch (error) {
       toast.error('Erro ao carregar grupos: ' + error.message)
@@ -42,14 +42,15 @@ export default function GroupSelect() {
     try {
       const data = await apiFetch('/auth/select-group', {
         method: 'POST',
-        body: JSON.stringify({ groupId: selectedGroup._id, password: password.trim() })
+        body: JSON.stringify({ groupId: selectedGroup._id, password: password.trim() }),
+        skipAuthRedirect: true,
       })
       // Salvar novo token e grupo
       localStorage.setItem('token', data.token)
       saveGroup(data.group)
       navigate('/participantes')
     } catch (err) {
-      toast.error('Senha incorreta.')
+      toast.error(err.message)
     } finally {
       setLoadingVerify(false)
     }

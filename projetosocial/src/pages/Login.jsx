@@ -89,6 +89,7 @@ export default function Login() {
       const data = await apiFetch('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ name: n, password: p }),
+        skipAuthRedirect: true,
       })
       saveSession(data)
       clearGroup() // Limpar grupo selecionado para forçar seleção após login

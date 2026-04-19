@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
-import "./src/config/database.js";
+import "./src/config/env.js";
+import { connectToDatabase } from "./src/config/database.js";
 import Group from "./src/models/group.model.js";
 import User from "./src/models/user.model.js";
 
@@ -14,13 +15,15 @@ function validatePassword(password) {
 
 async function init() {
   try {
+    await connectToDatabase();
+
     const defaultGroupName = process.env.DEFAULT_GROUP_NAME;
     const defaultGroupPassword = process.env.DEFAULT_GROUP_PASSWORD;
     if (!defaultGroupName || !defaultGroupPassword) {
-      console.log("Ignorando criação automática de grupo. Defina DEFAULT_GROUP_NAME e DEFAULT_GROUP_PASSWORD no ambiente se quiser usar o seed.");
+      console.log("Ignorando criacao automatica de grupo. Defina DEFAULT_GROUP_NAME e DEFAULT_GROUP_PASSWORD no ambiente se quiser usar o seed.");
     } else {
       if (!validatePassword(defaultGroupPassword)) {
-        throw new Error("DEFAULT_GROUP_PASSWORD deve ter ao menos 8 caracteres e não ser uma senha fraca.");
+        throw new Error("DEFAULT_GROUP_PASSWORD deve ter ao menos 8 caracteres e nao ser uma senha fraca.");
       }
 
       const groupName = String(defaultGroupName).trim();
@@ -34,7 +37,7 @@ async function init() {
         });
         console.log("Grupo inicial criado com sucesso:", group._id);
       } else {
-        console.log(`Grupo ${groupName} já existe.`);
+        console.log(`Grupo ${groupName} ja existe.`);
       }
     }
 
@@ -42,7 +45,7 @@ async function init() {
     const defaultAdminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
     if (defaultAdminName && defaultAdminPassword) {
       if (!validatePassword(defaultAdminPassword)) {
-        throw new Error("DEFAULT_ADMIN_PASSWORD deve ter ao menos 8 caracteres e não ser uma senha fraca.");
+        throw new Error("DEFAULT_ADMIN_PASSWORD deve ter ao menos 8 caracteres e nao ser uma senha fraca.");
       }
       const userName = String(defaultAdminName).trim();
       const existingAdmin = await User.findOne({ name: userName });
@@ -51,7 +54,7 @@ async function init() {
         const user = await User.create({ name: userName, passwordHash, role: "admin" });
         console.log("Admin inicial criado com sucesso:", user._id);
       } else {
-        console.log(`Admin ${userName} já existe.`);
+        console.log(`Admin ${userName} ja existe.`);
       }
     }
   } catch (err) {
